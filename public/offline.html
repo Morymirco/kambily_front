@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hors ligne | Kambily</title>
+  <style>
+    body {
+      font-family: 'Krub', sans-serif;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #f9fafb;
+    }
+    .container {
+      text-align: center;
+      padding: 2rem;
+    }
+    .logo {
+      width: 120px;
+      margin-bottom: 2rem;
+    }
+    h1 {
+      color: #1f2937;
+      margin-bottom: 1rem;
+    }
+    p {
+      color: #6b7280;
+      margin-bottom: 2rem;
+    }
+    button {
+      background-color: #048B9A;
+      color: white;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      font-weight: 500;
+    }
+    button:hover {
+      background-color: #037483;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <img src="/logo.jpg" alt="Kambily" class="logo">
+    <h1>Vous êtes hors ligne</h1>
+    <p>Vérifiez votre connexion internet et réessayez</p>
+    <button onclick="window.location.reload()">Actualiser la page</button>
+  </div>
+</body>
+</html> 
