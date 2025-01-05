@@ -6,7 +6,7 @@ import { useState } from 'react';
 import { FaFacebookF, FaHeart, FaLinkedinIn, FaShare, FaShoppingCart, FaStar, FaTimes, FaTwitter, FaWhatsapp } from 'react-icons/fa';
 import { FiZoomIn } from 'react-icons/fi';
 import { IoMdClose } from 'react-icons/io';
-import ProductCard from './../../../Components/Common/ProductCard';
+import ProductCard from './../../Components/Common/ProductCard';
 
 const ProductDetail = () => {
   const [selectedImage, setSelectedImage] = useState(0);

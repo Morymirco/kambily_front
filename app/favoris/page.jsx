@@ -1,6 +1,6 @@
 'use client'
 import Link from 'next/link';
-import Produit from './../../Components/Common/Product';
+import Produit from './../Components/Common/Product';
 
 export default function Wishlist() {
   // Exemple de données pour les favoris
