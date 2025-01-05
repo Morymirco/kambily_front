@@ -4,7 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
-import { FaEnvelope, FaGlobe, FaMoon, FaPhone, FaSearch, FaSun } from 'react-icons/fa';
+import { FaEnvelope, FaGlobe, FaMoon, FaPhone, FaSun } from 'react-icons/fa';
 import MobileNav from './MobileNav';
 
 export default function Navbar() {
@@ -423,7 +423,13 @@ export default function Navbar() {
             <div className="flex items-center justify-end space-x-5 sm:space-x-6">
               {/* Icône Recherche - cachée sur mobile */}
               <button className="hidden sm:flex items-center gap-2 text-gray-600 hover:text-[#048B9A]">
-                <FaSearch className="w-5 h-5" />
+                <Image 
+                  src="/search.svg"
+                  alt="Rechercher"
+                  width={24}
+                  height={24}
+                  className="w-5 h-5"
+                />
               </button>
 
               {/* Icône Panier avec popup */}

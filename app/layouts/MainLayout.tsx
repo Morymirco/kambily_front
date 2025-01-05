@@ -1,15 +1,21 @@
+'use client'
+import { usePathname } from 'next/navigation';
 import { ReactNode } from 'react';
-import Navbar from './../Components/NavBar/Navbar';
 import Footer from './../Components/Footer';
+import Navbar from './../Components/NavBar/Navbar';
 
 interface MainLayoutProps {
   children: ReactNode;
 }
 
 const MainLayout = ({ children }: MainLayoutProps) => {
+  // Utiliser usePathname pour vérifier la route actuelle
+  const pathname = usePathname();
+  const isAdminRoute = pathname?.startsWith('/admin');
+
   return (
     <div className="flex min-h-screen flex-col">
-      <Navbar />
+      {!isAdminRoute && <Navbar />}
       
       <main className="flex-grow">
         {/* Container principal avec padding responsive */}
@@ -18,7 +24,7 @@ const MainLayout = ({ children }: MainLayoutProps) => {
         </div>
       </main>
 
-      <Footer />
+      {!isAdminRoute && <Footer />}
     </div>
   );
 };

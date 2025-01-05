@@ -4,7 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { FaEnvelope, FaLock, FaGoogle, FaFacebook } from 'react-icons/fa';
 
-const Login = () => {
+export default function Login() {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -26,30 +26,28 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-lg shadow-md">
-        {/* Logo et titre */}
+    <div className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8">
+      <div className="w-full max-w-md space-y-8">
         <div className="text-center">
-          <div className="flex justify-center mb-4">
-            <Image
-              src="/logo.webp"
-              alt="Logo"
-              width={150}
-              height={50}
-              priority
-            />
-          </div>
-          <h2 className="text-3xl font-bold text-gray-900">Connexion</h2>
+          <Image
+            src="/logo.webp"
+            alt="Logo"
+            width={150}
+            height={50}
+            className="mx-auto"
+          />
+          <h2 className="mt-6 text-3xl font-bold tracking-tight text-gray-900">
+            Connectez-vous à votre compte
+          </h2>
           <p className="mt-2 text-sm text-gray-600">
             Ou{' '}
-            <Link href="/register" className="text-[#048B9A] hover:text-[#037483]">
+            <Link href="/register" className="font-medium text-[#048B9A] hover:text-[#037483]">
               créez un compte
             </Link>
           </p>
         </div>
 
-        {/* Formulaire */}
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+        <form className="mt-8 space-y-6 w-full" onSubmit={handleSubmit}>
           <div className="space-y-4">
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
@@ -124,7 +122,6 @@ const Login = () => {
           </button>
         </form>
 
-        {/* Séparateur */}
         <div className="mt-6">
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
@@ -149,6 +146,4 @@ const Login = () => {
       </div>
     </div>
   );
-};
-
-export default Login; 
+} 

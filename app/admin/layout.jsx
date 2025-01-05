@@ -5,6 +5,7 @@ import { useState } from 'react';
 import {
   FaBars,
   FaBox,
+  FaBullhorn,
   FaChartBar, FaCog,
   FaHome,
   FaShoppingCart,
@@ -22,10 +23,10 @@ const AdminLayout = ({ children }) => {
     { name: 'Produits', icon: FaBox, path: '/admin/products' },
     { name: 'Utilisateurs', icon: FaUsers, path: '/admin/users' },
     {
-        name: 'Assigner Livraisons',
-        icon: FaTruck,
-        path: '/admin/assign-deliveries'
-      },
+      name: 'Marketing',
+      icon: FaBullhorn,
+      path: '/admin/marketing'
+    },
     {
       name: 'Livreurs',
       icon: FaTruck,

@@ -1,6 +1,6 @@
 'use client'
+import Image from 'next/image';
 import { useState, useEffect } from 'react';
-import { FaArrowUp } from 'react-icons/fa';
 
 const ScrollToTop = () => {
   const [isVisible, setIsVisible] = useState(false);
@@ -34,10 +34,17 @@ const ScrollToTop = () => {
       {isVisible && (
         <button
           onClick={scrollToTop}
-          className="fixed bottom-24 md:bottom-8 right-4 md:right-8 bg-[#E9EAEA] hover:bg-[#048B9A] text-[#048B9A] hover:text-white w-10 h-10 md:w-12 md:h-12 rounded-full shadow-lg flex items-center justify-center transition-all duration-300 transform hover:scale-110 z-50 hidden md:flex"
+          className="fixed bottom-20 sm:bottom-8 right-4 sm:right-8 bg-[#E9EAEA] hover:bg-[#048B9A] text-[#048B9A] hover:text-white w-10 h-10 sm:w-12 sm:h-12 rounded-full shadow-lg flex items-center justify-center transition-all duration-300 transform hover:scale-110 z-[9998]"
           aria-label="Remonter en haut"
         >
-          <FaArrowUp className="w-4 h-4 md:w-5 md:h-5" />
+          <div className="relative w-4 h-4 sm:w-5 sm:h-5">
+            <Image 
+              src="/arrow.svg"
+              alt="Remonter"
+              fill
+              className="object-contain transition-transform rotate-180"
+            />
+          </div>
         </button>
       )}
     </>

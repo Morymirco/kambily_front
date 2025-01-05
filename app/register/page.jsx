@@ -4,7 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { FaUser, FaEnvelope, FaLock, FaPhone, FaGoogle, FaFacebook } from 'react-icons/fa';
 
-const Register = () => {
+export default function Register() {
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -30,30 +30,28 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-lg shadow-md">
-        {/* Logo et titre */}
+    <div className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8">
+      <div className="w-full max-w-md space-y-8">
         <div className="text-center">
-          <div className="flex justify-center mb-4">
-            <Image
-              src="/logo.webp"
-              alt="Logo"
-              width={150}
-              height={50}
-              priority
-            />
-          </div>
-          <h2 className="text-3xl font-bold text-gray-900">Créer un compte</h2>
+          <Image
+            src="/logo.webp"
+            alt="Logo"
+            width={150}
+            height={50}
+            className="mx-auto"
+          />
+          <h2 className="mt-6 text-3xl font-bold tracking-tight text-gray-900">
+            Créez votre compte
+          </h2>
           <p className="mt-2 text-sm text-gray-600">
             Ou{' '}
-            <Link href="/login" className="text-[#048B9A] hover:text-[#037483]">
-              connectez-vous à votre compte
+            <Link href="/login" className="font-medium text-[#048B9A] hover:text-[#037483]">
+              connectez-vous
             </Link>
           </p>
         </div>
 
-        {/* Formulaire */}
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+        <form className="mt-8 space-y-6 w-full" onSubmit={handleSubmit}>
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -233,6 +231,4 @@ const Register = () => {
       </div>
     </div>
   );
-};
-
-export default Register; 
+} 
