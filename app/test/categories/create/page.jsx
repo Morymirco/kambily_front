@@ -34,7 +34,7 @@ export default function CreateCategory() {
         return;
       }
 
-      const response = await fetch('http://192.168.43.134:8000/products/list_categories', {
+      const response = await fetch('https://kambily.ddns.net/products/list_categories', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -101,7 +101,7 @@ export default function CreateCategory() {
 
       console.log('Données à envoyer:', dataToSend);
 
-      const response = await fetch('http://192.168.43.134:8000/products/create_category', {
+      const response = await fetch('https://kambily.ddns.net/products/create_category', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

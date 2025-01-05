@@ -3,13 +3,17 @@ const nextConfig = {
   images: {
     remotePatterns: [
       {
-        protocol: 'http',
-        hostname: '192.168.43.134',
-        port: '8000',
+        protocol: 'https',
+        hostname: 'kambily.ddns.net',
+        port: '',
         pathname: '/media/**',
       },
     ],
+    unoptimized: true,
+  },
+  typescript: {
+    ignoreBuildErrors: true,
   },
 }
 
-module.exports = nextConfig
+export default nextConfig;

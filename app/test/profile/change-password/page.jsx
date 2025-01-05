@@ -57,7 +57,7 @@ export default function ChangePassword() {
 
       const user = JSON.parse(storedUser);
 
-      const response = await fetch('http://192.168.43.134:8000/accounts/change_password', {
+      const response = await fetch('https://kambily.ddns.net/accounts/change_password', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

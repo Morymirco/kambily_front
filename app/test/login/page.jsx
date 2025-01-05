@@ -39,7 +39,7 @@ export default function LoginPage() {
     setError(null);
 
     try {
-      const response = await fetch('http://192.168.43.134:8000/accounts/login', {
+      const response = await fetch('https://kambily.ddns.net/accounts/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -48,6 +48,7 @@ export default function LoginPage() {
       });
 
       const data = await response.json();
+      console.log(data);
 
       if (!response.ok) {
         throw new Error(data.message || 'Email ou mot de passe incorrect');

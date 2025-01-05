@@ -1,7 +1,7 @@
 'use client'
-import { useState } from 'react';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
+import { useState } from 'react';
 
 export default function TestPage() {
   const [formData, setFormData] = useState({
@@ -54,7 +54,7 @@ export default function TestPage() {
         }
       });
 
-      const response = await fetch('http://192.168.43.134:8000/accounts/register', {
+      const response = await fetch('https://kambily.ddns.net/accounts/register', {
         method: 'POST',
         body: formDataToSend
       });

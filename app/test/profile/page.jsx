@@ -54,7 +54,7 @@ export default function TestProfile() {
         return;
       }
 
-      const response = await fetch('http://192.168.43.134:8000/accounts/profile', {
+      const response = await fetch('https://kambily.ddns.net/accounts/profile', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -127,7 +127,7 @@ export default function TestProfile() {
         imageFormData.append('image', editForm.image);
         
         try {
-          const imageResponse = await fetch('http://192.168.43.134:8000/accounts/upload-image', {
+          const imageResponse = await fetch('https://kambily.ddns.net/accounts/upload-image', {
             method: 'POST',
             headers: {
               'Authorization': `Bearer ${token}`
@@ -158,7 +158,7 @@ export default function TestProfile() {
       console.log('Données à envoyer:', payload);
 
       // Mise à jour du profil
-      const response = await fetch('http://192.168.43.134:8000/accounts/modify_user', {
+      const response = await fetch('https://kambily.ddns.net/accounts/modify_user', {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,

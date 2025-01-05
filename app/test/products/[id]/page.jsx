@@ -22,7 +22,7 @@ export default function ProductDetail({ params }) {
 
   const fetchProduct = async () => {
     try {
-      const response = await fetch(`http://192.168.43.134:8000/products/show/${productId}`);
+      const response = await fetch(`https://kambily.ddns.net/products/show/${productId}`);
       if (!response.ok) throw new Error('Produit non trouvé');
       const data = await response.json();
       console.log('Données du produit:', data);
@@ -58,7 +58,7 @@ export default function ProductDetail({ params }) {
       : parseInt(productId) - 1;
 
     try {
-      const response = await fetch(`http://192.168.43.134:8000/products/show/${newId}`);
+      const response = await fetch(`https://kambily.ddns.net/products/show/${newId}`);
       if (!response.ok) throw new Error('Produit non trouvé');
       const data = await response.json();
       const slug = createSlug(data.name);
