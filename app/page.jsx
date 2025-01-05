@@ -1,18 +1,18 @@
 'use client'
+import Collection from '@/app/Components/Collection';
 import { motion } from 'framer-motion';
+import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'react-hot-toast';
-import Collection from '@/app/Components/Collection';
+import Footer from './Components/Footer';
 import Features from './Components/NavBar/features';
 import Hero from './Components/NavBar/Hero';
+import Navbar from './Components/NavBar/Navbar';
 import PromoPopup from './Components/Popup/PromoPopup';
 import Produits from './Components/Produit';
 import Promo from './Components/Promo';
 import Tendance from './Components/Tendance';
 import Spinner from './Components/ui/Spinner';
-import Navbar from './Components/NavBar/Navbar';
-import Footer from './Components/Footer';
-import { usePathname } from 'next/navigation';
 
 // Définition des données de produits
 const products = [
