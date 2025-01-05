@@ -1,4 +1,5 @@
 'use client'
+import { useTheme } from '@/app/providers/ThemeProvider';
 import { AnimatePresence, motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -16,6 +17,7 @@ export default function Navbar() {
   const [isLoggedIn, setIsLoggedIn] = useState(true);
   const [showCartPopup, setShowCartPopup] = useState(false);
   const cartPopupTimer = useRef(null);
+  const { theme, toggleTheme } = useTheme();
   
   const languages = [
     { code: 'fr', name: 'Français', flag: '/flags/fr.png' },
@@ -180,14 +182,14 @@ export default function Navbar() {
 
               {/* Switch Mode Sombre/Clair */}
               <button
-                onClick={() => setIsDarkMode(!isDarkMode)}
-                className="ml-4 text-white hover:opacity-80 transition-opacity"
-                aria-label={isDarkMode ? 'Activer le mode clair' : 'Activer le mode sombre'}
+                onClick={toggleTheme}
+                className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
+                aria-label="Toggle theme"
               >
-                {isDarkMode ? (
-                  <FaSun className="w-5 h-5" />
+                {theme === 'dark' ? (
+                  <FaSun className="w-5 h-5 text-yellow-500" />
                 ) : (
-                  <FaMoon className="w-5 h-5" />
+                  <FaMoon className="w-5 h-5 text-gray-600" />
                 )}
               </button>
             </div>
@@ -422,15 +424,10 @@ export default function Navbar() {
             {/* Icônes droites - adaptées pour mobile */}
             <div className="flex items-center justify-end space-x-5 sm:space-x-6">
               {/* Icône Recherche - cachée sur mobile */}
-              <button className="hidden sm:flex items-center gap-2 text-gray-600 hover:text-[#048B9A]">
-                <Image 
-                  src="/search.svg"
-                  alt="Rechercher"
-                  width={24}
-                  height={24}
-                  className="w-5 h-5"
-                />
-              </button>
+             <Link href="/boutique" className="hidden sm:flex items-center gap-2 text-gray-600 hover:text-[#048B9A]">
+             <Image src="/search.svg" alt="Recherche" width={24} height={24} />
+             </Link>
+          
 
               {/* Icône Panier avec popup */}
               <div 
