@@ -1,7 +1,7 @@
 'use client'
 import Link from 'next/link';
 import { useState } from 'react';
-import { FaCookie, FaShieldAlt, FaUserShield } from 'react-icons/fa';
+import { FaCookie, FaUserShield } from 'react-icons/fa';
 
 export default function CookiePolicy() {
   const [activeTab, setActiveTab] = useState('general');
@@ -34,25 +34,25 @@ export default function CookiePolicy() {
   ];
 
   return (
-    <div className="max-w-[1400px] mx-auto px-4 md:px-16 py-12">
+    <div className="max-w-[1400px] mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-6 sm:py-12 overflow-hidden">
       {/* Fil d'Ariane */}
-      <div className="flex items-center gap-2 text-sm text-gray-500 mb-8">
-        <Link href="/" className="hover:text-[#048B9A]">Accueil</Link>
-        <span>›</span>
-        <span className="text-gray-900">Politique de cookies</span>
+      <div className="flex items-center gap-2 text-sm text-gray-500 mb-6 sm:mb-8 overflow-x-hidden">
+        <Link href="/" className="hover:text-[#048B9A] shrink-0">Accueil</Link>
+        <span className="shrink-0">›</span>
+        <span className="text-gray-900 shrink-0">Politique de cookies</span>
       </div>
 
       {/* En-tête */}
-      <div className="text-center mb-12">
-        <h1 className="text-3xl md:text-4xl font-bold mb-4">Politique de Cookies</h1>
-        <p className="text-gray-600 max-w-2xl mx-auto">
+      <div className="text-center mb-8 sm:mb-12 overflow-x-hidden">
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4">Politique de Cookies</h1>
+        <p className="text-gray-600 max-w-2xl mx-auto px-2 text-sm sm:text-base">
           Nous utilisons des cookies pour améliorer votre expérience sur notre site. 
           Découvrez comment nous les utilisons et comment vous pouvez les contrôler.
         </p>
       </div>
 
-      {/* Onglets */}
-      <div className="flex gap-4 mb-8 border-b">
+      {/* Onglets simplifiés avec scroll caché */}
+      <div className="flex gap-4 mb-8 border-b scrollbar-none">
         <button
           onClick={() => setActiveTab('general')}
           className={`pb-4 px-4 font-medium transition-colors relative ${
@@ -62,7 +62,7 @@ export default function CookiePolicy() {
           }`}
         >
           <div className="flex items-center gap-2">
-            <FaCookie />
+            <FaCookie className="w-4 h-4" />
             Général
           </div>
           {activeTab === 'general' && (
@@ -78,37 +78,21 @@ export default function CookiePolicy() {
           }`}
         >
           <div className="flex items-center gap-2">
-            <FaUserShield />
-            Confidentialité
+            <FaUserShield className="w-4 h-4" />
+            Confidentialité & Sécurité
           </div>
           {activeTab === 'privacy' && (
             <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#048B9A]" />
           )}
         </button>
-        <button
-          onClick={() => setActiveTab('security')}
-          className={`pb-4 px-4 font-medium transition-colors relative ${
-            activeTab === 'security' 
-              ? 'text-[#048B9A]' 
-              : 'text-gray-500 hover:text-gray-700'
-          }`}
-        >
-          <div className="flex items-center gap-2">
-            <FaShieldAlt />
-            Sécurité
-          </div>
-          {activeTab === 'security' && (
-            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#048B9A]" />
-          )}
-        </button>
       </div>
 
-      {/* Contenu des onglets */}
-      <div className="min-h-[400px]">
+      {/* Contenu des onglets avec scroll caché */}
+      <div className="min-h-[400px] overflow-y-auto scrollbar-none">
         {activeTab === 'general' && (
-          <div className="space-y-8">
+          <div className="space-y-6 sm:space-y-8">
             {/* Introduction */}
-            <section className="bg-white p-6 rounded-xl shadow-sm">
+            <section className="bg-white p-4 sm:p-6 rounded-xl shadow-sm">
               <h2 className="text-xl font-semibold mb-4">Qu'est-ce qu'un cookie ?</h2>
               <p className="text-gray-600">
                 Un cookie est un petit fichier texte stocké sur votre ordinateur ou appareil mobile 
@@ -120,12 +104,12 @@ export default function CookiePolicy() {
 
             {/* Types de cookies */}
             <section className="space-y-4">
-              <h2 className="text-xl font-semibold mb-6">Types de cookies que nous utilisons</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <h2 className="text-xl font-semibold mb-4 sm:mb-6">Types de cookies que nous utilisons</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                 {cookieTypes.map((cookie, index) => (
                   <div 
                     key={index}
-                    className="bg-white p-6 rounded-xl shadow-sm"
+                    className="bg-white p-4 sm:p-6 rounded-xl shadow-sm"
                   >
                     <h3 className="text-lg font-medium mb-3 flex items-center justify-between">
                       {cookie.name}
@@ -156,43 +140,43 @@ export default function CookiePolicy() {
         )}
 
         {activeTab === 'privacy' && (
-          <div className="bg-white p-6 rounded-xl shadow-sm">
-            <h2 className="text-xl font-semibold mb-4">Protection de vos données</h2>
-            <p className="text-gray-600 mb-6">
-              Nous prenons la protection de vos données personnelles très au sérieux. 
-              Nos cookies sont utilisés de manière responsable et transparente, conformément 
-              aux lois sur la protection des données en vigueur.
-            </p>
-            <div className="space-y-4">
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <h3 className="font-medium mb-2">Conservation des données</h3>
-                <p className="text-sm text-gray-600">
-                  Les cookies que nous utilisons ne stockent aucune information personnelle 
-                  directement identifiable. Les données sont conservées uniquement pendant 
-                  la durée nécessaire à la réalisation des finalités visées.
-                </p>
-              </div>
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <h3 className="font-medium mb-2">Vos droits</h3>
-                <p className="text-sm text-gray-600">
-                  Vous avez le droit de contrôler et/ou supprimer les cookies comme vous 
-                  le souhaitez. Vous pouvez effacer les cookies déjà présents sur votre 
-                  ordinateur et paramétrer la plupart des navigateurs pour qu'ils les bloquent.
-                </p>
+          <div className="space-y-6">
+            {/* Section Confidentialité */}
+            <div className="bg-white p-6 rounded-xl shadow-sm">
+              <h2 className="text-xl font-semibold mb-4">Protection de vos données</h2>
+              <p className="text-gray-600 mb-6">
+                Nous prenons la protection de vos données personnelles très au sérieux. 
+                Nos cookies sont utilisés de manière responsable et transparente, conformément 
+                aux lois sur la protection des données en vigueur.
+              </p>
+              <div className="space-y-4">
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h3 className="font-medium mb-2">Conservation des données</h3>
+                  <p className="text-sm text-gray-600">
+                    Les cookies que nous utilisons ne stockent aucune information personnelle 
+                    directement identifiable. Les données sont conservées uniquement pendant 
+                    la durée nécessaire à la réalisation des finalités visées.
+                  </p>
+                </div>
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h3 className="font-medium mb-2">Vos droits</h3>
+                  <p className="text-sm text-gray-600">
+                    Vous avez le droit de contrôler et/ou supprimer les cookies comme vous 
+                    le souhaitez. Vous pouvez effacer les cookies déjà présents sur votre 
+                    ordinateur et paramétrer la plupart des navigateurs pour qu'ils les bloquent.
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
-        )}
 
-        {activeTab === 'security' && (
-          <div className="bg-white p-6 rounded-xl shadow-sm">
-            <h2 className="text-xl font-semibold mb-4">Sécurité des cookies</h2>
-            <p className="text-gray-600 mb-6">
-              La sécurité de vos données est notre priorité. Nous utilisons des 
-              protocoles de sécurité avancés pour protéger les informations stockées 
-              dans nos cookies.
-            </p>
-            <div className="space-y-4">
+            {/* Section Sécurité */}
+            <div className="bg-white p-6 rounded-xl shadow-sm">
+              <h2 className="text-xl font-semibold mb-4">Sécurité des cookies</h2>
+              <p className="text-gray-600 mb-6">
+                La sécurité de vos données est notre priorité. Nous utilisons des 
+                protocoles de sécurité avancés pour protéger les informations stockées 
+                dans nos cookies.
+              </p>
               <div className="bg-gray-50 p-4 rounded-lg">
                 <h3 className="font-medium mb-2">Mesures de sécurité</h3>
                 <ul className="list-disc list-inside text-sm text-gray-600 space-y-2">

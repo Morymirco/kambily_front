@@ -3,7 +3,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState, useRef } from 'react';
-import { FaEnvelope, FaGlobe, FaMoon, FaPhone, FaSearch, FaShoppingCart, FaSun } from 'react-icons/fa';
+import { FaEnvelope, FaGlobe, FaMoon, FaPhone, FaSearch, FaSun } from 'react-icons/fa';
 import MobileNav from './MobileNav';
 import { AnimatePresence, motion } from 'framer-motion';
 
@@ -328,9 +328,13 @@ export default function Navbar() {
               onClick={() => setIsDrawerOpen(true)}
               className="hover:text-cyan-600"
             >
-              <svg className="w-6 h-6 sm:w-8 sm:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
+              <Image 
+                src="/drawer.svg"
+                alt="Menu"
+                width={24}
+                height={24}
+                className="w-6 h-6 sm:w-8 sm:h-8"
+              />
             </button>
 
             {/* Logo - centré sur mobile */}
@@ -431,7 +435,13 @@ export default function Navbar() {
                 <button 
                   className="relative text-gray-600 hover:text-[#048B9A]"
                 >
-                  <FaShoppingCart className="w-5 h-5 sm:w-6 sm:h-6" />
+                  <Image
+                    src="/cart.svg"
+                    alt="Panier"
+                    width={24}
+                    height={24}
+                    className="w-5 h-5 sm:w-6 sm:h-6"
+                  />
                   <span className="absolute -top-2 -right-2 w-5 h-5 bg-[#048B9A] text-white text-xs rounded-full flex items-center justify-center">
                     {cartItems.length}
                   </span>
@@ -549,10 +559,10 @@ export default function Navbar() {
                 </AnimatePresence>
               </div>
 
-              {/* Icône Utilisateur - Nouveau */}
+              {/* Icône Utilisateur - Caché sur mobile */}
               <Link 
                 href="/profile" 
-                className="text-gray-600 hover:text-[#048B9A] transition-colors"
+                className="hidden sm:block text-gray-600 hover:text-[#048B9A] transition-colors"
               >
                 {isLoggedIn ? (
                   <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 border-current flex items-center justify-center overflow-hidden">
