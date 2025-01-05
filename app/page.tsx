@@ -2,7 +2,7 @@
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { toast } from 'react-hot-toast';
-import Collection from './Components/Collection';
+import Collection from '@/app/Components/Collection';
 import Features from './Components/NavBar/features';
 import Hero from './Components/NavBar/Hero';
 import PromoPopup from './Components/Popup/PromoPopup';
@@ -10,6 +10,25 @@ import Produits from './Components/Produit';
 import Promo from './Components/Promo';
 import Tendance from './Components/Tendance';
 import Spinner from './Components/ui/Spinner';
+
+// Définition des données de produits
+const products = [
+  {
+    id: 1,
+    image: "/products/product1.jpg",
+    title: "Produit 1",
+    price: 65000,
+    inStock: true
+  },
+  {
+    id: 2,
+    image: "/products/product2.jpg",
+    title: "Produit 2",
+    price: 75000,
+    inStock: true
+  },
+  // ... autres produits
+];
 
 export default function Home() {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -101,7 +120,7 @@ export default function Home() {
         viewport={{ once: true, margin: "-100px" }}
         transition={{ duration: 0.8 }}
       >
-        <Collection />
+        <Collection products={products} />
       </motion.div>
 
       {/* Section Newsletter */}
