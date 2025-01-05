@@ -17,10 +17,12 @@ const Promo = () => {
           {/* Texte principal */}
           <div className="text-center sm:text-left">
             <h2 className="text-lg sm:text-xl font-semibold text-[#048B9A] mb-1">
-              Livraison gratuite à 100% pour tout achats à partir de 350.000GNF !!!
+              Livraison gratuite
+              <span className="hidden sm:inline"> à 100% pour tout achats à partir de 350.000GNF !!!</span>
             </h2>
             <p className="text-sm sm:text-base text-gray-500">
-              Plus vous achetez, plus vous économisez!
+              <span className="sm:hidden">À partir de 350.000GNF</span>
+              <span className="hidden sm:inline">Plus vous achetez, plus vous économisez!</span>
             </p>
           </div>
 
