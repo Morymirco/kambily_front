@@ -193,7 +193,7 @@ const Panier = () => {
 
   return (
     <motion.div 
-      className="max-w-[1400px] mx-auto px-4 md:px-16 py-12"
+      className="w-full max-w-[1400px] mx-auto px-3 sm:px-4 md:px-16 py-3 sm:py-6 overflow-hidden"
       variants={containerVariants}
       initial="hidden"
       animate="visible"
@@ -201,20 +201,20 @@ const Panier = () => {
       <Toaster />
       
       <motion.h1 
-        className="text-3xl font-bold mb-8"
+        className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8"
         variants={itemVariants}
       >
         Panier
       </motion.h1>
 
-      <div className="grid md:grid-cols-3 gap-8">
+      <div className="grid md:grid-cols-3 gap-4 sm:gap-8">
         {/* Liste des produits */}
-        <div className="md:col-span-2 space-y-6">
+        <div className="md:col-span-2 space-y-4 sm:space-y-6 w-full">
           <AnimatePresence>
             {cartItems.map((item) => (
               <motion.div
                 key={item.id}
-                className="bg-white rounded-lg shadow-sm p-4 flex items-center gap-4"
+                className="bg-white rounded-lg shadow-sm p-3 sm:p-4 flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-4 w-full"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, x: -100 }}
@@ -222,7 +222,7 @@ const Panier = () => {
                 layout
               >
                 {/* Image du produit */}
-                <div className="relative w-24 h-24">
+                <div className="relative w-16 h-16 sm:w-24 sm:h-24 flex-shrink-0">
                   <Image
                     src={item.image}
                     alt={item.name}
@@ -232,39 +232,39 @@ const Panier = () => {
                 </div>
 
                 {/* Détails du produit */}
-                <div className="flex-1">
-                  <h3 className="font-medium">{item.name}</h3>
-                  <p className="text-gray-500 text-sm">Taille: M</p>
-                  <p className="text-[#048B9A] font-medium">
+                <div className="flex-1 min-w-0 w-[calc(100%-5rem)] sm:w-auto">
+                  <h3 className="font-medium text-sm sm:text-base truncate">{item.name}</h3>
+                  <p className="text-gray-500 text-xs sm:text-sm">Taille: M</p>
+                  <p className="text-[#048B9A] font-medium text-sm sm:text-base">
                     {item.price.toLocaleString()} GNF
                   </p>
                 </div>
 
                 {/* Contrôles de quantité et suppression */}
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 sm:gap-4 w-full sm:w-auto justify-end">
+                  <div className="flex items-center gap-1 sm:gap-2">
                     <button
                       onClick={() => decrementQuantity(item.id)}
-                      className="w-8 h-8 flex items-center justify-center border rounded-lg hover:bg-gray-50"
+                      className="w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center border rounded-lg hover:bg-gray-50 text-sm"
                     >
                       -
                     </button>
-                    <span className="w-12 text-center">
+                    <span className="w-8 sm:w-12 text-center text-sm">
                       {quantities[item.id] || 1}
                     </span>
                     <button
                       onClick={() => incrementQuantity(item.id)}
-                      className="w-8 h-8 flex items-center justify-center border rounded-lg hover:bg-gray-50"
+                      className="w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center border rounded-lg hover:bg-gray-50 text-sm"
                     >
                       +
                     </button>
                   </div>
                   <motion.button 
-                    className="text-red-500"
+                    className="text-red-500 p-1 sm:p-2"
                     whileHover={{ scale: 1.2 }}
                     whileTap={{ scale: 0.9 }}
                   >
-                    <FaTrash />
+                    <FaTrash className="w-3 h-3 sm:w-4 sm:h-4" />
                   </motion.button>
                 </div>
               </motion.div>
@@ -272,13 +272,10 @@ const Panier = () => {
           </AnimatePresence>
 
           {/* Bouton Continuer les achats */}
-          <motion.div 
-            variants={itemVariants}
-            className="flex justify-between items-center"
-          >
+          <motion.div variants={itemVariants} className="flex justify-between items-center">
             <Link href="/boutique">
               <motion.button
-                className="px-6 py-2 border-2 border-[#048B9A] text-[#048B9A] rounded-lg hover:bg-[#048B9A] hover:text-white transition-colors"
+                className="px-4 sm:px-6 py-2 border-2 border-[#048B9A] text-[#048B9A] rounded-lg hover:bg-[#048B9A] hover:text-white transition-colors text-sm sm:text-base"
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >
@@ -290,28 +287,23 @@ const Panier = () => {
 
         {/* Résumé de la commande */}
         <motion.div 
-          className="bg-white rounded-lg shadow-sm p-6 space-y-6"
+          className="bg-white rounded-lg shadow-sm p-3 sm:p-6 space-y-4 sm:space-y-6 w-full"
           variants={itemVariants}
         >
           {/* Code promo */}
-          <div className="space-y-3">
-            <h3 className="font-medium">Code promo</h3>
-            <div className="flex gap-2">
-              <motion.input
+          <div className="space-y-2 sm:space-y-3">
+            <h3 className="font-medium text-sm sm:text-base">Code promo</h3>
+            <div className="flex gap-2 w-full">
+              <input
                 type="text"
                 value={promoCode}
                 onChange={(e) => setPromoCode(e.target.value)}
                 placeholder="Entrez votre code"
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-[#048B9A] focus:border-[#048B9A]"
-                whileFocus={{ scale: 1.01 }}
+                className="flex-1 px-3 py-2 text-sm border rounded-lg min-w-0"
               />
-              <motion.button
-                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
+              <button className="px-3 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm whitespace-nowrap">
                 Appliquer
-              </motion.button>
+              </button>
             </div>
           </div>
 

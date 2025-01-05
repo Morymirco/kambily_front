@@ -1,11 +1,11 @@
 'use client'
+import { AnimatePresence, motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { FaEnvelope, FaGlobe, FaMoon, FaPhone, FaSearch, FaSun } from 'react-icons/fa';
 import MobileNav from './MobileNav';
-import { AnimatePresence, motion } from 'framer-motion';
 
 export default function Navbar() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -321,19 +321,19 @@ export default function Navbar() {
 
       {/* Navigation principale */}
       <div className="w-full">
-        <div className="max-w-[1400px] mx-auto px-4 sm:px-8 md:px-12 lg:px-16 py-2 sm:py-4">
+        <div className="max-w-[1400px] mx-auto px-5 sm:px-8 md:px-12 lg:px-16 py-4 sm:py-4">
           <div className="flex items-center justify-between">
             {/* Bouton du drawer - visible sur mobile et desktop */}
             <button 
               onClick={() => setIsDrawerOpen(true)}
-              className="hover:text-cyan-600"
+              className="hover:text-cyan-600 p-2"
             >
               <Image 
                 src="/drawer.svg"
                 alt="Menu"
-                width={24}
-                height={24}
-                className="w-6 h-6 sm:w-8 sm:h-8"
+                width={54}
+                height={54}
+                className="w-7 h-7 sm:w-8 sm:h-8"
               />
             </button>
 
@@ -346,7 +346,7 @@ export default function Navbar() {
                   width={120}
                   height={40}
                   priority
-                  className="w-[100px] sm:w-[120px]"
+                  className="w-[110px] sm:w-[120px]"
                 />
               </Link>
             </div>
@@ -420,7 +420,7 @@ export default function Navbar() {
             </div>
 
             {/* Icônes droites - adaptées pour mobile */}
-            <div className="flex items-center justify-end space-x-4 sm:space-x-6">
+            <div className="flex items-center justify-end space-x-5 sm:space-x-6">
               {/* Icône Recherche - cachée sur mobile */}
               <button className="hidden sm:flex items-center gap-2 text-gray-600 hover:text-[#048B9A]">
                 <FaSearch className="w-5 h-5" />
@@ -438,9 +438,9 @@ export default function Navbar() {
                   <Image
                     src="/cart.svg"
                     alt="Panier"
-                    width={24}
-                    height={24}
-                    className="w-5 h-5 sm:w-6 sm:h-6"
+                    width={54}
+                    height={54}
+                    className="w-7 first:h-7 sm:w-6 sm:h-6"
                   />
                   <span className="absolute -top-2 -right-2 w-5 h-5 bg-[#048B9A] text-white text-xs rounded-full flex items-center justify-center">
                     {cartItems.length}
