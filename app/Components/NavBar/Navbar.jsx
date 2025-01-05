@@ -267,7 +267,7 @@ export default function Navbar() {
                 <Link href="/contact" className="block text-gray-800 hover:text-[#048B9A]">
                   Contact
                 </Link>
-                <Link href="/a-propos" className="block text-gray-800 hover:text-[#048B9A]">
+                <Link href="/about" className="block text-gray-800 hover:text-[#048B9A]">
                   À propos de nous
                 </Link>
               </nav>
@@ -541,7 +541,7 @@ export default function Navbar() {
                                 Voir le panier
                               </Link>
                               <Link 
-                                href="/commander"
+                                href="/paiement"
                                 className="flex-1 block bg-green-600 text-white text-center px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
                               >
                                 Commander

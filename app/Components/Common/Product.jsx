@@ -7,8 +7,9 @@ import {
     FaFacebookF,
     FaLink,
     FaShoppingCart, FaTimes,
-    FaTwitter, FaWhatsapp
+    FaTwitter, FaWhatsapp, FaHeart
   } from 'react-icons/fa';
+import { AnimatePresence, motion } from 'framer-motion';
   
 const Spinner = () => (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
@@ -117,7 +118,7 @@ const Spinner = () => (
     );
   };
 
-const Produit = ({ image, gallery = [], title, price, inStock, category }) => {
+const Produit = ({ image, gallery = [], title, price, oldPrice, inStock, category, isFavorite: initialFavorite = false }) => {
     const [showModal, setShowModal] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [selectedImage, setSelectedImage] = useState(0);
@@ -125,6 +126,10 @@ const Produit = ({ image, gallery = [], title, price, inStock, category }) => {
     const allImages = hasGallery ? [image, ...gallery] : [image];
     const [copySuccess, setCopySuccess] = useState(false);
     const [quantity, setQuantity] = useState(1);
+    const [isFavorite, setIsFavorite] = useState(initialFavorite);
+    const [showFavToast, setShowFavToast] = useState(false);
+    const [showToast, setShowToast] = useState(false);
+    const [isAddingToCart, setIsAddingToCart] = useState(false);
 
   
     const handleOpenModal = () => {
@@ -169,10 +174,25 @@ const Produit = ({ image, gallery = [], title, price, inStock, category }) => {
       }
     };
   
+    const handleFavorite = (e) => {
+      e.stopPropagation();
+      setIsFavorite(!isFavorite);
+      setShowFavToast(true);
+      setTimeout(() => setShowFavToast(false), 2000);
+    };
+  
+    const handleAddToCart = () => {
+      setIsAddingToCart(true);
+      setTimeout(() => {
+        setIsAddingToCart(false);
+        setShowToast(true);
+        setTimeout(() => setShowToast(false), 3000);
+      }, 1000);
+    };
+  
     return (
       <>
         <div className="border rounded-xl overflow-hidden bg-white group">
-          {/* Image principale avec carousel si galerie existe */}
           <div className="relative h-[220px] w-full overflow-hidden rounded-2xl">
             {hasGallery ? (
               <ImageCarousel images={allImages} title={title} />
@@ -185,11 +205,39 @@ const Produit = ({ image, gallery = [], title, price, inStock, category }) => {
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               />
             )}
-            <div 
-              onClick={handleOpenModal}
-              className="absolute top-3 right-3 bg-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 cursor-pointer hover:bg-gray-100 z-10"
-            >
-              <FaEye className="w-4 h-4 text-gray-600" />
+
+            {/* Badge promo */}
+            {oldPrice && (
+              <div className="absolute top-3 left-3 bg-red-500 text-white text-xs px-2 py-1 rounded-full z-10">
+                Promo
+              </div>
+            )}
+
+            {/* Boutons d'action superposés */}
+            <div className="absolute top-3 right-3 flex flex-col gap-2 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300">
+              {/* Bouton favoris */}
+              <button
+                onClick={handleFavorite}
+                className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 ${
+                  isFavorite 
+                    ? 'bg-red-50 hover:bg-red-100' 
+                    : 'bg-white hover:bg-gray-100'
+                }`}
+              >
+                <FaHeart 
+                  className={`w-3.5 h-3.5 transition-colors duration-300 ${
+                    isFavorite ? 'text-red-500' : 'text-gray-600'
+                  }`}
+                />
+              </button>
+
+              {/* Bouton œil */}
+              <button 
+                onClick={handleOpenModal}
+                className="w-8 h-8 bg-white rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors"
+              >
+                <FaEye className="w-3.5 h-3.5 text-gray-600" />
+              </button>
             </div>
           </div>
   
@@ -200,37 +248,50 @@ const Produit = ({ image, gallery = [], title, price, inStock, category }) => {
               {title}
             </h3>
   
-            {/* Prix */}
-            <p className="text-lg font-bold text-gray-900 mb-2">
-              {price}GNF
-            </p>
+            {/* Prix avec gestion de la promo */}
+            <div className="flex items-center gap-2 mb-2">
+              <p className="text-lg font-bold text-gray-900">
+                {price}GNF
+              </p>
+              {oldPrice && (
+                <p className="text-sm text-gray-500 line-through">
+                  {oldPrice}GNF
+                </p>
+              )}
+            </div>
   
             {/* Indicateur de stock */}
             {inStock && (
-              <div className="flex items-center text-[#048B9A] mb-3">
-                <svg 
-                  className="w-4 h-4 mr-1" 
-                  viewBox="0 0 24 24" 
-                  fill="none" 
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M21 8l-2-2H5L3 8h18z" />
-                  <path d="M3 8v10a2 2 0 002 2h14a2 2 0 002-2V8" />
-                  <path d="M12 12v6" />
-                  <path d="M12 12l4-4" />
-                  <path d="M12 12l-4-4" />
-                </svg>
-                <span className="text-sm">In Stock</span>
+              <div className="flex items-center text-green-600 mb-3">
+                <div className="relative w-4 h-4 flex-shrink-0 [&_svg]:text-green-600 [&_path]:fill-green-600">
+                  <Image 
+                    src="/box.svg"
+                    alt="En stock"
+                    fill
+                    className="object-contain text-green-600"
+                  />
+                </div>
+                <span className="text-sm ml-1.5">En stock</span>
               </div>
             )}
   
             {/* Bouton Ajouter au panier */}
-            <button className="w-full bg-[#048B9A] text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-              <FaShoppingCart className="text-sm" />
-              Ajouter au panier
+            <button 
+              onClick={handleAddToCart}
+              disabled={isAddingToCart}
+              className="w-full bg-[#048B9A] text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300"
+            >
+              {isAddingToCart ? (
+                <>
+                  <span className="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full" />
+                  <span>Ajout...</span>
+                </>
+              ) : (
+                <>
+                  <FaShoppingCart className="text-sm" />
+                  <span className="text-sm">Ajouter au panier</span>
+                </>
+              )}
             </button>
           </div>
         </div>
@@ -239,20 +300,20 @@ const Produit = ({ image, gallery = [], title, price, inStock, category }) => {
   
         {/* Modal */}
         {showModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
-            <div className="bg-white rounded-lg w-full max-w-5xl relative">
+          <div className="fixed inset-0 z-50 flex items-start md:items-center justify-center bg-black bg-opacity-50 overflow-y-auto md:overflow-hidden">
+            <div className="bg-white rounded-lg w-full max-w-5xl relative my-4 mx-2 md:m-0">
               <button 
                 onClick={() => setShowModal(false)}
-                className="absolute top-6 right-6 w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center hover:bg-gray-200 transition-all z-10 group"
+                className="absolute top-4 right-4 w-8 h-8 md:w-10 md:h-10 bg-gray-100 rounded-full flex items-center justify-center hover:bg-gray-200 transition-all z-10 group"
               >
-                <FaTimes className="w-5 h-5 text-gray-600 group-hover:text-gray-800 transition-colors" />
+                <FaTimes className="w-4 h-4 md:w-5 md:h-5 text-gray-600 group-hover:text-gray-800 transition-colors" />
               </button>
   
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-8">
-                {/* Section image principale et miniatures */}
-                <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8 p-4 md:p-8">
+                {/* Section image */}
+                <div className="space-y-3 md:space-y-4">
                   {/* Image principale plus grande */}
-                  <div className="relative h-[500px] rounded-lg overflow-hidden">
+                  <div className="relative h-[300px] md:h-[500px] rounded-lg overflow-hidden">
                     <Image
                       src={allImages[selectedImage]}
                       alt={title}
@@ -277,9 +338,9 @@ const Produit = ({ image, gallery = [], title, price, inStock, category }) => {
                     )}
                   </div>
   
-                  {/* Miniatures plus grandes */}
+                  {/* Miniatures avec scroll horizontal sur mobile */}
                   {hasGallery && (
-                    <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+                    <div className="flex gap-2 md:gap-3 overflow-x-auto pb-2 scrollbar-none md:scrollbar-thin md:scrollbar-thumb-gray-300 md:scrollbar-track-gray-100">
                       {allImages.map((img, index) => (
                         <button
                           key={index}
@@ -302,8 +363,8 @@ const Produit = ({ image, gallery = [], title, price, inStock, category }) => {
                   )}
                 </div>
   
-                {/* Section détails */}
-                <div className="space-y-6">
+                {/* Section informations avec scroll sur mobile */}
+                <div className="space-y-4 md:space-y-6 overflow-y-auto max-h-[60vh] md:max-h-none">
                   {/* Titre */}
                   <h2 className="text-2xl font-bold text-gray-900">{title}</h2>
                   
@@ -330,7 +391,16 @@ const Produit = ({ image, gallery = [], title, price, inStock, category }) => {
                   )}
   
                   {/* Prix */}
-                  <p className="text-3xl font-bold">{price}GNF</p>
+                  <div className="flex items-center gap-4 mb-6">
+                    <span className="text-2xl font-bold text-[#048B9A]">
+                      {price}GNF
+                    </span>
+                    {oldPrice && (
+                      <span className="text-lg text-gray-500 line-through">
+                        {oldPrice}GNF
+                      </span>
+                    )}
+                  </div>
   
                   {/* Groupe Quantité + Ajouter au panier */}
                   <div className="flex items-center gap-4">
@@ -426,6 +496,90 @@ const Produit = ({ image, gallery = [], title, price, inStock, category }) => {
             </div>
           </div>
         )}
+  
+        {/* Toast notification */}
+        {showToast && (
+          <div className="fixed bottom-20 sm:bottom-4 right-4 z-[10000] animate-slide-up">
+            <div className="bg-white border rounded-lg shadow-lg p-4 w-[300px] flex items-center gap-4">
+              <div className="relative w-16 h-16 flex-shrink-0 rounded-md overflow-hidden">
+                <Image
+                  src={image}
+                  alt={title}
+                  fill
+                  className="object-cover"
+                />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-center gap-1.5 text-green-600 font-medium text-sm">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    Ajouté au panier
+                  </div>
+                </div>
+                <p className="text-gray-600 text-sm mt-1 truncate">{title}</p>
+                <Link href="/panier">
+                  <button className="mt-2 text-[#048B9A] text-sm font-medium hover:text-[#037383] transition-colors">
+                    Voir le panier
+                  </button>
+                </Link>
+              </div>
+            </div>
+          </div>
+        )}
+  
+        {/* Toast notification pour les favoris */}
+        <AnimatePresence>
+          {showFavToast && (
+            <motion.div
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 50 }}
+              className="fixed bottom-20 sm:bottom-4 right-4 z-[10000]"
+            >
+              <div className="bg-white border rounded-lg shadow-lg p-4 flex items-center gap-4">
+                {/* Image du produit */}
+                <div className="relative w-16 h-16 flex-shrink-0 rounded-md overflow-hidden">
+                  <Image
+                    src={image}
+                    alt={title}
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+
+                <div className="flex-1 min-w-0">
+                  {/* Titre du produit */}
+                  <p className="text-gray-600 text-sm mb-1.5 line-clamp-2">
+                    {title}
+                  </p>
+
+                  <div className="flex items-center gap-1.5">
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                      isFavorite ? 'bg-red-100' : 'bg-gray-100'
+                    }`}>
+                      <FaHeart className={`w-4 h-4 ${
+                        isFavorite ? 'text-red-500' : 'text-gray-600'
+                      }`} />
+                    </div>
+                    <p className="text-sm font-medium">
+                      {isFavorite 
+                        ? 'Ajouté aux favoris' 
+                        : 'Retiré des favoris'
+                      }
+                    </p>
+                  </div>
+                  <Link href="/favoris">
+                    <button className="text-[#048B9A] text-sm hover:text-[#037483] transition-colors mt-1">
+                      Voir mes favoris
+                    </button>
+                  </Link>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </>
     );
   };

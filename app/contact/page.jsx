@@ -176,21 +176,21 @@ const Contact = () => {
               variants={containerVariants}
             >
               {[
-                { Icon: FaFacebookF, bg: '#3b5998' },
-                { Icon: FaInstagram, bg: 'gray-900' },
-                { Icon: FaTwitter, bg: '#1DA1F2' },
-                { Icon: FaPinterestP, bg: '#E60023' },
-                { Icon: FaLinkedinIn, bg: '#0077B5' }
+                { Icon: FaFacebookF, color: 'bg-[#3b5998]' },
+                { Icon: FaInstagram, color: 'bg-gray-900' },
+                { Icon: FaTwitter, color: 'bg-[#1DA1F2]' },
+                { Icon: FaPinterestP, color: 'bg-[#E60023]' },
+                { Icon: FaLinkedinIn, color: 'bg-[#0077B5]' }
               ].map((social, index) => (
                 <motion.a
                   key={index}
                   href="#"
-                  className={`w-10 h-10 bg-${social.bg} text-white rounded-full flex items-center justify-center hover:opacity-90`}
+                  className={`w-10 h-10 ${social.color} text-white rounded-full flex items-center justify-center hover:opacity-90 transition-opacity`}
                   variants={socialVariants}
                   whileHover={{ scale: 1.2, rotate: 360 }}
                   whileTap={{ scale: 0.9 }}
                 >
-                  <social.Icon />
+                  <social.Icon className="w-4 h-4" />
                 </motion.a>
               ))}
             </motion.div>

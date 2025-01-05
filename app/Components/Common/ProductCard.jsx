@@ -14,8 +14,17 @@ const ProductCard = ({ image, gallery = [], title, price, oldPrice, inStock, des
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isFavorite, setIsFavorite] = useState(initialFavorite);
   const [showFavToast, setShowFavToast] = useState(false);
+  const [quantity, setQuantity] = useState(1);
 
   const images = [image, ...(gallery || [])];
+
+  const incrementQuantity = () => {
+    setQuantity(prev => prev + 1);
+  };
+
+  const decrementQuantity = () => {
+    setQuantity(prev => Math.max(1, prev - 1));
+  };
 
   const handleAddToCart = () => {
     setIsAddingToCart(true);
@@ -145,23 +154,16 @@ const ProductCard = ({ image, gallery = [], title, price, oldPrice, inStock, des
           )}
           
           {inStock && (
-            <div className="flex items-center text-[#048B9A] mb-3">
-              <svg 
-                className="w-4 h-4 mr-1" 
-                viewBox="0 0 24 24" 
-                fill="none" 
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M21 8l-2-2H5L3 8h18z" />
-                <path d="M3 8v10a2 2 0 002 2h14a2 2 0 002-2V8" />
-                <path d="M12 12v6" />
-                <path d="M12 12l4-4" />
-                <path d="M12 12l-4-4" />
-              </svg>
-              <span className="text-sm">In Stock</span>
+            <div className="flex items-center text-green-600 mb-3">
+              <div className="relative w-4 h-4 flex-shrink-0 [&_svg]:text-green-600 [&_path]:fill-green-600">
+                <Image 
+                  src="/box.svg"
+                  alt="En stock"
+                  fill
+                  className="object-contain text-green-600"
+                />
+              </div>
+              <span className="text-sm ml-1.5">En stock</span>
             </div>
           )}
 
@@ -212,47 +214,66 @@ const ProductCard = ({ image, gallery = [], title, price, oldPrice, inStock, des
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4"
+            className="fixed inset-0 z-50 flex items-start md:items-center justify-center bg-black bg-opacity-50 overflow-y-auto md:overflow-hidden"
           >
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white rounded-lg w-full max-w-5xl relative"
+              className="bg-white rounded-lg w-full max-w-5xl relative my-4 mx-2 md:m-0"
             >
               <button 
                 onClick={() => setShowModal(false)}
-                className="absolute top-6 right-6 w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center hover:bg-gray-200 transition-all z-10"
+                className="absolute top-4 right-4 w-8 h-8 md:w-10 md:h-10 bg-gray-100 rounded-full flex items-center justify-center hover:bg-gray-200 transition-all z-10 group"
               >
-                <FaTimes className="w-5 h-5 text-gray-600" />
+                <FaTimes className="w-4 h-4 md:w-5 md:h-5 text-gray-600 group-hover:text-gray-800 transition-colors" />
               </button>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8 p-4 md:p-8">
                 {/* Section image */}
-                <div className="space-y-4">
-                  <div className="relative aspect-square rounded-xl overflow-hidden">
+                <div className="space-y-3 md:space-y-4">
+                  {/* Image principale plus grande */}
+                  <div className="relative h-[300px] md:h-[500px] rounded-lg overflow-hidden">
                     <Image
                       src={images[selectedImage]}
                       alt={title}
                       fill
                       className="object-cover"
                     />
+                    {images.length > 1 && (
+                      <>
+                        <button
+                          onClick={() => setSelectedImage(prev => prev === 0 ? images.length - 1 : prev - 1)}
+                          className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 p-2 rounded-full hover:bg-white"
+                        >
+                          <FaChevronLeft className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => setSelectedImage(prev => (prev + 1) % images.length)}
+                          className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 p-2 rounded-full hover:bg-white"
+                        >
+                          <FaChevronRight className="w-4 h-4" />
+                        </button>
+                      </>
+                    )}
                   </div>
 
-                  {/* Miniatures */}
+                  {/* Miniatures avec scroll horizontal sur mobile */}
                   {images.length > 1 && (
-                    <div className="grid grid-cols-4 gap-4">
+                    <div className="flex gap-2 md:gap-3 overflow-x-auto pb-2 scrollbar-none md:scrollbar-thin md:scrollbar-thumb-gray-300 md:scrollbar-track-gray-100">
                       {images.map((img, index) => (
                         <button
                           key={index}
                           onClick={() => setSelectedImage(index)}
-                          className={`relative aspect-square rounded-lg overflow-hidden ${
-                            selectedImage === index ? 'ring-2 ring-[#048B9A]' : ''
+                          className={`relative flex-shrink-0 w-24 h-24 rounded-lg overflow-hidden transition-all ${
+                            selectedImage === index 
+                              ? 'ring-2 ring-[#12B886] opacity-100' 
+                              : 'opacity-60 hover:opacity-100'
                           }`}
                         >
                           <Image
                             src={img}
-                            alt={`${title} view ${index + 1}`}
+                            alt={`${title} - vue ${index + 1}`}
                             fill
                             className="object-cover"
                           />
@@ -262,10 +283,27 @@ const ProductCard = ({ image, gallery = [], title, price, oldPrice, inStock, des
                   )}
                 </div>
 
-                {/* Section informations */}
-                <div>
-                  <h2 className="text-2xl font-bold mb-4">{title}</h2>
-                  <div className="flex items-center gap-4 mb-6">
+                {/* Section informations avec scroll sur mobile */}
+                <div className="space-y-4 md:space-y-6 overflow-y-auto max-h-[60vh] md:max-h-none">
+                  <h2 className="text-2xl font-bold text-gray-900">{title}</h2>
+                  
+                  {/* Stock */}
+                  {inStock && (
+                    <div className="flex items-center text-green-600">
+                      <div className="relative w-4 h-4 flex-shrink-0 [&_svg]:text-green-600 [&_path]:fill-green-600 mr-2">
+                        <Image 
+                          src="/box.svg"
+                          alt="En stock"
+                          fill
+                          className="object-contain text-green-600"
+                        />
+                      </div>
+                      <span>En stock</span>
+                    </div>
+                  )}
+
+                  {/* Prix */}
+                  <div className="flex items-center gap-4">
                     <span className="text-2xl font-bold text-[#048B9A]">
                       {price}GNF
                     </span>
@@ -276,28 +314,67 @@ const ProductCard = ({ image, gallery = [], title, price, oldPrice, inStock, des
                     )}
                   </div>
 
+                  {/* Description */}
                   {description && (
-                    <p className="text-gray-600 mb-6">{description}</p>
+                    <p className="text-gray-600">{description}</p>
                   )}
 
-                  {/* Bouton Ajouter au panier */}
-                  <button
-                    onClick={handleAddToCart}
-                    disabled={isAddingToCart}
-                    className="w-full bg-[#048B9A] text-white rounded-lg py-3 flex items-center justify-center gap-2 hover:bg-[#037483] transition-colors mb-6"
-                  >
-                    {isAddingToCart ? (
-                      <>
-                        <span className="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full" />
-                        <span>Ajout en cours...</span>
-                      </>
-                    ) : (
-                      <>
-                        <FaShoppingCart className="w-5 h-5" />
-                        Ajouter au panier
-                      </>
-                    )}
-                  </button>
+                  {/* Groupe Quantité + Ajouter au panier */}
+                  <div className="flex items-center gap-4">
+                    {/* Sélecteur de quantité */}
+                    <div className="flex items-center border rounded-lg h-12">
+                      <button
+                        onClick={decrementQuantity}
+                        className="px-3 h-full text-gray-600 hover:text-[#12B886] disabled:opacity-50 disabled:cursor-not-allowed border-r"
+                        disabled={quantity <= 1}
+                      >
+                        -
+                      </button>
+                      <span className="px-4 min-w-[3rem] text-center">
+                        {quantity}
+                      </span>
+                      <button
+                        onClick={incrementQuantity}
+                        className="px-3 h-full text-gray-600 hover:text-[#12B886] border-l"
+                      >
+                        +
+                      </button>
+                    </div>
+
+                    {/* Bouton Ajouter au panier */}
+                    <button 
+                      onClick={handleAddToCart}
+                      disabled={isAddingToCart}
+                      className="w-[200px] bg-[#048B9A] text-white h-12 rounded-lg flex items-center justify-center gap-2 hover:bg-[#037483] transition-colors"
+                    >
+                      {isAddingToCart ? (
+                        <>
+                          <span className="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full" />
+                          <span>Ajout...</span>
+                        </>
+                      ) : (
+                        <>
+                          <FaShoppingCart />
+                          Ajouter au panier
+                        </>
+                      )}
+                    </button>
+                  </div>
+
+                  {/* Tailles */}
+                  <div className="pt-4 border-t">
+                    <h3 className="font-semibold mb-3">Tailles disponibles</h3>
+                    <div className="flex gap-2">
+                      {['S', 'M', 'L', 'XL'].map((size) => (
+                        <button 
+                          key={size}
+                          className="w-10 h-10 border rounded-md flex items-center justify-center hover:border-[#048B9A] hover:text-[#048B9A]"
+                        >
+                          {size}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
 
                   {/* Partage */}
                   <div className="pt-4 border-t">
@@ -343,7 +420,7 @@ const ProductCard = ({ image, gallery = [], title, price, oldPrice, inStock, des
 
       {/* Toast notification */}
       {showToast && (
-        <div className="fixed bottom-4 right-4 z-50 animate-slide-up">
+        <div className="fixed bottom-20 sm:bottom-4 right-4 z-[10000] animate-slide-up">
           <div className="bg-white border rounded-lg shadow-lg p-4 w-[300px] flex items-center gap-4">
             <div className="relative w-16 h-16 flex-shrink-0 rounded-md overflow-hidden">
               <Image
@@ -380,7 +457,7 @@ const ProductCard = ({ image, gallery = [], title, price, oldPrice, inStock, des
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 50 }}
-            className="fixed bottom-4 right-4 z-50"
+            className="fixed bottom-20 sm:bottom-4 right-4 z-[10000]"
           >
             <div className="bg-white border rounded-lg shadow-lg p-4 flex items-center gap-4">
               {/* Image du produit */}
