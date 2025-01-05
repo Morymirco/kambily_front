@@ -14,7 +14,7 @@ const MobileNav = () => {
       path: '/',
       icon: (
         <Image
-          src="/icons/home.svg"
+          src="/home.svg"
           alt="Accueil"
           width={24}
           height={24}
@@ -27,7 +27,7 @@ const MobileNav = () => {
       path: '/boutique',
       icon: (
         <Image
-          src="/icons/shop.svg"
+          src="/shop.svg"
           alt="Boutique"
           width={24}
           height={24}
@@ -40,7 +40,7 @@ const MobileNav = () => {
       path: '/panier',
       icon: (
         <Image
-          src="/icons/cart.svg"
+          src="/cart.svg"
           alt="Panier"
           width={24}
           height={24}
@@ -53,7 +53,7 @@ const MobileNav = () => {
       path: '/favoris',
       icon: (
         <Image
-          src="/icons/heart.svg"
+          src="/heart.svg"
           alt="Favoris"
           width={24}
           height={24}
