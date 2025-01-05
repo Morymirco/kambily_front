@@ -5,7 +5,32 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { FaChevronLeft, FaChevronRight, FaEye, FaFacebookF, FaHeart, FaLink, FaShoppingCart, FaTimes, FaTwitter, FaWhatsapp } from 'react-icons/fa';
 
-const ProductCard = ({ image, gallery = [], title, price, oldPrice, inStock, description, isFavorite: initialFavorite = false }) => {
+// Interface pour les props du composant ProductCard
+interface ProductCardProps {
+  image: string;
+  gallery?: string[];
+  title: string;
+  price: number;
+  oldPrice?: number;
+  inStock: boolean;
+  description?: string;
+  isFavorite?: boolean;
+}
+
+interface SharePlatform {
+  platform: 'facebook' | 'twitter' | 'whatsapp' | 'copy';
+}
+
+const ProductCard = ({ 
+  image, 
+  gallery = [], 
+  title, 
+  price, 
+  oldPrice, 
+  inStock, 
+  description, 
+  isFavorite: initialFavorite = false 
+}: ProductCardProps) => {
   const [showToast, setShowToast] = useState(false);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [showModal, setShowModal] = useState(false);
@@ -26,17 +51,17 @@ const ProductCard = ({ image, gallery = [], title, price, oldPrice, inStock, des
     }, 1000);
   };
 
-  const nextImage = (e) => {
+  const nextImage = (e: React.MouseEvent) => {
     e.stopPropagation();
     setCurrentImageIndex((prev) => (prev + 1) % images.length);
   };
 
-  const prevImage = (e) => {
+  const prevImage = (e: React.MouseEvent) => {
     e.stopPropagation();
     setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
   };
 
-  const handleShare = async (platform) => {
+  const handleShare = async (platform: SharePlatform['platform']) => {
     const url = window.location.href;
     
     switch (platform) {
@@ -61,7 +86,7 @@ const ProductCard = ({ image, gallery = [], title, price, oldPrice, inStock, des
     }
   };
 
-  const handleFavorite = (e) => {
+  const handleFavorite = (e: React.MouseEvent) => {
     e.stopPropagation();
     setIsFavorite(!isFavorite);
     setShowFavToast(true);
