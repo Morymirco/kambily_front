@@ -15,7 +15,7 @@ export default function Navbar() {
   const [showLanguages, setShowLanguages] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(true);
   const [showCartPopup, setShowCartPopup] = useState(false);
-  const cartPopupTimer = useRef<NodeJS.Timeout | null>(null);
+  const cartPopupTimer = useRef(null);
   
   const languages = [
     { code: 'fr', name: 'Français', flag: '/flags/fr.png' },
@@ -90,7 +90,7 @@ export default function Navbar() {
   }, []);
 
   // Ajoutez cette fonction pour gérer la suppression
-  const removeFromCart = (itemId: number) => {
+  const removeFromCart = (itemId) => {
     // Remplacez ceci par votre logique de gestion d'état réelle
     const updatedCart = cartItems.filter(item => item.id !== itemId);
     // Mettez à jour votre état ici

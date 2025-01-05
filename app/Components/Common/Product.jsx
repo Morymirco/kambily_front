@@ -16,75 +16,31 @@ const Spinner = () => (
     </div>
   );
   
-  // Définition des interfaces pour les props
-  interface ImageCarouselProps {
-    images: string[];
-    title: string;
-  }
-
-  interface ProductProps {
-    image: string;
-    gallery?: string[];
-    title: string;
-    price: number;
-    inStock: boolean;
-    category: string;
-  }
-
-  // Ajout des types pour les événements
-  type DragEvent = MouseEvent | TouchEvent;
-
-  const ImageCarousel = ({ images, title }: ImageCarouselProps) => {
+  const ImageCarousel = ({ images, title }) => {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [startX, setStartX] = useState(0);
     const [isDragging, setIsDragging] = useState(false);
-    const carouselRef = useRef<HTMLDivElement>(null);
+    const carouselRef = useRef(null);
   
-    // Gestionnaires d'événements séparés pour les événements touch natifs
-    const handleTouchStart = (e: TouchEvent) => {
+    const handleDragStart = (e) => {
       e.preventDefault();
       setIsDragging(true);
-      setStartX(e.touches[0].clientX);
+      setStartX(e.clientX || e.touches?.[0].clientX);
     };
   
-    const handleTouchMove = (e: TouchEvent) => {
+    const handleDragMove = (e) => {
       if (!isDragging) return;
       e.preventDefault();
       
-      const currentX = e.touches[0].clientX;
+      const currentX = e.clientX || e.touches?.[0].clientX;
       const diff = startX - currentX;
   
-      if (Math.abs(diff) > 50) {
+      if (Math.abs(diff) > 50) { // Seuil minimum pour changer d'image
         if (diff > 0) {
+          // Glissement vers la gauche -> image suivante
           setCurrentIndex((prev) => (prev + 1) % images.length);
         } else {
-          setCurrentIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
-        }
-        setIsDragging(false);
-      }
-    };
-  
-    const handleTouchEnd = () => {
-      setIsDragging(false);
-    };
-  
-    // Gestionnaires d'événements React pour les événements souris
-    const handleDragStart = (e: React.MouseEvent) => {
-      e.preventDefault();
-      setIsDragging(true);
-      setStartX(e.clientX);
-    };
-  
-    const handleDragMove = (e: React.MouseEvent) => {
-      if (!isDragging) return;
-      e.preventDefault();
-      
-      const diff = startX - e.clientX;
-  
-      if (Math.abs(diff) > 50) {
-        if (diff > 0) {
-          setCurrentIndex((prev) => (prev + 1) % images.length);
-        } else {
+          // Glissement vers la droite -> image précédente
           setCurrentIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
         }
         setIsDragging(false);
@@ -99,18 +55,16 @@ const Spinner = () => (
       const carousel = carouselRef.current;
       if (!carousel) return;
   
-      // Ajout des écouteurs d'événements touch natifs
-      carousel.addEventListener('touchstart', handleTouchStart);
-      carousel.addEventListener('touchmove', handleTouchMove);
-      carousel.addEventListener('touchend', handleTouchEnd);
+      carousel.addEventListener('touchstart', handleDragStart);
+      carousel.addEventListener('touchmove', handleDragMove);
+      carousel.addEventListener('touchend', handleDragEnd);
   
       return () => {
-        // Nettoyage des écouteurs d'événements
-        carousel.removeEventListener('touchstart', handleTouchStart);
-        carousel.removeEventListener('touchmove', handleTouchMove);
-        carousel.removeEventListener('touchend', handleTouchEnd);
+        carousel.removeEventListener('touchstart', handleDragStart);
+        carousel.removeEventListener('touchmove', handleDragMove);
+        carousel.removeEventListener('touchend', handleDragEnd);
       };
-    }, [isDragging, startX, images.length]);
+    }, [isDragging, startX]);
   
     return (
       <div 
@@ -163,7 +117,7 @@ const Spinner = () => (
     );
   };
 
-const Produit = ({ image, gallery = [], title, price, inStock, category }: ProductProps) => {
+const Produit = ({ image, gallery = [], title, price, inStock, category }) => {
     const [showModal, setShowModal] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [selectedImage, setSelectedImage] = useState(0);
@@ -182,7 +136,7 @@ const Produit = ({ image, gallery = [], title, price, inStock, category }: Produ
       }, 500);
     };
   
-    const handleShare = async (platform: 'facebook' | 'twitter' | 'whatsapp' | 'copy') => {
+    const handleShare = async (platform) => {
       const shareUrl = window.location.href;
       
       switch(platform) {
@@ -207,7 +161,7 @@ const Produit = ({ image, gallery = [], title, price, inStock, category }: Produ
       }
     };
   
-    const handleQuantityChange = (action: 'increment' | 'decrement') => {
+    const handleQuantityChange = (action) => {
       if (action === 'increment') {
         setQuantity(prev => prev + 1);
       } else if (action === 'decrement' && quantity > 1) {
