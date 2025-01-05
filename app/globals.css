@@ -2,6 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
+@media (max-width: 768px) {
+  body {
+    padding-bottom: 4rem;
+  }
+}
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
@@ -14,8 +20,22 @@
   }
 }
 
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+@keyframes slideDown {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(0);
+  }
 }
+
+.animate-slideDown {
+  animation: slideDown 0.3s ease-out forwards;
+}
+
+body {
+  min-height: 100vh;
+  position: relative;
+  padding-bottom: 4rem;
+}
+
