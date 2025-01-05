@@ -3,7 +3,8 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { FaUser, FaEnvelope, FaPhone, FaMapMarkerAlt, FaEdit, FaSignOutAlt } from 'react-icons/fa';
+import { FaUser, FaEnvelope, FaPhone, FaMapMarkerAlt, FaEdit, FaSignOutAlt, FaLock } from 'react-icons/fa';
+import Link from 'next/link';
 
 export default function TestProfile() {
   const router = useRouter();
@@ -22,6 +23,26 @@ export default function TestProfile() {
   });
 
   useEffect(() => {
+    const storedUser = localStorage.getItem('user');
+    const token = localStorage.getItem('token');
+
+    if (!token || !storedUser) {
+      router.push('/test/login');
+      return;
+    }
+
+    // Initialiser avec les données stockées
+    setUser(JSON.parse(storedUser));
+    setEditForm({
+      first_name: JSON.parse(storedUser).first_name,
+      last_name: JSON.parse(storedUser).last_name,
+      email: JSON.parse(storedUser).email,
+      phone_number: JSON.parse(storedUser).phone_number || '',
+      address: JSON.parse(storedUser).address || '',
+      bio: JSON.parse(storedUser).bio || '',
+    });
+
+    // Rafraîchir les données depuis l'API
     fetchUserProfile();
   }, []);
 
@@ -42,6 +63,7 @@ export default function TestProfile() {
       if (!response.ok) {
         if (response.status === 401) {
           localStorage.removeItem('token');
+          localStorage.removeItem('user');
           router.push('/test/login');
           return;
         }
@@ -49,8 +71,8 @@ export default function TestProfile() {
       }
 
       const data = await response.json();
-      console.log('Données du profil:', data);
       setUser(data);
+      localStorage.setItem('user', JSON.stringify(data)); // Mettre à jour les données stockées
       setEditForm({
         first_name: data.first_name,
         last_name: data.last_name,
@@ -69,37 +91,108 @@ export default function TestProfile() {
 
   const handleLogout = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('user');
     router.push('/test/login');
   };
 
   const handleUpdateProfile = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setError(null);
 
     try {
       const token = localStorage.getItem('token');
-      const formData = new FormData();
-      Object.keys(editForm).forEach(key => {
-        if (editForm[key] !== null) {
-          formData.append(key, editForm[key]);
-        }
-      });
+      const storedUser = JSON.parse(localStorage.getItem('user'));
 
-      const response = await fetch('http://192.168.43.134:8000/accounts/update-profile', {
+      if (!token || !storedUser) {
+        router.push('/test/login');
+        return;
+      }
+
+      // Préparer les données à mettre à jour
+      const updatedData = {};
+      
+      // Ne prendre que les champs qui ont été modifiés
+      if (editForm.first_name !== user.first_name) updatedData.first_name = editForm.first_name;
+      if (editForm.last_name !== user.last_name) updatedData.last_name = editForm.last_name;
+      if (editForm.email !== user.email) updatedData.email = editForm.email;
+      if (editForm.phone_number !== user.phone_number) updatedData.phone_number = editForm.phone_number;
+      if (editForm.address !== user.address) updatedData.address = editForm.address;
+      if (editForm.bio !== user.bio) updatedData.bio = editForm.bio;
+
+      // Si une nouvelle image est sélectionnée
+      let imageUrl = null;
+      if (editForm.image) {
+        const imageFormData = new FormData();
+        imageFormData.append('image', editForm.image);
+        
+        try {
+          const imageResponse = await fetch('http://192.168.43.134:8000/accounts/upload-image', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${token}`
+            },
+            body: imageFormData
+          });
+
+          if (imageResponse.ok) {
+            const imageData = await imageResponse.json();
+            imageUrl = imageData.image_url;
+            updatedData.image = imageUrl;
+          }
+        } catch (imageError) {
+          console.error('Erreur upload image:', imageError);
+        }
+      }
+
+      // Préparer le payload final
+      const payload = {
+        user_id: storedUser.id,
+        updated_data: updatedData
+      };
+
+      if (imageUrl) {
+        payload.image = imageUrl;
+      }
+
+      console.log('Données à envoyer:', payload);
+
+      // Mise à jour du profil
+      const response = await fetch('http://192.168.43.134:8000/accounts/modify_user', {
         method: 'PUT',
         headers: {
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
         },
-        body: formData
+        body: JSON.stringify(payload)
       });
 
-      if (!response.ok) throw new Error('Erreur lors de la mise à jour du profil');
+      console.log('Réponse status:', response.status);
+      const data = await response.json();
+      console.log('Réponse data:', data);
 
-      const updatedData = await response.json();
-      setUser(updatedData);
+      if (!response.ok) {
+        throw new Error(data.message || 'Erreur lors de la mise à jour du profil');
+      }
+
+      // Mettre à jour les données locales
+      const updatedUser = { ...user, ...updatedData };
+      if (imageUrl) {
+        updatedUser.image = imageUrl;
+      }
+      
+      setUser(updatedUser);
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+      
       setShowEditModal(false);
+      
+      // Afficher le message de succès
+      setSuccess(true);
+      setTimeout(() => setSuccess(false), 3000);
+
     } catch (err) {
-      setError(err.message);
+      console.error('Erreur détaillée:', err);
+      setError(err.message || 'Une erreur est survenue lors de la mise à jour');
     } finally {
       setLoading(false);
     }
@@ -140,6 +233,12 @@ export default function TestProfile() {
               <p className="text-gray-600">{user?.bio || 'Aucune bio'}</p>
             </div>
             <div className="flex gap-4">
+              <Link
+                href="/test/profile/change-password"
+                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors flex items-center gap-2"
+              >
+                <FaLock /> Changer le mot de passe
+              </Link>
               <button
                 onClick={() => setShowEditModal(true)}
                 className="px-4 py-2 bg-[#048B9A] text-white rounded-lg hover:bg-[#037483] transition-colors flex items-center gap-2"

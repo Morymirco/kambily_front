@@ -1,8 +1,9 @@
 'use client'
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 
 export default function LoginPage() {
@@ -14,6 +15,12 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const router = useRouter();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -26,6 +33,8 @@ export default function LoginPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!mounted) return;
+    
     setLoading(true);
     setError(null);
 
@@ -44,11 +53,12 @@ export default function LoginPage() {
         throw new Error(data.message || 'Email ou mot de passe incorrect');
       }
 
-      // Stocker le token dans le localStorage
+      // Stocker le token et les données utilisateur
       localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
       
-      // Rediriger vers la page d'accueil
-      window.location.href = '/';
+      // Rediriger vers la page profil
+      router.push('/test/profile');
 
     } catch (err) {
       setError(err.message);
@@ -56,6 +66,8 @@ export default function LoginPage() {
       setLoading(false);
     }
   };
+
+  if (!mounted) return null;
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
