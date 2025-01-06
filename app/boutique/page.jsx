@@ -217,7 +217,9 @@ const ProductCard = ({ id, image, gallery = [], title, price, inStock, category,
         {/* Image du produit */}
         <div className={`
           relative overflow-hidden rounded-2xl
-          ${viewMode === 'list' ? 'w-[300px] h-[300px]' : 'h-[300px] w-full'}
+          ${viewMode === 'list' 
+            ? 'w-[300px] h-[300px]' 
+            : 'h-[200px] sm:h-[300px] w-full'}
         `}>
           {hasGallery ? (
             <ImageCarousel images={allImages} title={title} />
