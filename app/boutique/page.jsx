@@ -693,7 +693,7 @@ const Boutique = () => {
   };
 
   return (
-    <div className="max-w-[1400px] mx-auto px-4 md:px-16 my-8">
+    <div className="max-w-[1400px] mx-auto px-4 py-8">
       {/* Fil d'Ariane */}
       <div className="flex items-center gap-2 text-sm text-gray-500 mb-8">
         <Link href="/" className="hover:text-[#048B9A]">Accueil</Link>
@@ -1025,9 +1025,9 @@ const Boutique = () => {
           variants={containerVariants}
           initial="hidden"
           animate="show"
-          className={`grid gap-6 ${
-            viewMode === 'grid' 
-              ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' 
+          className={`grid gap-3 sm:gap-6 ${
+            viewMode === 'grid'
+              ? 'grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' // 2 colonnes sur mobile
               : 'grid-cols-1'
           }`}
         >
