@@ -219,7 +219,7 @@ const ProductCard = ({ id, image, gallery = [], title, price, inStock, category,
           relative overflow-hidden rounded-2xl
           ${viewMode === 'list' 
             ? 'w-[300px] h-[300px]' 
-            : 'h-[200px] sm:h-[300px] w-full'}
+            : 'h-[160px]  sm:h-[300px] w-full'}
         `}>
           {hasGallery ? (
             <ImageCarousel images={allImages} title={title} />
@@ -323,12 +323,12 @@ const ProductCard = ({ id, image, gallery = [], title, price, inStock, category,
             {isAddingToCart ? (
               <>
                 <span className="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full" />
-                <span className="ml-2">Ajout...</span>
+                <span className="ml-2 text-sm md:text-base">Ajout...</span>
               </>
             ) : (
               <>
                 <FaShoppingCart className="w-4 h-4" />
-                Ajouter
+                <p className="text-[10px] md:text-base">Ajouter au panier</p>
               </>
             )}
           </button>
@@ -473,7 +473,7 @@ const ProductCard = ({ id, image, gallery = [], title, price, inStock, category,
                     ) : (
                       <>
                         <FaShoppingCart className="w-4 h-4" />
-                        Ajouter
+                        Ajouter au panier
                       </>
                     )}
                   </button>
