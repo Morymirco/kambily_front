@@ -227,7 +227,7 @@ const ProductCard = ({ id, image, gallery = [], title, price, inStock, category,
               alt={title}
               fill
               className="object-cover transition-transform duration-300 group-hover:scale-105"
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw "
             />
           )}
           <div 
@@ -693,7 +693,7 @@ const Boutique = () => {
   };
 
   return (
-    <div className="max-w-[1400px] mx-auto px-4 py-8">
+    <div className="w-full px-2 sm:px-4 py-4 sm:py-8">
       {/* Fil d'Ariane */}
       <div className="flex items-center gap-2 text-sm text-gray-500 mb-8">
         <Link href="/" className="hover:text-[#048B9A]">Accueil</Link>
@@ -1020,16 +1020,16 @@ const Boutique = () => {
           )}
         </AnimatePresence>
 
-        {/* Grille de produits avec animation */}
+        {/* Grille de produits modifiée pour 4 colonnes maximum */}
         <motion.div
           variants={containerVariants}
           initial="hidden"
           animate="show"
-          className={`grid gap-3 sm:gap-6 ${
+          className={`grid w-full gap-2 sm:gap-4 ${
             viewMode === 'grid'
-              ? 'grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' // 2 colonnes sur mobile
+              ? 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4' // Maximum 4 colonnes
               : 'grid-cols-1'
-          }`}
+          } max-w-[1400px] mx-auto`} // Ajout d'une largeur maximale centrée
         >
           <AnimatePresence>
             {(searchQuery ? filteredProducts : allProducts).map(product => (
@@ -1040,10 +1040,12 @@ const Boutique = () => {
                 initial="hidden"
                 animate="show"
                 exit={{ opacity: 0, scale: 0.9 }}
+                className="w-full"
               >
                 <ProductCard
                   {...product}
                   viewMode={viewMode}
+                  className="h-full w-full"
                 />
               </motion.div>
             ))}
