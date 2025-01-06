@@ -197,7 +197,7 @@ const ProductCard = ({ id, image, gallery = [], title, price, inStock, category,
               ) : (
                 <>
                   <FaShoppingCart className="w-4 h-4" />
-                  Ajouter
+                  Ajouter au panier
                 </>
               )}
             </button>
@@ -269,22 +269,21 @@ const ProductCard = ({ id, image, gallery = [], title, price, inStock, category,
             </div>
 
             {inStock ? (
-              <div className="flex items-center text-green-600 mb-3">
-                <svg 
-                  className="w-4 h-4 mr-1" 
-                  viewBox="0 0 24 24" 
-                  fill="none" 
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M21 8l-2-2H5L3 8h18z" />
-                  <path d="M3 8v10a2 2 0 002 2h14a2 2 0 002-2V8" />
-                  <path d="M12 12v6" />
-                  <path d="M12 12l4-4" />
-                  <path d="M12 12l-4-4" />
-                </svg>
+              <div className="flex items-center text-[#137c2d] mb-3">
+                 <svg 
+                    className="w-4 h- mr-1 text-[#137c2d] group-hover:scale-110 transition-transform" 
+                    viewBox="0 0 24 24" 
+                    fill="none" 
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M21 10V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l2-1.14"/>
+                    <path d="M16.5 9.4L7.55 4.24"/>
+                    <polyline points="3.29 7 12 12 20.71 7"/>
+                    <line x1="12" y1="22" x2="12" y2="12"/>
+                  </svg>
                 <span className="text-sm">En stock</span>
               </div>
             ) : (
@@ -311,7 +310,7 @@ const ProductCard = ({ id, image, gallery = [], title, price, inStock, category,
             onClick={handleAddToCart}
             disabled={isAddingToCart}
             className={`
-              bg-[#048B9A] text-white rounded-lg flex items-center justify-center gap-2 
+              bg-[#048B9A] text-white rounded-xl flex items-center justify-center gap-2 
               hover:bg-[#037383] transition-all relative overflow-hidden
               ${viewMode === 'list' 
                 ? 'w-[200px] h-12' 
@@ -328,7 +327,7 @@ const ProductCard = ({ id, image, gallery = [], title, price, inStock, category,
             ) : (
               <>
                 <FaShoppingCart className="w-4 h-4" />
-                <p className="text-[10px] md:text-base">Ajouter au panier</p>
+                <p className="text-[12px] md:text-base">Ajouter au panier</p>
               </>
             )}
           </button>
@@ -1027,11 +1026,11 @@ const Boutique = () => {
           variants={containerVariants}
           initial="hidden"
           animate="show"
-          className={`grid w-full gap-2 sm:gap-4 ${
+          className={`grid w-full gap-1 sm:gap-3 ${
             viewMode === 'grid'
-              ? 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4' // Maximum 4 colonnes
+              ? 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4'
               : 'grid-cols-1'
-          } max-w-[1400px] mx-auto`} // Ajout d'une largeur maximale centrée
+          } max-w-[1500px] mx-auto`}
         >
           <AnimatePresence>
             {(searchQuery ? filteredProducts : allProducts).map(product => (
@@ -1042,7 +1041,7 @@ const Boutique = () => {
                 initial="hidden"
                 animate="show"
                 exit={{ opacity: 0, scale: 0.9 }}
-                className="w-full"
+                className="w-full px-0.5 sm:px-1"
               >
                 <ProductCard
                   {...product}
