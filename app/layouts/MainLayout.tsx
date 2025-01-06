@@ -19,7 +19,7 @@ const MainLayout = ({ children }: MainLayoutProps) => {
       
       <main className="flex-grow">
         {/* Container principal avec padding responsive */}
-        <div className="container mx-auto px-1 sm:px-4 overflow-hidden">
+        <div className="container mx-auto  sm:px-4 overflow-hidden">
           {children}
         </div>
       </main>

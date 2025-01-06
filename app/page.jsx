@@ -1,8 +1,8 @@
 'use client'
+import Collection from '@/app/Components/Collection';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { toast } from 'react-hot-toast';
-import Collection from '@/app/Components/Collection';
 import Features from './Components/NavBar/features';
 import Hero from './Components/NavBar/Hero';
 import PromoPopup from './Components/Popup/PromoPopup';

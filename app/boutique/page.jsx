@@ -102,24 +102,31 @@ const ProductCard = ({ id, image, gallery = [], title, price, inStock, category,
 
   if (viewMode === 'list') {
     return (
-      <div className="border rounded-xl overflow-hidden bg-white group">
+      <div className=" rounded-xl  overflow-hidden bg-white group">
         <div className="flex">
           {/* Colonne gauche : Image/Carousel avec largeur augmentée et coins arrondis */}
           <div className="w-[320px] h-[280px] relative flex-shrink-0 p-3">
             <div className="relative w-full h-full rounded-xl overflow-hidden">
-              {hasGallery ? (
-                <ImageCarousel images={allImages} title={title} />
-              ) : (
-                <Image
-                  src={image}
-                  alt={title}
-                  fill
-                  className="object-cover"
-                  sizes="320px"
-                />
-              )}
+              <Link href={`/boutique/${id}`}>
+                <div className="relative w-full h-full">
+                  {hasGallery ? (
+                    <ImageCarousel images={allImages} title={title} />
+                  ) : (
+                    <Image
+                      src={image}
+                      alt={title}
+                      fill
+                      className="object-cover"
+                      sizes="320px"
+                    />
+                  )}
+                </div>
+              </Link>
               <div 
-                onClick={handleOpenModal}
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleOpenModal();
+                }}
                 className="absolute top-3 right-3 bg-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 cursor-pointer hover:bg-gray-100 z-10"
               >
                 <FaEye className="w-4 h-4 text-gray-600" />
@@ -136,7 +143,9 @@ const ProductCard = ({ id, image, gallery = [], title, price, inStock, category,
             </Link>
 
             <div className="mb-4">
-              <span className="text-xl font-bold text-[#048B9A]">{price}GNF</span>
+              <span className="text-xl font-extrabold text-[#048B9A]">
+                {parseInt(price).toLocaleString('fr-FR')} GNF
+              </span>
             </div>
 
             {inStock ? (
@@ -216,25 +225,35 @@ const ProductCard = ({ id, image, gallery = [], title, price, inStock, category,
       `}>
         {/* Image du produit */}
         <div className={`
-          relative overflow-hidden rounded-2xl
+          relative overflow-hidden rounded-2xl cursor-pointer
           ${viewMode === 'list' 
             ? 'w-[300px] h-[300px]' 
-            : 'h-[160px]  sm:h-[300px] w-full'}
+            : 'h-[160px] sm:h-[300px] w-full'}
         `}>
-          {hasGallery ? (
-            <ImageCarousel images={allImages} title={title} />
-          ) : (
-            <Image
-              src={image}
-              alt={title}
-              fill
-              className="object-cover transition-transform duration-300 group-hover:scale-105"
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw "
-            />
-          )}
+          <Link href={`/boutique/${id}`}>
+            <div className="relative w-full h-full">
+              {hasGallery ? (
+                <ImageCarousel images={allImages} title={title} />
+              ) : (
+                <Image
+                  src={image}
+                  alt={title}
+                  fill
+                  className="object-cover transition-transform duration-300 group-hover:scale-105"
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                />
+              )}
+            </div>
+          </Link>
+          
           <div 
-            onClick={handleOpenModal}
-            className="absolute top-3 right-3 bg-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 cursor-pointer hover:bg-gray-100 z-10"
+            onClick={(e) => {
+              e.preventDefault();
+              handleOpenModal();
+            }}
+            className="absolute top-3 right-3 bg-white p-2 rounded-full 
+              opacity-100 sm:opacity-0 sm:group-hover:opacity-100
+              transition-opacity duration-300 cursor-pointer hover:bg-gray-100 z-10"
           >
             <FaEye className="w-4 h-4 text-gray-600" />
           </div>
@@ -262,9 +281,9 @@ const ProductCard = ({ id, image, gallery = [], title, price, inStock, category,
               </p>
             )}
 
-            <div className="flex  font-light items-center gap-2 mb-3">
-              <span className={`  ${viewMode === 'list' ? 'text-2xl' : 'text-lg'}`}>
-                {price}GNF
+            <div className="flex font-medium items-center gap-2 mb-3">
+              <span className={`font-normal ${viewMode === 'list' ? 'text-2xl' : 'text-lg'}`}>
+                {parseInt(price).toLocaleString('fr-FR')} GNF
               </span>
             </div>
 
@@ -436,7 +455,11 @@ const ProductCard = ({ id, image, gallery = [], title, price, inStock, category,
                 )}
 
                 {/* Prix */}
-                <p className="text-3xl font-bold text-[#048B9A]">{price}GNF</p>
+                <div className="flex items-center gap-3 mb-6">
+                  <span className="text-3xl font-extrabold text-[#048B9A]">
+                    {parseInt(price).toLocaleString('fr-FR')} GNF
+                  </span>
+                </div>
 
                 {/* Groupe Quantité + Ajouter au panier */}
                 <div className="flex items-center gap-4">

@@ -288,8 +288,8 @@ const Produit = ({ image, gallery = [], title, price, oldPrice, inStock, categor
                 </>
               ) : (
                 <>
-                  <FaShoppingCart className="text-sm" />
-                  <span className="text-sm">Ajouter au panier</span>
+                  <FaShoppingCart className="text-sm sm:text-base" />
+                  <span className="text-[10px] sm:text-base">Ajouter au panier</span>
                 </>
               )}
             </button>
@@ -425,7 +425,7 @@ const Produit = ({ image, gallery = [], title, price, oldPrice, inStock, categor
                     </div>
   
                     {/* Bouton d'action avec largeur réduite */}
-                    <button className="w-[200px] bg-[#12B886] text-white h-12 rounded-lg flex items-center justify-center gap-2 hover:bg-[#0CA678] transition-colors">
+                    <button className="w-[200px] bg-[#12B886] text-[10px] sm:text-base text-white h-12 rounded-lg flex items-center justify-center gap-2 hover:bg-[#0CA678] transition-colors">
                       <FaShoppingCart />
                       Ajouter au panier
                     </button>
