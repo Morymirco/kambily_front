@@ -2,8 +2,7 @@ import ScrollToTop from '@/app/Components/ScrollToTop';
 import MainLayout from '@/app/layouts/MainLayout';
 import { Krub } from "next/font/google";
 import "./globals.css";
-import { ApiProvider } from './providers/ApiProvider';
-import { ThemeProvider } from './providers/ThemeProvider';
+
 
 const krub = Krub({
   subsets: ['latin'],
@@ -82,14 +81,13 @@ export default function RootLayout({ children }) {
         <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
       </head>
       <body className={krub.className}>
-        <ThemeProvider>
-          <ApiProvider>
+      
             <MainLayout>
               {children}
             </MainLayout>
-          </ApiProvider>
+         
           <ScrollToTop />
-        </ThemeProvider>
+     
         <script
           dangerouslySetInnerHTML={{
             __html: `

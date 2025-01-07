@@ -3,7 +3,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import Image from 'next/image';
 import { useState } from 'react';
 import { FaAddressCard, FaCog, FaHeart, FaShoppingBag, FaSignOutAlt, FaUser, FaGlobe, FaMoon, FaSun, FaCreditCard, FaPlus, FaTimes, FaExclamationTriangle, FaTrash, FaEdit, FaMapMarkerAlt, FaBox, FaCheck, FaTruck, FaStar, FaDownload, FaPrint } from 'react-icons/fa';
-import { useTheme } from '@/app/providers/ThemeProvider';
+
 import ProductCard from '@/app/Components/Common/ProductCard';
 import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
 import Link from 'next/link';
@@ -975,7 +975,6 @@ const AddressesContent = () => {
 };
 
 const SettingsContent = () => {
-  const { theme, toggleTheme } = useTheme();
   const [language, setLanguage] = useState('fr');
   const [showAddPaymentModal, setShowAddPaymentModal] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState('card');
@@ -1026,7 +1025,7 @@ const SettingsContent = () => {
           {/* Mode sombre/clair */}
           <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
             <div className="flex items-center gap-3">
-              {theme === 'dark' ? <FaMoon className="text-[#048B9A]" /> : <FaSun className="text-[#048B9A]" />}
+              <FaMoon className="text-[#048B9A]" /> 
               <div>
                 <h4 className="font-medium mb-1">Mode {theme === 'dark' ? 'sombre' : 'clair'}</h4>
                 <p className="text-sm text-gray-500">
@@ -1039,7 +1038,7 @@ const SettingsContent = () => {
                 type="checkbox" 
                 className="sr-only peer" 
                 checked={theme === 'dark'}
-                onChange={toggleTheme}
+                onChange={()=>{}}
               />
               <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#048B9A]"></div>
             </label>

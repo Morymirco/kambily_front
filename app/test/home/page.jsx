@@ -14,6 +14,9 @@ export default function TestHome() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [timeLeft, setTimeLeft] = useState('00:00:00:00');
   const [isMobile, setIsMobile] = useState(true);
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   // Images du carrousel
   const carouselImages = [
@@ -37,33 +40,41 @@ export default function TestHome() {
     }
   ];
 
-  // Exemple de produits avec la structure adaptée au composant Product
-  const products = [
-    {
-      id: 1,
-      name: "Ensemble De Pyjama Short & Top À Fines Brides Imprimé Cœur",
-      price: 65000,
-      images: [{ image: "/products/pyjama1.jpg" }],
-      category: { name: "Pyjamas" },
-      description: "Ensemble pyjama confortable et élégant"
-    },
-    {
-      id: 2, 
-      name: "T-shirt graphique Floral et Slogan pour Femmes",
-      price: 85000,
-      images: [{ image: "/products/tshirt1.jpg" }],
-      category: { name: "T-shirts" },
-      description: "T-shirt tendance avec motif floral"
-    },
-    {
-      id: 3,
-      name: "Robe d'été Florale",
-      price: 95000, 
-      images: [{ image: "/products/robe1.jpg" }],
-      category: { name: "Robes" },
-      description: "Robe légère et élégante pour l'été"
-    }
-  ];
+  // Récupération des produits depuis l'API
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await fetch('https://kambily.ddns.net/products');
+        
+        // Récupérer d'abord le texte brut de la réponse
+        const responseText = await response.text();
+        console.log('Réponse brute du serveur:', responseText);
+
+        let data;
+        try {
+          // Essayer de parser le texte en JSON
+          data = JSON.parse(responseText);
+        } catch (parseError) {
+          console.error('Erreur de parsing JSON:', parseError);
+          throw new Error('Le serveur a renvoyé une réponse invalide');
+        }
+
+        if (!response.ok) {
+          throw new Error(data.message || 'Erreur lors du chargement des produits');
+        }
+
+        console.log('Données des produits:', data);
+        setProducts(data);
+        setLoading(false);
+      } catch (err) {
+        console.error('Erreur:', err);
+        setError(err.message);
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
 
   useEffect(() => {
     const checkIsMobile = () => {
@@ -96,7 +107,7 @@ export default function TestHome() {
           </p>
           <div className="mt-6">
             <Image
-              src="/mobile-only.svg" // Ajoutez une image appropriée
+              src="/mobile-only.svg"
               alt="Mobile only"
               width={200}
               height={200}
@@ -116,7 +127,19 @@ export default function TestHome() {
         setCurrentSlide={setCurrentSlide}
       />
       <QualityHeader timeLeft={timeLeft} />
-      <ProductGrid products={products} fullWidthIndex={2} />
+      
+      {loading ? (
+        <div className="flex justify-center items-center p-8">
+          <div className="w-12 h-12 border-4 border-[#048B9A] border-t-transparent rounded-full animate-spin" />
+        </div>
+      ) : error ? (
+        <div className="text-center text-red-500 p-8">
+          {error}
+        </div>
+      ) : (
+        <ProductGrid products={products} fullWidthIndex={2} />
+      )}
+
       <FreeDeliveryBanner />
       <JewelrySection />
       <ElectronicsSection />
