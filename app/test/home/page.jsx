@@ -66,6 +66,14 @@ export default function TestHome() {
       images: [{ image: "/houston_tshirt.png" }],
       category: { name: "T-shirts" },
       description: "T-shirt tendance avec motif floral"
+    },
+    {
+      id: 3,
+      name: "Robe d'été Florale",
+      price: 95000, 
+      images: [{ image: "/robe.png" }],
+      category: { name: "Robes" },
+      description: "Robe légère et élégante pour l'été"
     }
   ];
 
@@ -217,7 +225,7 @@ export default function TestHome() {
 
       {/* Grille de produits */}
       <div className="grid grid-cols-2 gap-0">
-        {products.map((product) => (
+        {products.slice(0, 2).map((product) => (
           <Product
             key={product.id}
             image={product.images[0]?.image}
@@ -229,6 +237,248 @@ export default function TestHome() {
             description={product.description}
           />
         ))}
+      </div>
+      
+      {/* Dernier produit en pleine largeur */}
+      <div className="col-span-full w-full">
+        <Product
+          key={products[2].id}
+          image={products[2].images[0]?.image}
+          gallery={products[2].images.map(img => img.image)}
+          title={products[2].name}
+          price={products[2].price}
+          category={products[2].category.name}
+          inStock={true}
+          description={products[2].description}
+        />
+      </div>
+
+      {/* Section Livraison Gratuite */}
+      <div className="bg-pink-50 m-4 p-4 rounded-lg">
+        <div className="text-center">
+          <h2 className="text-4xl font-bold mb-1">100%</h2>
+          <h3 className="text-[#048B9A] font-medium mb-1">
+            Livraison gratuite à 100% pour tout achats à partir de 350.000GNF !!!
+          </h3>
+          <p className="text-gray-500 text-sm">Plus vous achetez, plus vous économisez!</p>
+          <div className="mt-2 text-gray-700 font-medium">Gratuit</div>
+        </div>
+      </div>
+
+      {/* Section Vêtements */}
+      <div className="bg-gray-100 m-4 p-4 rounded-lg">
+        <div className="uppercase text-sm font-medium text-[#048B9A] mb-2">
+          VETEMENTS
+        </div>
+        <h2 className="text-xl font-bold mb-2">
+          Des Tendances qui Captivent
+        </h2>
+        <p className="text-gray-600 text-sm mb-4">
+          Explorez notre gamme de vêtements inspirés des dernières tendances de la mode mondiale.
+        </p>
+        <button className="text-[#048B9A] text-sm font-medium">
+          Explore →
+        </button>
+        <div className="mt-4">
+          <Image
+            src="/couple.jpg"
+            alt="Tendances mode"
+            width={400}
+            height={300}
+            className="w-full h-auto rounded-lg"
+          />
+        </div>
+      </div>
+
+      {/* Deuxième liste de produits */}
+      <div className="grid grid-cols-2 gap-0">
+        {products.slice(0, 2).map((product) => (
+          <Product
+            key={`second-${product.id}`}
+            image={product.images[0]?.image}
+            gallery={product.images.map(img => img.image)}
+            title={product.name}
+            price={product.price}
+            category={product.category.name}
+            inStock={true}
+            description={product.description}
+          />
+        ))}
+      </div>
+      
+      {/* Dernier produit en pleine largeur (deuxième liste) */}
+      <div className="col-span-full w-full">
+        <Product
+          key={`second-${products[2].id}`}
+          image={products[2].images[0]?.image}
+          gallery={products[2].images.map(img => img.image)}
+          title={products[2].name}
+          price={products[2].price}
+          category={products[2].category.name}
+          inStock={true}
+          description={products[2].description}
+        />
+      </div>
+
+      {/* Section Meilleures Offres */}
+      <div className="px-4 py-3">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="text-[#048B9A]">
+            <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" strokeWidth="2"/>
+            </svg>
+          </div>
+          <div>
+            <h2 className="text-sm font-medium">Meilleures Offres</h2>
+            <p className="text-xs text-gray-400 leading-tight">
+              Découvrez nos offres imbattables conçues pour offrir le meilleur rapport qualité-prix.
+            </p>
+          </div>
+        </div>
+
+        {/* Grille de bijoux */}
+        <div className="grid grid-cols-2 gap-4">
+          <div className="bg-white rounded-lg overflow-hidden shadow-sm">
+            <div className="relative aspect-square">
+              <Image
+                src="/bijoux/bagues.jpg"
+                alt="Set de bagues"
+                fill
+                className="object-cover"
+              />
+            </div>
+            <div className="p-3">
+              <h3 className="text-sm font-medium">21/23 Pièces/Set De Bagues À La Mode</h3>
+              <div className="text-[#048B9A] font-medium mt-1">40,000 GNF</div>
+              <div className="flex items-center gap-2 text-xs text-green-600 mt-1">
+                <span className="inline-block w-2 h-2 bg-green-600 rounded-full"></span>
+                In Stock
+              </div>
+              <button className="w-full mt-2 bg-[#048B9A] text-white py-2 rounded-lg text-sm">
+                Ajouter au panier
+              </button>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg overflow-hidden shadow-sm">
+            <div className="relative aspect-square">
+              <Image
+                src="/bijoux/collier.jpg"
+                alt="Collier papillon"
+                fill
+                className="object-cover"
+              />
+            </div>
+            <div className="p-3">
+              <h3 className="text-sm font-medium">2 pièces Collier à papillon</h3>
+              <div className="text-[#048B9A] font-medium mt-1">18,000 GNF</div>
+              <div className="flex items-center gap-2 text-xs text-green-600 mt-1">
+                <span className="inline-block w-2 h-2 bg-green-600 rounded-full"></span>
+                In Stock
+              </div>
+              <button className="w-full mt-2 bg-[#048B9A] text-white py-2 rounded-lg text-sm">
+                Ajouter au panier
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Section Bijouterie */}
+      <div className="m-4 relative rounded-lg overflow-hidden">
+        <Image
+          src="/bijoux/collier-diamant.jpg"
+          alt="Collection de bijoux"
+          width={400}
+          height={300}
+          className="w-full h-[200px] object-cover"
+        />
+        <div className="absolute inset-0 bg-black/30 p-4 flex flex-col justify-between">
+          <div>
+            <div className="inline-block bg-[#048B9A] text-white text-xs px-2 py-1 rounded">
+              BIJOUTERIE
+            </div>
+            <h2 className="text-white text-xl font-bold mt-2">
+              Éblouissez-vous avec notre collection de bijoux
+            </h2>
+            <p className="text-white/90 text-sm mt-1">
+              Parcourez notre collection pour trouver des bijoux qui parlent de votre style unique.
+            </p>
+          </div>
+          <button className="text-white text-sm font-medium">
+            Explorer →
+          </button>
+        </div>
+      </div>
+
+      {/* Section Paiement Sécurisé */}
+      <div className="px-4 py-3 flex items-center gap-3">
+        <div className="text-[#048B9A]">
+          <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" stroke="currentColor" strokeWidth="2"/>
+            <path d="M2 10h20" stroke="currentColor" strokeWidth="2"/>
+          </svg>
+        </div>
+        <div>
+          <h2 className="text-sm font-medium">Paiement Sécurisé</h2>
+          <p className="text-xs text-gray-400 leading-tight">
+            Nous nous engageons à vous offrir une expérience d'achat en ligne sûre et fiable.
+          </p>
+        </div>
+      </div>
+
+      {/* Section Électronique avec produits */}
+      <div className="px-4 space-y-4">
+        {/* Casque VR en grand format */}
+        <div className="bg-white rounded-lg overflow-hidden">
+          <div className="relative aspect-square">
+            <Image
+              src="/electronique/vr-headset.jpg"
+              alt="Casque VR"
+              fill
+              className="object-contain p-4"
+            />
+          </div>
+          <div className="p-4">
+            <h3 className="text-sm font-medium">
+              Réalité Virtuelle Casque, Portable 3D Virtuel Réalité Lunettes Pour Films Et Jeux
+            </h3>
+            <div className="flex items-center gap-2 mt-2">
+              <span className="text-gray-400 line-through text-sm">210,000GNF</span>
+              <span className="text-[#048B9A] font-medium">185,000GNF</span>
+            </div>
+            <div className="flex items-center gap-2 text-xs text-green-600 mt-1">
+              <span className="inline-block w-2 h-2 bg-green-600 rounded-full"></span>
+              In Stock
+            </div>
+            <p className="text-xs text-gray-400 mt-1">
+              Profitez dès maintenant avant la fin de l'offre
+            </p>
+          </div>
+        </div>
+
+        {/* Liste des autres produits */}
+        <div className="space-y-4">
+          {/* Souris gaming */}
+          <div className="flex items-center gap-3">
+            <div className="w-20 h-20 relative rounded-lg overflow-hidden bg-gray-50">
+              <Image
+                src="/electronique/mouse.jpg"
+                alt="Souris gaming"
+                fill
+                className="object-contain p-2"
+              />
+            </div>
+            <div>
+              <h3 className="text-sm font-medium">
+                Souris sans fil silencieuse à lumière RVB, souris de jeu
+              </h3>
+              <div className="text-[#048B9A] font-medium mt-1">
+                52,000GNF
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Navigation du bas */}
