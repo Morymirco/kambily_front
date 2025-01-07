@@ -1,7 +1,8 @@
 import ScrollToTop from '@/app/Components/ScrollToTop';
-import { Krub } from "next/font/google";
 import MainLayout from '@/app/layouts/MainLayout';
+import { Krub } from "next/font/google";
 import "./globals.css";
+import { ApiProvider } from './providers/ApiProvider';
 import { ThemeProvider } from './providers/ThemeProvider';
 
 const krub = Krub({
@@ -82,9 +83,11 @@ export default function RootLayout({ children }) {
       </head>
       <body className={krub.className}>
         <ThemeProvider>
-          <MainLayout>
-            {children}
-          </MainLayout>
+          <ApiProvider>
+            <MainLayout>
+              {children}
+            </MainLayout>
+          </ApiProvider>
           <ScrollToTop />
         </ThemeProvider>
         <script

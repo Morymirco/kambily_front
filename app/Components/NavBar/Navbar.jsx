@@ -110,6 +110,11 @@ export default function Navbar() {
     }, 300);
   };
 
+  // Fonction de navigation vers le panier
+  const handleCartClick = () => {
+    router.push('/panier');
+  };
+
   return (
     <nav className="w-full bg-white shadow-sm font-krub">
       {/* Barre supérieure avec promotion et timer - cachée sur mobile */}
@@ -437,6 +442,7 @@ export default function Navbar() {
               >
                 <button 
                   className="relative text-gray-600 hover:text-[#048B9A]"
+                  onClick={handleCartClick}
                 >
                   <Image
                     src="/cart.svg"
