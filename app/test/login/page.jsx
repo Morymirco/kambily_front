@@ -1,9 +1,9 @@
 'use client'
-import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 
 export default function LoginPage() {
@@ -39,7 +39,7 @@ export default function LoginPage() {
     setError(null);
 
     try {
-      const response = await fetch('https://kambily.ddns.net/accounts/login', {
+      const response = await fetch('https://kambily.ddns.net/accounts/login/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -47,21 +47,36 @@ export default function LoginPage() {
         body: JSON.stringify(formData)
       });
 
-      const data = await response.json();
-      console.log(data);
+      // Récupérer d'abord le texte brut de la réponse
+      const responseText = await response.text();
+      
+      let data;
+      try {
+        // Essayer de parser le texte en JSON
+        data = JSON.parse(responseText);
+      } catch (parseError) {
+        console.error('Réponse brute:', responseText);
+        throw new Error("Le serveur a renvoyé une réponse invalide");
+      }
 
       if (!response.ok) {
         throw new Error(data.message || 'Email ou mot de passe incorrect');
       }
 
-      // Stocker le token et les données utilisateur
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
+      // Vérifier que nous avons bien reçu les tokens
+      if (!data.access || !data.refresh) {
+        throw new Error("Réponse invalide du serveur");
+      }
+
+      // Stocker les tokens
+      localStorage.setItem('access_token', data.access);
+      localStorage.setItem('refresh_token', data.refresh);
       
       // Rediriger vers la page profil
       router.push('/test/profile');
 
     } catch (err) {
+      console.error("Erreur de connexion:", err);
       setError(err.message);
     } finally {
       setLoading(false);

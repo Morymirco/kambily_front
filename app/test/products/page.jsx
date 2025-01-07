@@ -46,7 +46,8 @@ export default function TestProducts() {
 
   const fetchProducts = async () => {
     try {
-      const response = await fetch('https://kambily.ddns.net/products/index');
+      const response = await fetch('https://kambily.ddns.net/products');
+      console.log(response);
       if (!response.ok) throw new Error('Erreur lors du chargement des produits');
       const data = await response.json();
       console.log('Données des produits:', data);

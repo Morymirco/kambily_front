@@ -348,10 +348,10 @@ export default function Navbar() {
             <div className="absolute left-1/2 transform -translate-x-1/2 sm:static sm:transform-none sm:ml-8">
               <Link href="/" className="flex-shrink-0">
                 <Image
-                  src="/logo.webp"
+                  src="/logo6.svg"
                   alt="Kambily Logo"
-                  width={120}
-                  height={40}
+                  width={150}
+                  height={300}
                   priority
                   className="w-[110px] sm:w-[120px]"
                 />
@@ -551,7 +551,7 @@ export default function Navbar() {
                               </Link>
                               <Link 
                                 href="/paiement"
-                                className="flex-1 block bg-green-600 text-white text-center px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
+                                className="flex-1 block bg-[#C4DE85] text-white text-center px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
                               >
                                 Commander
                               </Link>
