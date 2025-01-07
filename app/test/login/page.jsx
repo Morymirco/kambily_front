@@ -1,4 +1,5 @@
 'use client'
+import useTestStore from '@/app/stores/testStore';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -7,6 +8,7 @@ import { useEffect, useState } from 'react';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 
 export default function LoginPage() {
+  const { setAuth } = useTestStore();
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -39,7 +41,8 @@ export default function LoginPage() {
     setError(null);
 
     try {
-      const response = await fetch('https://kambily.ddns.net/accounts/login/', {
+      // Première requête pour obtenir les tokens
+      const loginResponse = await fetch('https://kambily.ddns.net/accounts/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -47,30 +50,40 @@ export default function LoginPage() {
         body: JSON.stringify(formData)
       });
 
-      // Récupérer d'abord le texte brut de la réponse
-      const responseText = await response.text();
-      
-      let data;
-      try {
-        // Essayer de parser le texte en JSON
-        data = JSON.parse(responseText);
-      } catch (parseError) {
-        console.error('Réponse brute:', responseText);
-        throw new Error("Le serveur a renvoyé une réponse invalide");
-      }
+      const loginData = await loginResponse.json();
+      console.log(loginData);
 
-      if (!response.ok) {
-        throw new Error(data.message || 'Email ou mot de passe incorrect');
+      if (!loginResponse.ok) {
+        throw new Error(loginData.message || 'Email ou mot de passe incorrect');
       }
 
       // Vérifier que nous avons bien reçu les tokens
-      if (!data.access || !data.refresh) {
+      if (!loginData.access || !loginData.refresh) {
         throw new Error("Réponse invalide du serveur");
       }
 
       // Stocker les tokens
-      localStorage.setItem('access_token', data.access);
-      localStorage.setItem('refresh_token', data.refresh);
+      localStorage.setItem('access_token', loginData.access);
+      localStorage.setItem('refresh_token', loginData.refresh);
+
+      // Deuxième requête pour obtenir les informations de l'utilisateur
+      const userResponse = await fetch('https://kambily.ddns.net/accounts/get_user_with_token', {
+        headers: {
+          'Authorization': `Bearer ${loginData.access}`
+        }
+      });
+
+      const userData = await userResponse.json();
+
+      if (!userResponse.ok) {
+        throw new Error("Erreur lors de la récupération des données utilisateur");
+      }
+
+      // Mettre à jour le store avec les informations de l'utilisateur et les tokens
+      setAuth(userData, {
+        access: loginData.access,
+        refresh: loginData.refresh
+      });
       
       // Rediriger vers la page profil
       router.push('/test/profile');
