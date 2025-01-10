@@ -120,7 +120,7 @@ const TagsPage = () => {
   useEffect(() => {
     const fetchTags = async () => {
       try {
-        const response = await fetch('https://kambily.ddns.net/products/tags', {
+        const response = await fetch('http://35.85.136.46:8001/products/tags', {
           headers: {
             'Accept': 'application/json',
             'Authorization': `Bearer ${localStorage.getItem('access_token')}`
@@ -170,7 +170,7 @@ const TagsPage = () => {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch('https://kambily.ddns.net/products/tags/create', {
+      const response = await fetch('http://35.85.136.46:8001/products/tags/create', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -216,7 +216,7 @@ const TagsPage = () => {
     if (!window.confirm('Êtes-vous sûr de vouloir supprimer ce tag ?')) return;
 
     try {
-      const response = await fetch(`https://kambily.ddns.net/products/tags/${tagId}/`, {
+      const response = await fetch(`http://35.85.136.46:8001/products/tags/${tagId}/`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('access_token')}`
@@ -241,7 +241,7 @@ const TagsPage = () => {
 
     try {
       const deletePromises = selectedTags.map(tagId =>
-        fetch(`https://kambily.ddns.net/products/tags/${tagId}/`, {
+        fetch(`http://35.85.136.46:8001/products/tags/${tagId}/`, {
           method: 'DELETE',
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('access_token')}`
@@ -263,7 +263,7 @@ const TagsPage = () => {
   // Mise à jour d'un tag
   const handleEdit = async (tagId, updatedData) => {
     try {
-      const response = await fetch(`https://kambily.ddns.net/products/tags/${tagId}/`, {
+      const response = await fetch(`http://35.85.136.46:8001/products/tags/${tagId}/`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

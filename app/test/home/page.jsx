@@ -44,7 +44,7 @@ export default function TestHome() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await fetch('https://kambily.ddns.net/products');
+        const response = await fetch('http://35.85.136.46:8001/products');
         
         // Récupérer d'abord le texte brut de la réponse
         const responseText = await response.text();

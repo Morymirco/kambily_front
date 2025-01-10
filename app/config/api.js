@@ -1,5 +1,5 @@
 // Configuration de base pour l'API
-const API_BASE_URL = 'https://kambily.ddns.net';
+const API_BASE_URL = 'http://35.85.136.46:8001';
 
 // Fonction utilitaire pour les requêtes API
 const fetchApi = async (endpoint, options = {}) => {
