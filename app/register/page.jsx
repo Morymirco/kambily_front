@@ -2,18 +2,29 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { FaUser, FaEnvelope, FaLock, FaPhone, FaGoogle, FaFacebook } from 'react-icons/fa';
+import { FaUser, FaEnvelope, FaLock, FaPhone, FaGoogle, FaFacebook, FaEye, FaEyeSlash } from 'react-icons/fa';
+import { useAuth } from '@/app/providers/AuthProvider';
+import { useRouter } from 'next/navigation';
+import { motion } from 'framer-motion';
 
 export default function Register() {
+  const router = useRouter();
+  const { register, loading: authLoading } = useAuth();
+  
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
+    first_name: '',
+    last_name: '',
     email: '',
-    phone: '',
+    phone_number: '',
     password: '',
     confirmPassword: '',
-    acceptTerms: false
+    acceptTerms: false,
+    profile_image: null
   });
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -21,12 +32,59 @@ export default function Register() {
       ...prev,
       [name]: type === 'checkbox' ? checked : value
     }));
+    // Réinitialiser l'erreur quand l'utilisateur commence à taper
+    if (error) setError(null);
   };
 
-  const handleSubmit = (e) => {
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setFormData({ ...formData, profile_image: file });
+    }
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Register data:', formData);
-    // Ajoutez ici votre logique d'inscription
+    setLoading(true);
+    setError(null);
+
+    // Vérification des mots de passe
+    if (formData.password !== formData.confirmPassword) {
+      setError("Les mots de passe ne correspondent pas");
+      setLoading(false);
+      return;
+    }
+
+    // Vérification des conditions d'utilisation
+    if (!formData.acceptTerms) {
+      setError("Vous devez accepter les conditions d'utilisation");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      // Création du FormData pour l'envoi
+      const registerFormData = new FormData();
+      registerFormData.append('email', formData.email.trim());
+      registerFormData.append('password', formData.password);
+      registerFormData.append('first_name', formData.first_name.trim());
+      registerFormData.append('last_name', formData.last_name.trim());
+      registerFormData.append('phone_number', formData.phone_number.trim());
+      
+      if (formData.profile_image) {
+        registerFormData.append('image', formData.profile_image);
+      }
+
+      await register(registerFormData);
+      
+      // Si l'inscription réussit, rediriger vers la page d'accueil
+      router.push('/');
+    } catch (err) {
+      console.error('Erreur d\'inscription:', err);
+      setError(err.message || 'Une erreur est survenue lors de l\'inscription');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -52,10 +110,20 @@ export default function Register() {
         </div>
 
         <form className="mt-8 space-y-6 w-full" onSubmit={handleSubmit}>
+          {error && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-red-50 text-red-500 p-3 rounded-md text-sm"
+            >
+              {error}
+            </motion.div>
+          )}
+
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label htmlFor="firstName" className="block text-sm font-medium text-gray-700">
+                <label htmlFor="first_name" className="block text-sm font-medium text-gray-700">
                   Prénom
                 </label>
                 <div className="mt-1 relative">
@@ -63,19 +131,20 @@ export default function Register() {
                     <FaUser className="text-gray-400" />
                   </div>
                   <input
-                    id="firstName"
-                    name="firstName"
+                    id="first_name"
+                    name="first_name"
                     type="text"
                     required
-                    value={formData.firstName}
+                    value={formData.first_name}
                     onChange={handleChange}
                     className="appearance-none block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#048B9A] focus:border-[#048B9A]"
+                    disabled={loading}
                   />
                 </div>
               </div>
 
               <div>
-                <label htmlFor="lastName" className="block text-sm font-medium text-gray-700">
+                <label htmlFor="last_name" className="block text-sm font-medium text-gray-700">
                   Nom
                 </label>
                 <div className="mt-1 relative">
@@ -83,13 +152,14 @@ export default function Register() {
                     <FaUser className="text-gray-400" />
                   </div>
                   <input
-                    id="lastName"
-                    name="lastName"
+                    id="last_name"
+                    name="last_name"
                     type="text"
                     required
-                    value={formData.lastName}
+                    value={formData.last_name}
                     onChange={handleChange}
                     className="appearance-none block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#048B9A] focus:border-[#048B9A]"
+                    disabled={loading}
                   />
                 </div>
               </div>
@@ -112,12 +182,13 @@ export default function Register() {
                   onChange={handleChange}
                   className="appearance-none block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#048B9A] focus:border-[#048B9A]"
                   placeholder="exemple@email.com"
+                  disabled={loading}
                 />
               </div>
             </div>
 
             <div>
-              <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="phone_number" className="block text-sm font-medium text-gray-700">
                 Téléphone
               </label>
               <div className="mt-1 relative">
@@ -125,14 +196,15 @@ export default function Register() {
                   <FaPhone className="text-gray-400" />
                 </div>
                 <input
-                  id="phone"
-                  name="phone"
+                  id="phone_number"
+                  name="phone_number"
                   type="tel"
                   required
-                  value={formData.phone}
+                  value={formData.phone_number}
                   onChange={handleChange}
                   className="appearance-none block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#048B9A] focus:border-[#048B9A]"
                   placeholder="+224 6XX XX XX XX"
+                  disabled={loading}
                 />
               </div>
             </div>
@@ -148,13 +220,22 @@ export default function Register() {
                 <input
                   id="password"
                   name="password"
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   required
                   value={formData.password}
                   onChange={handleChange}
-                  className="appearance-none block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#048B9A] focus:border-[#048B9A]"
+                  className="appearance-none block w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#048B9A] focus:border-[#048B9A]"
                   placeholder="••••••••"
+                  disabled={loading}
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                  disabled={loading}
+                >
+                  {showPassword ? <FaEyeSlash className="text-gray-400" /> : <FaEye className="text-gray-400" />}
+                </button>
               </div>
             </div>
 
@@ -169,13 +250,22 @@ export default function Register() {
                 <input
                   id="confirmPassword"
                   name="confirmPassword"
-                  type="password"
+                  type={showConfirmPassword ? "text" : "password"}
                   required
                   value={formData.confirmPassword}
                   onChange={handleChange}
-                  className="appearance-none block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#048B9A] focus:border-[#048B9A]"
+                  className="appearance-none block w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#048B9A] focus:border-[#048B9A]"
                   placeholder="••••••••"
+                  disabled={loading}
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                  disabled={loading}
+                >
+                  {showConfirmPassword ? <FaEyeSlash className="text-gray-400" /> : <FaEye className="text-gray-400" />}
+                </button>
               </div>
             </div>
 
@@ -188,6 +278,7 @@ export default function Register() {
                 checked={formData.acceptTerms}
                 onChange={handleChange}
                 className="h-4 w-4 text-[#048B9A] focus:ring-[#048B9A] border-gray-300 rounded"
+                disabled={loading}
               />
               <label htmlFor="acceptTerms" className="ml-2 block text-sm text-gray-900">
                 J'accepte les{' '}
@@ -196,17 +287,71 @@ export default function Register() {
                 </Link>
               </label>
             </div>
+
+            <div>
+              <label htmlFor="profile_image" className="block text-sm font-medium text-gray-700">
+                Photo de profil
+              </label>
+              <div className="mt-1 flex items-center space-x-4">
+                {formData.profile_image ? (
+                  <div className="relative w-16 h-16 rounded-full overflow-hidden">
+                    <Image
+                      src={URL.createObjectURL(formData.profile_image)}
+                      alt="Aperçu"
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                ) : (
+                  <div className="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center">
+                    <FaUser className="w-8 h-8 text-gray-400" />
+                  </div>
+                )}
+                <label
+                  htmlFor="profile_image_input"
+                  className="cursor-pointer py-2 px-3 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#048B9A]"
+                >
+                  Changer
+                  <input
+                    id="profile_image_input"
+                    name="profile_image"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    className="hidden"
+                    disabled={loading}
+                  />
+                </label>
+                {formData.profile_image && (
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, profile_image: null })}
+                    className="py-2 px-3 border border-gray-300 rounded-md text-sm font-medium text-red-600 hover:bg-red-50"
+                    disabled={loading}
+                  >
+                    Supprimer
+                  </button>
+                )}
+              </div>
+              <p className="mt-1 text-xs text-gray-500">
+                JPG, PNG ou GIF. Taille maximale 2MB.
+              </p>
+            </div>
           </div>
 
           <button
             type="submit"
-            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#048B9A] hover:bg-[#037483] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#048B9A]"
+            disabled={loading}
+            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#048B9A] hover:bg-[#037483] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#048B9A] disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Créer un compte
+            {loading ? (
+              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            ) : (
+              'Créer un compte'
+            )}
           </button>
         </form>
 
-        {/* Séparateur */}
         <div className="mt-6">
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
@@ -218,11 +363,17 @@ export default function Register() {
           </div>
 
           <div className="mt-6 grid grid-cols-2 gap-3">
-            <button className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+            <button 
+              disabled={loading}
+              className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
               <FaGoogle className="mr-2" />
               Google
             </button>
-            <button className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+            <button 
+              disabled={loading}
+              className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
               <FaFacebook className="mr-2" />
               Facebook
             </button>

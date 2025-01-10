@@ -3,13 +3,21 @@ import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { FaEnvelope, FaLock, FaGoogle, FaFacebook } from 'react-icons/fa';
+import { useAuth } from '@/app/providers/AuthProvider';
+import { useRouter } from 'next/navigation';
+import { motion } from 'framer-motion';
 
 export default function Login() {
+  const router = useRouter();
+  const { login, loading: authLoading } = useAuth();
+  
   const [formData, setFormData] = useState({
     email: '',
     password: '',
     rememberMe: false
   });
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -17,12 +25,29 @@ export default function Login() {
       ...prev,
       [name]: type === 'checkbox' ? checked : value
     }));
+    // Réinitialiser l'erreur quand l'utilisateur commence à taper
+    if (error) setError(null);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Login data:', formData);
-    // Ajoutez ici votre logique de connexion
+    setLoading(true);
+    setError(null);
+
+    try {
+      await login({
+        email: formData.email,
+        password: formData.password
+      });
+      
+      // Si la connexion réussit, rediriger vers la page d'accueil
+      router.push('/');
+    } catch (err) {
+      console.error('Erreur de connexion:', err);
+      setError(err.message || 'Une erreur est survenue lors de la connexion');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -48,6 +73,16 @@ export default function Login() {
         </div>
 
         <form className="mt-8 space-y-6 w-full" onSubmit={handleSubmit}>
+          {error && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-red-50 text-red-500 p-3 rounded-md text-sm"
+            >
+              {error}
+            </motion.div>
+          )}
+
           <div className="space-y-4">
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
@@ -66,6 +101,7 @@ export default function Login() {
                   onChange={handleChange}
                   className="appearance-none block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#048B9A] focus:border-[#048B9A]"
                   placeholder="exemple@email.com"
+                  disabled={loading}
                 />
               </div>
             </div>
@@ -87,6 +123,7 @@ export default function Login() {
                   onChange={handleChange}
                   className="appearance-none block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#048B9A] focus:border-[#048B9A]"
                   placeholder="••••••••"
+                  disabled={loading}
                 />
               </div>
             </div>
@@ -101,6 +138,7 @@ export default function Login() {
                 checked={formData.rememberMe}
                 onChange={handleChange}
                 className="h-4 w-4 text-[#048B9A] focus:ring-[#048B9A] border-gray-300 rounded"
+                disabled={loading}
               />
               <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
                 Se souvenir de moi
@@ -116,9 +154,14 @@ export default function Login() {
 
           <button
             type="submit"
-            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#048B9A] hover:bg-[#037483] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#048B9A]"
+            disabled={loading}
+            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#048B9A] hover:bg-[#037483] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#048B9A] disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Se connecter
+            {loading ? (
+              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            ) : (
+              'Se connecter'
+            )}
           </button>
         </form>
 
@@ -133,11 +176,17 @@ export default function Login() {
           </div>
 
           <div className="mt-6 grid grid-cols-2 gap-3">
-            <button className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+            <button 
+              disabled={loading}
+              className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
               <FaGoogle className="mr-2" />
               Google
             </button>
-            <button className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+            <button 
+              disabled={loading}
+              className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
               <FaFacebook className="mr-2" />
               Facebook
             </button>

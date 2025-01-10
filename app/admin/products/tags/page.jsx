@@ -202,7 +202,7 @@ const TagsPage = () => {
 
       setTags(prevTags => [...prevTags, data]);
       toast.success('Tag ajouté avec succès');
-      setNewTag({ name: '', slug: '', description: '' });
+    setNewTag({ name: '', slug: '', description: '' });
     } catch (err) {
       console.error('Erreur:', err);
       toast.error(err.message);

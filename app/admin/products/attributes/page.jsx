@@ -1,7 +1,8 @@
 'use client'
-import { useState, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
+import { useCallback, useState } from 'react';
 import toast from 'react-hot-toast';
-import { FaEdit, FaSearch, FaTrash } from 'react-icons/fa';
+import { FaEdit, FaSearch, FaTimes, FaTrash } from 'react-icons/fa';
 
 // Composant client séparé pour le bouton de suppression en masse
 const BulkDeleteButton = ({ selectedCount, onDelete }) => (
@@ -15,51 +16,154 @@ const BulkDeleteButton = ({ selectedCount, onDelete }) => (
 );
 
 // Composant client séparé pour le formulaire d'ajout
-const AddAttributeForm = ({ newAttribute, onSubmit, onChange }) => (
-  <form onSubmit={onSubmit} className="space-y-4">
-    <div>
-      <label className="block text-sm text-gray-700 mb-1">Nom</label>
-      <input
-        type="text"
-        value={newAttribute.name}
-        onChange={(e) => onChange({...newAttribute, name: e.target.value})}
-        className="w-full px-3 py-2 border rounded-lg text-sm"
-        required
-        placeholder="ex: Taille, Couleur..."
-      />
+const AddAttributeForm = ({ onSubmit, onClose }) => {
+  const [attributeType, setAttributeType] = useState('size'); // 'size' ou 'color'
+  const [newValue, setNewValue] = useState({
+    name: '',
+    description: '',
+    code: '' // pour les couleurs uniquement
+  });
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const token = localStorage.getItem('access_token');
+      if (!token) {
+        router.push('/test/login');
+        return;
+      }
+
+      const endpoint = attributeType === 'size'
+        ? 'http://35.85.136.46:8001/products/sizes/create'
+        : 'http://35.85.136.46:8001/products/colors/create';
+
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify(newValue)
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.detail || `Erreur lors de l'ajout`);
+      }
+
+      toast.success(`${attributeType === 'size' ? 'Taille' : 'Couleur'} ajoutée avec succès`);
+      onSubmit();
+      onClose();
+    } catch (err) {
+      console.error('Erreur:', err);
+      toast.error(err.message);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg p-6 w-full max-w-md">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-lg font-semibold">Ajouter un attribut</h2>
+          <button
+            onClick={onClose}
+            className="text-gray-500 hover:text-gray-700"
+          >
+            <FaTimes />
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Type d'attribut
+            </label>
+            <select
+              value={attributeType}
+              onChange={(e) => {
+                setAttributeType(e.target.value);
+                setNewValue({ name: '', description: '', code: '' });
+              }}
+              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#048B9A]/20 focus:border-[#048B9A]"
+            >
+              <option value="size">Taille</option>
+              <option value="color">Couleur</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Nom
+            </label>
+            <input
+              type="text"
+              value={newValue.name}
+              onChange={(e) => setNewValue({...newValue, name: e.target.value})}
+              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#048B9A]/20 focus:border-[#048B9A]"
+              required
+              placeholder={attributeType === 'size' ? "ex: XL, 42..." : "ex: Rouge, Bleu..."}
+            />
+          </div>
+
+          {attributeType === 'color' && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Code couleur
+              </label>
+              <div className="flex gap-2">
+                <input
+                  type="color"
+                  value={newValue.code}
+                  onChange={(e) => setNewValue({...newValue, code: e.target.value})}
+                  className="h-10 w-20 p-1 border rounded-lg"
+                  required
+                />
+                <input
+                  type="text"
+                  value={newValue.code}
+                  onChange={(e) => setNewValue({...newValue, code: e.target.value})}
+                  className="flex-1 px-3 py-2 border rounded-lg"
+                  placeholder="#000000"
+                  pattern="^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"
+                />
+              </div>
+            </div>
+          )}
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Description
+            </label>
+            <textarea
+              value={newValue.description}
+              onChange={(e) => setNewValue({...newValue, description: e.target.value})}
+              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#048B9A]/20 focus:border-[#048B9A]"
+              rows={3}
+              placeholder="Description optionnelle"
+            />
+          </div>
+
+          <div className="flex justify-end gap-3 mt-6">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 border rounded-lg hover:bg-gray-50"
+            >
+              Annuler
+            </button>
+            <button
+              type="submit"
+              className="px-4 py-2 bg-[#048B9A] text-white rounded-lg hover:bg-[#037483]"
+            >
+              Ajouter
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
-    <div>
-      <label className="block text-sm text-gray-700 mb-1">Valeurs</label>
-      <input
-        type="text"
-        value={newAttribute.values}
-        onChange={(e) => onChange({...newAttribute, values: e.target.value})}
-        className="w-full px-3 py-2 border rounded-lg text-sm"
-        required
-        placeholder="Séparez les valeurs par des virgules"
-      />
-      <p className="mt-1 text-xs text-gray-500">
-        Ex: XS, S, M, L, XL
-      </p>
-    </div>
-    <div>
-      <label className="block text-sm text-gray-700 mb-1">Description</label>
-      <textarea
-        value={newAttribute.description}
-        onChange={(e) => onChange({...newAttribute, description: e.target.value})}
-        className="w-full px-3 py-2 border rounded-lg text-sm"
-        rows={3}
-        placeholder="Description optionnelle"
-      />
-    </div>
-    <button
-      type="submit"
-      className="w-full bg-[#048B9A] text-white px-4 py-2 rounded-lg text-sm hover:bg-[#037483]"
-    >
-      Ajouter
-    </button>
-  </form>
-);
+  );
+};
 
 // Composant client séparé pour la ligne du tableau d'attributs
 const AttributeRow = ({ attribute, isSelected, onSelect, onEdit, onDelete }) => (
@@ -107,11 +211,14 @@ const AttributeRow = ({ attribute, isSelected, onSelect, onEdit, onDelete }) => 
 const AttributesPage = () => {
   const [selectedAttributes, setSelectedAttributes] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [attributeType, setAttributeType] = useState('size'); // 'size' ou 'color'
   const [newAttribute, setNewAttribute] = useState({
     name: '',
-    values: '',
-    description: ''
+    description: '',
+    code: '' // pour les couleurs uniquement
   });
+  const router = useRouter();
   
   const attributes = [
     {
@@ -131,11 +238,42 @@ const AttributesPage = () => {
     // ... autres attributs
   ];
 
-  const handleSubmit = useCallback((e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    toast.success('Attribut ajouté avec succès');
-    setNewAttribute({ name: '', values: '', description: '' });
-  }, []);
+    try {
+      const token = localStorage.getItem('access_token');
+      if (!token) {
+        router.push('/test/login');
+        return;
+      }
+
+      const endpoint = attributeType === 'size'
+        ? 'http://35.85.136.46:8001/products/sizes/create'
+        : 'http://35.85.136.46:8001/products/colors/create';
+
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify(newAttribute)
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.detail || `Erreur lors de l'ajout`);
+      }
+
+      toast.success(`${attributeType === 'size' ? 'Taille' : 'Couleur'} ajoutée avec succès`);
+      setShowAddModal(false);
+      setNewAttribute({ name: '', description: '', code: '' });
+    } catch (err) {
+      console.error('Erreur:', err);
+      toast.error(err.message);
+    }
+  };
 
   const handleSelectAll = useCallback((e) => {
     if (e.target.checked) {
@@ -181,13 +319,85 @@ const AttributesPage = () => {
 
       <div className="grid grid-cols-3 gap-6">
         <div className="col-span-1">
-          <div className="bg-white p-4 rounded-lg shadow-sm">
-            <h2 className="font-medium mb-4">Ajouter un attribut</h2>
-            <AddAttributeForm
-              newAttribute={newAttribute}
-              onSubmit={handleSubmit}
-              onChange={setNewAttribute}
-            />
+          <div className="bg-white p-6 rounded-lg shadow-sm">
+            <h2 className="text-lg font-semibold mb-4">Ajouter un attribut</h2>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Type d'attribut
+                </label>
+                <select
+                  value={attributeType}
+                  onChange={(e) => {
+                    setAttributeType(e.target.value);
+                    setNewAttribute({ name: '', description: '', code: '' });
+                  }}
+                  className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#048B9A]/20 focus:border-[#048B9A]"
+                >
+                  <option value="size">Taille</option>
+                  <option value="color">Couleur</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Nom
+                </label>
+                <input
+                  type="text"
+                  value={newAttribute.name}
+                  onChange={(e) => setNewAttribute({...newAttribute, name: e.target.value})}
+                  className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#048B9A]/20 focus:border-[#048B9A]"
+                  required
+                  placeholder={attributeType === 'size' ? "ex: XL, 42..." : "ex: Rouge, Bleu..."}
+                />
+              </div>
+
+              {attributeType === 'color' && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Code couleur
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      type="color"
+                      value={newAttribute.code}
+                      onChange={(e) => setNewAttribute({...newAttribute, code: e.target.value})}
+                      className="h-10 w-20 p-1 border rounded-lg"
+                      required
+                    />
+                    <input
+                      type="text"
+                      value={newAttribute.code}
+                      onChange={(e) => setNewAttribute({...newAttribute, code: e.target.value})}
+                      className="flex-1 px-3 py-2 border rounded-lg"
+                      placeholder="#000000"
+                      pattern="^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"
+                    />
+                  </div>
+                </div>
+              )}
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Description
+                </label>
+                <textarea
+                  value={newAttribute.description}
+                  onChange={(e) => setNewAttribute({...newAttribute, description: e.target.value})}
+                  className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#048B9A]/20 focus:border-[#048B9A]"
+                  rows={3}
+                  placeholder="Description optionnelle"
+                />
+              </div>
+
+              <button
+                type="submit"
+                className="w-full px-4 py-2 bg-[#048B9A] text-white rounded-lg hover:bg-[#037483]"
+              >
+                Ajouter
+              </button>
+            </form>
           </div>
         </div>
 
