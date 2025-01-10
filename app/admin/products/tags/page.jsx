@@ -1,5 +1,5 @@
 'use client'
-import { useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { FaEdit, FaSearch, FaTrash } from 'react-icons/fa';
 
@@ -15,7 +15,7 @@ const BulkDeleteButton = ({ selectedCount, onDelete }) => (
 );
 
 // Composant pour le formulaire d'ajout
-const AddTagForm = ({ newTag, onSubmit, onChange }) => (
+const AddTagForm = ({ newTag, onSubmit, onChange, isLoading }) => (
   <form onSubmit={onSubmit} className="space-y-4">
     <div>
       <label className="block text-sm text-gray-700 mb-1">Nom</label>
@@ -25,6 +25,7 @@ const AddTagForm = ({ newTag, onSubmit, onChange }) => (
         onChange={(e) => onChange({...newTag, name: e.target.value})}
         className="w-full px-3 py-2 border rounded-lg text-sm"
         required
+        disabled={isLoading}
       />
     </div>
     <div>
@@ -35,6 +36,7 @@ const AddTagForm = ({ newTag, onSubmit, onChange }) => (
         onChange={(e) => onChange({...newTag, slug: e.target.value})}
         className="w-full px-3 py-2 border rounded-lg text-sm"
         required
+        disabled={isLoading}
       />
     </div>
     <div>
@@ -44,13 +46,22 @@ const AddTagForm = ({ newTag, onSubmit, onChange }) => (
         onChange={(e) => onChange({...newTag, description: e.target.value})}
         className="w-full px-3 py-2 border rounded-lg text-sm"
         rows={4}
+        disabled={isLoading}
       />
     </div>
     <button
       type="submit"
-      className="w-full bg-[#048B9A] text-white px-4 py-2 rounded-lg text-sm hover:bg-[#037483]"
+      disabled={isLoading}
+      className="w-full bg-[#048B9A] text-white px-4 py-2 rounded-lg text-sm hover:bg-[#037483] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
     >
-      Ajouter
+      {isLoading ? (
+        <>
+          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+          <span>Ajout en cours...</span>
+        </>
+      ) : (
+        'Ajouter'
+      )}
     </button>
   </form>
 );
@@ -77,7 +88,9 @@ const TagRow = ({ tag, isSelected, onSelect, onEdit, onDelete }) => (
       {tag.productsCount}
     </td>
     <td className="px-4 py-4 text-sm font-medium text-gray-900">
-      {tag.total.toLocaleString()} GNF
+      {
+        100000
+      } GNF
     </td>
     <td className="px-4 py-4 text-right space-x-2">
       <button onClick={onEdit} className="text-[#048B9A] hover:text-[#037483]">
@@ -93,60 +106,233 @@ const TagRow = ({ tag, isSelected, onSelect, onEdit, onDelete }) => (
 const TagsPage = () => {
   const [selectedTags, setSelectedTags] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [tags, setTags] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [newTag, setNewTag] = useState({
     name: '',
     slug: '',
     description: ''
   });
-  
-  const tags = [
-    {
-      id: 1,
-      name: 'Nouveau',
-      slug: 'nouveau',
-      description: 'Produits récemment ajoutés',
-      productsCount: 12,
-      total: 3500000
-    },
-    {
-      id: 2,
-      name: 'Promo',
-      slug: 'promo',
-      description: 'Produits en promotion',
-      productsCount: 8,
-      total: 2800000
-    },
-    // ... autres tags
-  ];
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = useCallback((e) => {
-    e.preventDefault();
-    toast.success('Étiquette ajoutée avec succès');
-    setNewTag({ name: '', slug: '', description: '' });
+  // Récupération des tags
+  useEffect(() => {
+    const fetchTags = async () => {
+      try {
+        const response = await fetch('https://kambily.ddns.net/products/tags', {
+          headers: {
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error('Erreur lors de la récupération des tags');
+        }
+
+        const data = await response.json();
+        setTags(data);
+      } catch (err) {
+        console.error('Erreur:', err);
+        setError(err.message);
+        toast.error('Erreur lors du chargement des tags');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTags();
   }, []);
 
-  const handleSelectAll = useCallback((e) => {
+  // Fonction pour générer un slug à partir du nom
+  const generateSlug = (name) => {
+    return name
+      .toLowerCase()
+      .trim()
+      .replace(/[^\w\s-]/g, '') // Enlever les caractères spéciaux
+      .replace(/\s+/g, '-') // Remplacer les espaces par des tirets
+      .replace(/-+/g, '-'); // Éviter les tirets multiples
+  };
+
+  // Mise à jour du nom et génération automatique du slug
+  const handleNameChange = (name) => {
+    setNewTag(prev => ({
+      ...prev,
+      name,
+      slug: generateSlug(name)
+    }));
+  };
+
+  // Ajout d'un tag avec meilleure gestion des erreurs
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch('https://kambily.ddns.net/products/tags/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+        },
+        body: JSON.stringify(newTag)
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        // Gestion spécifique des erreurs de validation
+        if (response.status === 400) {
+          if (data.slug) {
+            throw new Error(`Un tag avec le slug "${newTag.slug}" existe déjà`);
+          }
+          if (data.name) {
+            throw new Error(`Un tag avec le nom "${newTag.name}" existe déjà`);
+          }
+          // Autres erreurs de validation
+          const errors = Object.entries(data)
+            .map(([field, messages]) => `${field}: ${messages.join(', ')}`)
+            .join('\n');
+          throw new Error(errors);
+        }
+        throw new Error(data.detail || 'Erreur lors de l\'ajout du tag');
+      }
+
+      setTags(prevTags => [...prevTags, data]);
+      toast.success('Tag ajouté avec succès');
+      setNewTag({ name: '', slug: '', description: '' });
+    } catch (err) {
+      console.error('Erreur:', err);
+      toast.error(err.message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Suppression d'un tag
+  const handleDelete = async (tagId) => {
+    if (!window.confirm('Êtes-vous sûr de vouloir supprimer ce tag ?')) return;
+
+    try {
+      const response = await fetch(`https://kambily.ddns.net/products/tags/${tagId}/`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Erreur lors de la suppression du tag');
+      }
+
+      setTags(prevTags => prevTags.filter(tag => tag.id !== tagId));
+      toast.success('Tag supprimé avec succès');
+    } catch (err) {
+      console.error('Erreur:', err);
+      toast.error(err.message);
+    }
+  };
+
+  // Suppression en masse
+  const handleBulkDelete = async () => {
+    if (!window.confirm(`Supprimer ${selectedTags.length} tag(s) ?`)) return;
+
+    try {
+      const deletePromises = selectedTags.map(tagId =>
+        fetch(`https://kambily.ddns.net/products/tags/${tagId}/`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+          }
+        })
+      );
+
+      await Promise.all(deletePromises);
+
+      setTags(prevTags => prevTags.filter(tag => !selectedTags.includes(tag.id)));
+      toast.success(`${selectedTags.length} tag(s) supprimé(s)`);
+      setSelectedTags([]);
+    } catch (err) {
+      console.error('Erreur:', err);
+      toast.error('Erreur lors de la suppression des tags');
+    }
+  };
+
+  // Mise à jour d'un tag
+  const handleEdit = async (tagId, updatedData) => {
+    try {
+      const response = await fetch(`https://kambily.ddns.net/products/tags/${tagId}/`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+        },
+        body: JSON.stringify(updatedData)
+      });
+
+      if (!response.ok) {
+        throw new Error('Erreur lors de la mise à jour du tag');
+      }
+
+      const updatedTag = await response.json();
+      setTags(prevTags => 
+        prevTags.map(tag => tag.id === tagId ? updatedTag : tag)
+      );
+      toast.success('Tag mis à jour avec succès');
+    } catch (err) {
+      console.error('Erreur:', err);
+      toast.error(err.message);
+    }
+  };
+
+  // Filtrage des tags selon la recherche
+  const filteredTags = tags.filter(tag =>
+    tag.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    tag.description.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  // Fonction pour sélectionner/désélectionner tous les tags
+  const handleSelectAll = (e) => {
     if (e.target.checked) {
       setSelectedTags(tags.map(tag => tag.id));
     } else {
       setSelectedTags([]);
     }
-  }, [tags]);
+  };
 
-  const handleSelectTag = useCallback((tagId) => {
+  // Fonction pour sélectionner/désélectionner un tag
+  const handleSelectTag = (tagId) => {
     setSelectedTags(prev => 
       prev.includes(tagId)
         ? prev.filter(id => id !== tagId)
         : [...prev, tagId]
     );
-  }, []);
+  };
 
-  const handleBulkDelete = useCallback(() => {
-    if (window.confirm(`Supprimer ${selectedTags.length} étiquette(s) ?`)) {
-      toast.success(`${selectedTags.length} étiquette(s) supprimée(s)`);
-      setSelectedTags([]);
-    }
-  }, [selectedTags.length]);
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="w-12 h-12 border-4 border-[#048B9A] border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center text-red-500 p-4">
+        <p>{error}</p>
+        <button 
+          onClick={() => window.location.reload()} 
+          className="mt-4 px-4 py-2 bg-[#048B9A] text-white rounded hover:bg-[#037483]"
+        >
+          Réessayer
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -174,8 +360,20 @@ const TagsPage = () => {
             <AddTagForm
               newTag={newTag}
               onSubmit={handleSubmit}
-              onChange={setNewTag}
+              onChange={(updatedTag) => {
+                if (updatedTag.name !== newTag.name) {
+                  handleNameChange(updatedTag.name);
+                } else {
+                  setNewTag(updatedTag);
+                }
+              }}
+              isLoading={isSubmitting}
             />
+            {newTag.name && (
+              <p className="mt-2 text-sm text-gray-500">
+                Slug généré : {newTag.slug}
+              </p>
+            )}
           </div>
         </div>
 
@@ -213,14 +411,14 @@ const TagsPage = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {tags.map((tag) => (
+                {filteredTags.map((tag) => (
                   <TagRow
                     key={tag.id}
                     tag={tag}
                     isSelected={selectedTags.includes(tag.id)}
                     onSelect={handleSelectTag}
-                    onEdit={() => {}}
-                    onDelete={() => {}}
+                    onEdit={() => handleEdit(tag.id, tag)}
+                    onDelete={() => handleDelete(tag.id)}
                   />
                 ))}
               </tbody>

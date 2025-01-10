@@ -1,7 +1,6 @@
 'use client'
 import { motion } from 'framer-motion';
 import Image from 'next/image';
-import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 
@@ -28,10 +27,12 @@ export default function LoginPage() {
     setError(null);
 
     try {
-      const response = await fetch('https://kambily.ddns.net/accounts/login', {
+      const response = await fetch('http://35.85.136.46:8001/accounts/login', {
         method: 'POST',
+        mode: 'cors',
         headers: {
           'Content-Type': 'application/json',
+          'Accept': 'application/json'
         },
         body: JSON.stringify(formData)
       });

@@ -20,7 +20,7 @@ export default function TestContact() {
     setError(null);
 
     try {
-      const response = await fetch('https://kambily.ddns.net/accounts/send_contact_email', {
+      const response = await fetch('http://35.85.136.46:8001/accounts/send_contact_email', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

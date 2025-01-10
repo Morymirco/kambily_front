@@ -1,9 +1,9 @@
 'use client'
 import Product from '@/app/Components/Common/Product';
-import { useEffect, useState } from 'react';
-import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { FaSearch, FaFilter, FaSortAmountDown } from 'react-icons/fa';
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
+import { FaFilter, FaSearch, FaSortAmountDown } from 'react-icons/fa';
 
 export default function ProductsPage() {
   const [products, setProducts] = useState([]);
@@ -32,8 +32,10 @@ export default function ProductsPage() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await fetch('https://kambily.ddns.net/products/');
+        const response = await fetch('http://35.85.136.46:8001/products');
         const data = await response.json();
+        console.log(data);
+        
         
         const transformedProducts = data.map(product => ({
           ...product,

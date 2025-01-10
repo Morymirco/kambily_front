@@ -1,7 +1,7 @@
 'use client'
-import { useEffect, useState } from 'react';
-import { FaUser, FaEnvelope, FaPhone, FaMapMarkerAlt, FaSignOutAlt } from 'react-icons/fa';
 import Image from 'next/image';
+import { useEffect, useState } from 'react';
+import { FaEnvelope, FaMapMarkerAlt, FaPhone, FaSignOutAlt, FaUser } from 'react-icons/fa';
 
 export default function ProfilePage() {
   const [userData, setUserData] = useState(null);
@@ -18,9 +18,12 @@ export default function ProfilePage() {
           return;
         }
 
-        const response = await fetch('https://kambily.ddns.net/accounts/get_user_with_token', {
+        const response = await fetch('http://35.85.136.46:8001/accounts/get_user_with_token', {
+          mode: 'cors',
           headers: {
-            'Authorization': `Bearer ${token}`
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
           }
         });
 

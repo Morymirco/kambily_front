@@ -1,8 +1,8 @@
 'use client'
-import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-import { FaPlus, FaArrowLeft } from 'react-icons/fa';
+import { useEffect, useState } from 'react';
+import { FaArrowLeft, FaPlus } from 'react-icons/fa';
 
 export default function CreateCategory() {
   const router = useRouter();
@@ -34,7 +34,7 @@ export default function CreateCategory() {
         return;
       }
 
-      const response = await fetch('https://kambily.ddns.net/products/list_categories', {
+      const response = await fetch('http://35.85.136.46:8001/products/list_categories', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -101,7 +101,7 @@ export default function CreateCategory() {
 
       console.log('Données à envoyer:', dataToSend);
 
-      const response = await fetch('https://kambily.ddns.net/products/create_category', {
+      const response = await fetch('http://35.85.136.46:8001/products/create_category', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

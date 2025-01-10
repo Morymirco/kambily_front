@@ -1,10 +1,9 @@
 'use client'
-import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
-import Image from 'next/image';
-import { FaArrowLeft, FaShoppingCart, FaHeart, FaArrowRight } from 'react-icons/fa';
-import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
+import Image from 'next/image';
+import { useParams, useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { FaArrowLeft, FaArrowRight, FaHeart, FaShoppingCart } from 'react-icons/fa';
 
 export default function ProductDetailPage() {
   const params = useParams();
@@ -21,7 +20,7 @@ export default function ProductDetailPage() {
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const response = await fetch(`https://kambily.ddns.net/products/${params.id}`);
+        const response = await fetch(`http://35.85.136.46:8001/products/${params.id}`);
         const data = await response.json();
         
         if (!response.ok) {
