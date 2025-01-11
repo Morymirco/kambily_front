@@ -102,24 +102,31 @@ const ProductCard = ({ id, image, gallery = [], title, price, inStock, category,
 
   if (viewMode === 'list') {
     return (
-      <div className="border rounded-xl overflow-hidden bg-white group">
+      <div className=" rounded-xl  overflow-hidden bg-white group">
         <div className="flex">
           {/* Colonne gauche : Image/Carousel avec largeur augmentée et coins arrondis */}
           <div className="w-[320px] h-[280px] relative flex-shrink-0 p-3">
             <div className="relative w-full h-full rounded-xl overflow-hidden">
-              {hasGallery ? (
-                <ImageCarousel images={allImages} title={title} />
-              ) : (
-                <Image
-                  src={image}
-                  alt={title}
-                  fill
-                  className="object-cover"
-                  sizes="320px"
-                />
-              )}
+              <Link href={`/boutique/${id}`}>
+                <div className="relative w-full h-full">
+                  {hasGallery ? (
+                    <ImageCarousel images={allImages} title={title} />
+                  ) : (
+                    <Image
+                      src={image}
+                      alt={title}
+                      fill
+                      className="object-cover"
+                      sizes="320px"
+                    />
+                  )}
+                </div>
+              </Link>
               <div 
-                onClick={handleOpenModal}
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleOpenModal();
+                }}
                 className="absolute top-3 right-3 bg-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 cursor-pointer hover:bg-gray-100 z-10"
               >
                 <FaEye className="w-4 h-4 text-gray-600" />
@@ -136,7 +143,9 @@ const ProductCard = ({ id, image, gallery = [], title, price, inStock, category,
             </Link>
 
             <div className="mb-4">
-              <span className="text-xl font-bold text-[#048B9A]">{price}GNF</span>
+              <span className="text-xl font-extrabold text-[#048B9A]">
+                {parseInt(price).toLocaleString('fr-FR')} GNF
+              </span>
             </div>
 
             {inStock ? (
@@ -197,7 +206,7 @@ const ProductCard = ({ id, image, gallery = [], title, price, inStock, category,
               ) : (
                 <>
                   <FaShoppingCart className="w-4 h-4" />
-                  Ajouter
+                  Ajouter au panier
                 </>
               )}
             </button>
@@ -216,23 +225,35 @@ const ProductCard = ({ id, image, gallery = [], title, price, inStock, category,
       `}>
         {/* Image du produit */}
         <div className={`
-          relative overflow-hidden rounded-2xl
-          ${viewMode === 'list' ? 'w-[300px] h-[300px]' : 'h-[300px] w-full'}
+          relative overflow-hidden rounded-2xl cursor-pointer
+          ${viewMode === 'list' 
+            ? 'w-[300px] h-[300px]' 
+            : 'h-[160px] sm:h-[300px] w-full'}
         `}>
-          {hasGallery ? (
-            <ImageCarousel images={allImages} title={title} />
-          ) : (
-            <Image
-              src={image}
-              alt={title}
-              fill
-              className="object-cover transition-transform duration-300 group-hover:scale-105"
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            />
-          )}
+          <Link href={`/boutique/${id}`}>
+            <div className="relative w-full h-full">
+              {hasGallery ? (
+                <ImageCarousel images={allImages} title={title} />
+              ) : (
+                <Image
+                  src={image}
+                  alt={title}
+                  fill
+                  className="object-cover transition-transform duration-300 group-hover:scale-105"
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                />
+              )}
+            </div>
+          </Link>
+          
           <div 
-            onClick={handleOpenModal}
-            className="absolute top-3 right-3 bg-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 cursor-pointer hover:bg-gray-100 z-10"
+            onClick={(e) => {
+              e.preventDefault();
+              handleOpenModal();
+            }}
+            className="absolute top-3 right-3 bg-white p-2 rounded-full 
+              opacity-100 sm:opacity-0 sm:group-hover:opacity-100
+              transition-opacity duration-300 cursor-pointer hover:bg-gray-100 z-10"
           >
             <FaEye className="w-4 h-4 text-gray-600" />
           </div>
@@ -260,29 +281,28 @@ const ProductCard = ({ id, image, gallery = [], title, price, inStock, category,
               </p>
             )}
 
-            <div className="flex  font-light items-center gap-2 mb-3">
-              <span className={`  ${viewMode === 'list' ? 'text-2xl' : 'text-lg'}`}>
-                {price}GNF
+            <div className="flex font-medium items-center gap-2 mb-3">
+              <span className={`font-normal ${viewMode === 'list' ? 'text-2xl' : 'text-lg'}`}>
+                {parseInt(price).toLocaleString('fr-FR')} GNF
               </span>
             </div>
 
             {inStock ? (
-              <div className="flex items-center text-green-600 mb-3">
-                <svg 
-                  className="w-4 h-4 mr-1" 
-                  viewBox="0 0 24 24" 
-                  fill="none" 
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M21 8l-2-2H5L3 8h18z" />
-                  <path d="M3 8v10a2 2 0 002 2h14a2 2 0 002-2V8" />
-                  <path d="M12 12v6" />
-                  <path d="M12 12l4-4" />
-                  <path d="M12 12l-4-4" />
-                </svg>
+              <div className="flex items-center text-[#137c2d] mb-3">
+                 <svg 
+                    className="w-4 h- mr-1 text-[#137c2d] group-hover:scale-110 transition-transform" 
+                    viewBox="0 0 24 24" 
+                    fill="none" 
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M21 10V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l2-1.14"/>
+                    <path d="M16.5 9.4L7.55 4.24"/>
+                    <polyline points="3.29 7 12 12 20.71 7"/>
+                    <line x1="12" y1="22" x2="12" y2="12"/>
+                  </svg>
                 <span className="text-sm">En stock</span>
               </div>
             ) : (
@@ -309,7 +329,7 @@ const ProductCard = ({ id, image, gallery = [], title, price, inStock, category,
             onClick={handleAddToCart}
             disabled={isAddingToCart}
             className={`
-              bg-[#048B9A] text-white rounded-lg flex items-center justify-center gap-2 
+              bg-[#048B9A] text-white rounded-xl flex items-center justify-center gap-2 
               hover:bg-[#037383] transition-all relative overflow-hidden
               ${viewMode === 'list' 
                 ? 'w-[200px] h-12' 
@@ -321,12 +341,12 @@ const ProductCard = ({ id, image, gallery = [], title, price, inStock, category,
             {isAddingToCart ? (
               <>
                 <span className="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full" />
-                <span className="ml-2">Ajout...</span>
+                <span className="ml-2 text-sm md:text-base">Ajout...</span>
               </>
             ) : (
               <>
                 <FaShoppingCart className="w-4 h-4" />
-                Ajouter
+                <p className="text-[12px] md:text-base">Ajouter au panier</p>
               </>
             )}
           </button>
@@ -435,7 +455,11 @@ const ProductCard = ({ id, image, gallery = [], title, price, inStock, category,
                 )}
 
                 {/* Prix */}
-                <p className="text-3xl font-bold text-[#048B9A]">{price}GNF</p>
+                <div className="flex items-center gap-3 mb-6">
+                  <span className="text-3xl font-extrabold text-[#048B9A]">
+                    {parseInt(price).toLocaleString('fr-FR')} GNF
+                  </span>
+                </div>
 
                 {/* Groupe Quantité + Ajouter au panier */}
                 <div className="flex items-center gap-4">
@@ -471,7 +495,7 @@ const ProductCard = ({ id, image, gallery = [], title, price, inStock, category,
                     ) : (
                       <>
                         <FaShoppingCart className="w-4 h-4" />
-                        Ajouter
+                        Ajouter au panier
                       </>
                     )}
                   </button>
@@ -546,117 +570,82 @@ const ProductCard = ({ id, image, gallery = [], title, price, inStock, category,
   );
 };
 
+const ProductSkeleton = () => (
+  <div className="border rounded-xl overflow-hidden bg-white animate-pulse">
+    <div className="h-[300px] bg-gray-200" />
+    <div className="p-4 space-y-3">
+      <div className="h-4 bg-gray-200 rounded w-3/4" />
+      <div className="h-4 bg-gray-200 rounded w-1/2" />
+      <div className="h-8 bg-gray-200 rounded w-full" />
+    </div>
+  </div>
+);
+
 const Boutique = () => {
   const [sortBy, setSortBy] = useState('popular');
   const [showFilters, setShowFilters] = useState(false);
-  const [viewMode, setViewMode] = useState('grid'); // 'grid' ou 'list'
+  const [viewMode, setViewMode] = useState('grid');
   const [priceRange, setPriceRange] = useState([0, 185000]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [isFiltering, setIsFiltering] = useState(false);
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Données de produits étendues
-  const allProducts = [
-    {
-      id: 1,
-      category: 'vetements',
-      image: "/pyjama.png",
-      title: "Ensemble De Pyjama Short & Top À Fines Brides Imprimé Cœur",
-      price: 65000,
-      oldPrice: 85000,
-      inStock: true
-    },
-    {
-      id: 2,
-      category: 'accessoires',
-      image: "/casque.webp",
-      title: "Casquette Los Angeles California",
-      price: 45000,
-      oldPrice: 55000,
-      inStock: true
-    },
-    {
-      id: 3,
-      category: 'vetements',
-      image: "/tshirt.png",
-      title: "Ensemble Blanc Motif Cœur",
-      price: 75000,
-      oldPrice: 95000,
-      inStock: true
-    },
-    {
-      id: 4,
-      category: 'vetements',
-      image: "/souris.webp",
-      title: "Body Sculptant Sans Couture",
-      price: 55000,
-      oldPrice: 70000,
-      inStock: false
-    },
-    {
-      id: 5,
-      category: 'vetements',
-      image: "/tshirt.png",
-      title: "Robe d'Été Légère Fleurie",
-      price: 85000,
-      oldPrice: 100000,
-      inStock: true
-    },
-    {
-      id: 6,
-      category: 'accessoires',
-      image: "/tshirt.png",
-      title: "Sac à Main Élégant",
-      price: 120000,
-      oldPrice: 150000,
-      inStock: true
-    },
-    {
-      id: 7,
-      category: 'vetements',
-      image: "/tshirt.png",
-      title: "Jean Slim Taille Haute",
-      price: 95000,
-      oldPrice: 115000,
-      inStock: true
-    },
-    {
-      id: 8,
-      category: 'accessoires',
-      image: "/tshirt.png",
-      title: "Montre Analogique Classique",
-      price: 180000,
-      oldPrice: 220000,
-      inStock: true
-    }
-  ];
+  // Charger les produits depuis l'API
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await fetch('http://35.85.136.46:8001/products', {
+          method: 'GET',
+          mode: 'cors',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          }
+        });
 
-  // Catégories avec leur nombre de produits
-  const categories = [
-    { name: 'Accessoires', count: 4 },
-    { name: 'Accessoires de tête', count: 1 },
-    { name: 'Chapeau', count: 1 },
-    { name: 'Lunettes', count: 1 },
-    { name: 'Bijouterie', count: 6 },
-    { name: 'Bijoux de corps', count: 1 },
-    { name: 'Bracelets', count: 2 },
-    { name: 'Colliers', count: 3 },
-    { name: 'Colliers femmes', count: 2 },
-    { name: 'Electronique', count: 6 },
-    { name: 'Coques & accessoires de téléphone', count: 2 },
-    { name: 'Non classé', count: 2 },
-    { name: 'Sous-vêtements', count: 1 },
-    { name: 'Vêtements', count: 5 },
-    { name: 'Vêtements pour femmes', count: 3 },
-    { name: 'Hauts', count: 1 },
-  ];
+        if (!response.ok) {
+          throw new Error('Erreur lors du chargement des produits');
+        }
+
+        const data = await response.json();
+        console.log('Données brutes:', data);
+        
+        const productsArray = Array.isArray(data) ? data : data.results || [];
+        
+        const transformedProducts = productsArray.map(product => ({
+          id: product.id,
+          title: product.name,
+          image: product.images?.[0]?.image || '/tshirt.png',
+          gallery: product.images?.slice(1)?.map(img => img.image) || [],
+          price: product.regular_price,
+          oldPrice: product.promo_price !== product.regular_price ? product.regular_price : null,
+          inStock: product.stock_status === 'in_stock',
+          category: product.categories?.[0]?.name || 'Non catégorisé'
+        }));
+
+        console.log('Produits transformés:', transformedProducts);
+        setProducts(transformedProducts);
+        setFilteredProducts(transformedProducts);
+      } catch (err) {
+        console.error('Erreur:', err);
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
 
   // Filtrer les produits quand la recherche change
   useEffect(() => {
     setIsFiltering(true);
     const timeoutId = setTimeout(() => {
-      const filtered = allProducts.filter(product => 
+      const filtered = products.filter(product => 
         product.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         product.category.toLowerCase().includes(searchQuery.toLowerCase())
       );
@@ -665,7 +654,7 @@ const Boutique = () => {
     }, 300);
 
     return () => clearTimeout(timeoutId);
-  }, [searchQuery]);
+  }, [searchQuery, products]);
 
   // Animation variants pour les produits
   const containerVariants = {
@@ -693,7 +682,7 @@ const Boutique = () => {
   };
 
   return (
-    <div className="max-w-[1400px] mx-auto px-4 md:px-16 my-8">
+    <div className="w-full px-2 sm:px-4 py-4 sm:py-8">
       {/* Fil d'Ariane */}
       <div className="flex items-center gap-2 text-sm text-gray-500 mb-8">
         <Link href="/" className="hover:text-[#048B9A]">Accueil</Link>
@@ -1020,19 +1009,36 @@ const Boutique = () => {
           )}
         </AnimatePresence>
 
-        {/* Grille de produits avec animation */}
+        {/* Grille de produits avec skeleton loader */}
         <motion.div
           variants={containerVariants}
           initial="hidden"
           animate="show"
-          className={`grid gap-6 ${
-            viewMode === 'grid' 
-              ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' 
+          className={`grid w-full gap-1 sm:gap-3 ${
+            viewMode === 'grid'
+              ? 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4'
               : 'grid-cols-1'
-          }`}
+          } max-w-[1500px] mx-auto`}
         >
           <AnimatePresence>
-            {(searchQuery ? filteredProducts : allProducts).map(product => (
+            {loading || isFiltering ? (
+              // Afficher les skeletons pendant le chargement
+              [...Array(8)].map((_, index) => (
+                <motion.div
+                  key={`skeleton-${index}`}
+                  variants={productVariants}
+                  initial="hidden"
+                  animate="show"
+                  className="w-full px-0.5 sm:px-1"
+                >
+                  <ProductSkeleton />
+                </motion.div>
+              ))
+            ) : error ? (
+              <div className="col-span-full text-center text-red-500 p-8">
+                {error}
+              </div>
+            ) : (searchQuery ? filteredProducts : products).map(product => (
               <motion.div
                 key={product.id}
                 variants={productVariants}
@@ -1040,10 +1046,12 @@ const Boutique = () => {
                 initial="hidden"
                 animate="show"
                 exit={{ opacity: 0, scale: 0.9 }}
+                className="w-full px-0.5 sm:px-1"
               >
                 <ProductCard
                   {...product}
                   viewMode={viewMode}
+                  className="h-full w-full"
                 />
               </motion.div>
             ))}
