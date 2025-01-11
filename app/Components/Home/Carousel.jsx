@@ -5,32 +5,16 @@ import Link from 'next/link';
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 
 export default function Carousel({ images, currentSlide, setCurrentSlide }) {
-  const nextSlide = () => {
-    setCurrentSlide((prev) => 
-      prev === images.length - 1 ? 0 : prev + 1
-    );
-  };
-
-  const prevSlide = () => {
-    setCurrentSlide((prev) => 
-      prev === 0 ? images.length - 1 : prev - 1
-    );
-  };
-
   return (
-    <div className="relative w-full h-48 bg-gray-200">
-      {images.map((image, index) => (
-        <motion.div
-          key={image.id}
-          className="absolute inset-0"
-          initial={{ opacity: 0 }}
-          animate={{ 
-            opacity: currentSlide === index ? 1 : 0,
-            zIndex: currentSlide === index ? 1 : 0
-          }}
-          transition={{ duration: 0.5 }}
-        >
-          <Link href={image.link}>
+    <div className="relative w-full overflow-hidden">
+      <div className="relative h-[200px] sm:h-[300px] md:h-[400px] lg:h-[500px]">
+        {images.map((image, index) => (
+          <div
+            key={image.id}
+            className={`absolute w-full h-full transition-opacity duration-500 ${
+              index === currentSlide ? 'opacity-100' : 'opacity-0'
+            }`}
+          >
             <Image
               src={image.src}
               alt={image.alt}
@@ -38,35 +22,42 @@ export default function Carousel({ images, currentSlide, setCurrentSlide }) {
               className="object-cover"
               priority={index === 0}
             />
-          </Link>
-        </motion.div>
-      ))}
+          </div>
+        ))}
+      </div>
 
-      <button
-        onClick={prevSlide}
-        className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/30 text-white p-2 rounded-full z-10 hover:bg-black/50"
-      >
-        <FaChevronLeft />
-      </button>
-      <button
-        onClick={nextSlide}
-        className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/30 text-white p-2 rounded-full z-10 hover:bg-black/50"
-      >
-        <FaChevronRight />
-      </button>
-
-      <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-2 z-10">
+      {/* Indicateurs de navigation */}
+      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
         {images.map((_, index) => (
           <button
             key={index}
             onClick={() => setCurrentSlide(index)}
-            className={`w-2 h-2 rounded-full transition-all ${
-              currentSlide === index 
+            className={`w-2 h-2 rounded-full transition-all duration-300 ${
+              index === currentSlide 
                 ? 'bg-white w-4' 
-                : 'bg-white/50'
+                : 'bg-white/50 hover:bg-white/75'
             }`}
+            aria-label={`Aller à la diapositive ${index + 1}`}
           />
         ))}
+      </div>
+
+      {/* Boutons précédent/suivant */}
+      <div className="absolute inset-0 flex items-center justify-between p-4">
+        <button
+          onClick={() => setCurrentSlide(prev => (prev === 0 ? images.length - 1 : prev - 1))}
+          className="p-2 rounded-full bg-black/30 text-white hover:bg-black/50 transition-colors"
+          aria-label="Image précédente"
+        >
+          <FaChevronLeft className="w-6 h-6" />
+        </button>
+        <button
+          onClick={() => setCurrentSlide(prev => (prev === images.length - 1 ? 0 : prev + 1))}
+          className="p-2 rounded-full bg-black/30 text-white hover:bg-black/50 transition-colors"
+          aria-label="Image suivante"
+        >
+          <FaChevronRight className="w-6 h-6" />
+        </button>
       </div>
     </div>
   );

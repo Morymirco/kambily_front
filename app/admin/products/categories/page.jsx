@@ -1,8 +1,8 @@
 'use client'
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import toast from 'react-hot-toast';
-import { FaEdit, FaImage, FaSearch, FaTimes, FaTrash } from 'react-icons/fa';
+import toast, { Toaster } from 'react-hot-toast';
+import { FaEdit, FaEye, FaImage, FaSearch, FaSpinner, FaTimes, FaTrash } from 'react-icons/fa';
 
 const CategoriesPage = () => {
   const [selectedCategories, setSelectedCategories] = useState([]);
@@ -25,6 +25,8 @@ const CategoriesPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Charger les catégories
   useEffect(() => {
@@ -62,8 +64,7 @@ const CategoriesPage = () => {
 
   // Filtrer les catégories selon la recherche
   const filteredCategories = categories.filter(category =>
-    category.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    category.description?.toLowerCase().includes(searchQuery.toLowerCase())
+    category.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   // Calculer les catégories à afficher pour la page courante
@@ -264,6 +265,8 @@ const CategoriesPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
+
     try {
       const token = localStorage.getItem('access_token');
       if (!token) {
@@ -274,55 +277,72 @@ const CategoriesPage = () => {
       // Créer l'objet de données à envoyer
       const categoryData = {
         name: newCategory.name,
-        description: newCategory.description,
+        description: newCategory.description || "Description par défaut",
         slug: newCategory.name.toLowerCase().replace(/\s+/g, '-'),
         is_main: newCategory.is_main,
-        parent_category: newCategory.parent_category || null
+        parent_category: null
       };
 
-      // Si une image est sélectionnée, créer un FormData
-      let body;
+      console.log('Données envoyées:', categoryData);
+
+      // Créer le FormData
+      const formData = new FormData();
+      
+      // Ajouter les champs texte
+      formData.append('name', categoryData.name);
+      formData.append('description', categoryData.description);
+      formData.append('slug', categoryData.slug);
+      formData.append('is_main', categoryData.is_main.toString());
+      
+      // Ajouter l'image si elle existe
       if (newCategory.image) {
-        body = new FormData();
-        // Ajouter les données de la catégorie
-        Object.keys(categoryData).forEach(key => {
-          body.append(key, categoryData[key]);
-        });
-        // Ajouter l'image
-        body.append('image', newCategory.image);
-      } else {
-        body = JSON.stringify(categoryData);
+        formData.append('image', newCategory.image);
+      }
+
+      // Ajouter la catégorie parente si elle existe et que ce n'est pas une catégorie principale
+      if (!newCategory.is_main && newCategory.parent_category) {
+        const parentCategory = categories.find(cat => cat.id === Number(newCategory.parent_category));
+        if (parentCategory) {
+          formData.append('parent_category', parentCategory.name);
+        }
       }
 
       const response = await fetch('http://35.85.136.46:8001/products/categories/create', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
-          ...(newCategory.image ? {} : {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          })
         },
-        body: body
+        body: formData
       });
 
       const data = await response.json();
+      console.log('Réponse du serveur:', data);
 
       if (!response.ok) {
-        // Gestion des différents types d'erreurs
+        // Vérifier spécifiquement le message d'erreur de catégorie existante
+        if (data.name && Array.isArray(data.name) && data.name[0].includes('already exists')) {
+          throw new Error(`La catégorie "${newCategory.name}" existe déjà`);
+        }
+
+        // Pour les autres erreurs
         if (response.status === 400) {
-          const errorMessage = Object.entries(data)
-            .map(([key, value]) => `${key}: ${value.join(', ')}`)
-            .join('\n');
+          const errorMessage = typeof data === 'object' 
+            ? Object.entries(data)
+                .map(([key, value]) => {
+                  if (Array.isArray(value)) {
+                    return `${key}: ${value.join(', ')}`;
+                  }
+                  return `${key}: ${value}`;
+                })
+                .join('\n')
+            : data.toString();
           throw new Error(errorMessage);
         }
-        throw new Error(data.detail || 'Erreur lors de l\'ajout de la catégorie');
+        throw new Error(data.detail || `Erreur ${response.status}: ${data.message || 'Impossible de créer la catégorie'}`);
       }
 
-      // Mise à jour de la liste des catégories
       setCategories(prevCategories => [...prevCategories, data]);
       
-      // Réinitialisation du formulaire
       setNewCategory({
         name: '',
         description: '',
@@ -332,12 +352,41 @@ const CategoriesPage = () => {
         image: null
       });
       
-      // Fermer le modal et afficher le message de succès
       setShowAddModal(false);
-      toast.success('Catégorie ajoutée avec succès');
+      toast.success('Catégorie créée avec succès !', {
+        duration: 3000,
+        position: 'top-right',
+        style: {
+          background: '#10B981',
+          color: 'white',
+        },
+      });
+
     } catch (err) {
-      console.error('Erreur:', err);
-      toast.error(err.message);
+      console.error('Erreur détaillée:', err);
+      
+      // Afficher le toast avec un style différent selon le type d'erreur
+      if (err.message.includes('existe déjà')) {
+        toast.error(err.message, {
+          duration: 4000,
+          position: 'top-right',
+          style: {
+            background: '#FEF2F2',
+            color: '#DC2626',
+            border: '1px solid #DC2626',
+            padding: '16px',
+            borderRadius: '8px',
+          },
+          icon: '⚠️',
+        });
+      } else {
+        toast.error(err.message || 'Une erreur est survenue lors de la création de la catégorie', {
+          duration: 4000,
+          position: 'top-right',
+        });
+      }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -367,6 +416,28 @@ const CategoriesPage = () => {
 
   return (
     <div className="space-y-6">
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          duration: 3000,
+          style: {
+            background: '#333',
+            color: '#fff',
+          },
+          success: {
+            style: {
+              background: '#10B981',
+            },
+          },
+          error: {
+            style: {
+              background: '#EF4444',
+            },
+            duration: 4000,
+          },
+        }}
+      />
+
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-xl font-bold">Catégories</h1>
@@ -419,6 +490,7 @@ const CategoriesPage = () => {
                   onChange={(e) => setNewCategory({...newCategory, description: e.target.value})}
                   className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#048B9A]/20 focus:border-[#048B9A]"
                   rows={3}
+                  placeholder="Description de la catégorie (optionnel)"
                 />
               </div>
 
@@ -443,13 +515,21 @@ const CategoriesPage = () => {
                   </label>
                   <select
                     value={newCategory.parent_category || ''}
-                    onChange={(e) => setNewCategory({...newCategory, parent_category: e.target.value || null})}
+                    onChange={(e) => setNewCategory({
+                      ...newCategory,
+                      parent_category: e.target.value ? Number(e.target.value) : null
+                    })}
                     className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#048B9A]/20 focus:border-[#048B9A]"
                   >
                     <option value="">Aucune</option>
-                    {categories.filter(cat => cat.is_main).map(cat => (
-                      <option key={cat.id} value={cat.id}>{cat.name}</option>
-                    ))}
+                    {categories
+                      .filter(cat => cat.is_main)
+                      .map(cat => (
+                        <option key={cat.id} value={cat.id}>
+                          {cat.name}
+                        </option>
+                      ))
+                    }
                   </select>
                 </div>
               )}
@@ -492,14 +572,23 @@ const CategoriesPage = () => {
                   type="button"
                   onClick={() => setShowAddModal(false)}
                   className="px-4 py-2 border rounded-lg hover:bg-gray-50"
+                  disabled={isSubmitting}
                 >
                   Annuler
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-[#048B9A] text-white rounded-lg hover:bg-[#037483]"
+                  disabled={isSubmitting}
+                  className="px-4 py-2 bg-[#048B9A] text-white rounded-lg hover:bg-[#037483] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#048B9A] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-w-[100px]"
                 >
-                  Ajouter
+                  {isSubmitting ? (
+                    <>
+                      <FaSpinner className="animate-spin mr-2" />
+                      Création...
+                    </>
+                  ) : (
+                    'Ajouter'
+                  )}
                 </button>
               </div>
             </form>
@@ -569,11 +658,14 @@ const CategoriesPage = () => {
                         )}
                       </div>
                     </td>
-                    <td className="px-4 py-4 text-sm font-medium text-gray-900">
+                    <td 
+                      className="px-4 py-4 text-sm font-medium text-gray-900 cursor-pointer hover:text-[#048B9A]"
+                      onClick={() => router.push(`/admin/products/categories/${category.id}`)}
+                    >
                       {category.name}
                     </td>
-                    <td className="px-4 py-4 text-sm text-gray-500">
-                      {category.description}
+                    <td className="px-4 py-4 text-sm text-gray-500 max-w-xs truncate">
+                      {category.description || 'Description par défaut'}
                     </td>
                     <td className="px-4 py-4 text-sm text-gray-500">
                       {category.parent_category?.name || '-'}
@@ -584,13 +676,22 @@ const CategoriesPage = () => {
                     <td className="px-4 py-4 text-right space-x-2">
                       <button 
                         className="text-[#048B9A] hover:text-[#037483]"
+                        onClick={() => router.push(`/admin/products/categories/${category.id}`)}
+                        title="Voir les détails"
+                      >
+                        <FaEye size={14} />
+                      </button>
+                      <button 
+                        className="text-[#048B9A] hover:text-[#037483]"
                         onClick={() => router.push(`/admin/products/categories/${category.id}/edit`)}
+                        title="Modifier"
                       >
                         <FaEdit size={14} />
                       </button>
                       <button 
                         className="text-red-600 hover:text-red-800"
                         onClick={() => handleDelete(category.id)}
+                        title="Supprimer"
                       >
                         <FaTrash size={14} />
                       </button>
@@ -647,6 +748,7 @@ const CategoriesPage = () => {
                   onChange={(e) => setNewCategory({...newCategory, description: e.target.value})}
                   className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#048B9A]/20 focus:border-[#048B9A]"
                   rows={3}
+                  placeholder="Description de la catégorie (optionnel)"
                 />
               </div>
 
@@ -671,13 +773,21 @@ const CategoriesPage = () => {
                   </label>
                   <select
                     value={newCategory.parent_category || ''}
-                    onChange={(e) => setNewCategory({...newCategory, parent_category: e.target.value || null})}
+                    onChange={(e) => setNewCategory({
+                      ...newCategory,
+                      parent_category: e.target.value ? Number(e.target.value) : null
+                    })}
                     className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#048B9A]/20 focus:border-[#048B9A]"
                   >
                     <option value="">Aucune</option>
-                    {categories.filter(cat => cat.is_main).map(cat => (
-                      <option key={cat.id} value={cat.id}>{cat.name}</option>
-                    ))}
+                    {categories
+                      .filter(cat => cat.is_main)
+                      .map(cat => (
+                        <option key={cat.id} value={cat.id}>
+                          {cat.name}
+                        </option>
+                      ))
+                    }
                   </select>
                 </div>
               )}
@@ -720,14 +830,23 @@ const CategoriesPage = () => {
                   type="button"
                   onClick={() => setShowAddModal(false)}
                   className="px-4 py-2 border rounded-lg hover:bg-gray-50"
+                  disabled={isSubmitting}
                 >
                   Annuler
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-[#048B9A] text-white rounded-lg hover:bg-[#037483]"
+                  disabled={isSubmitting}
+                  className="px-4 py-2 bg-[#048B9A] text-white rounded-lg hover:bg-[#037483] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#048B9A] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-w-[100px]"
                 >
-                  Ajouter
+                  {isSubmitting ? (
+                    <>
+                      <FaSpinner className="animate-spin mr-2" />
+                      Création...
+                    </>
+                  ) : (
+                    'Ajouter'
+                  )}
                 </button>
               </div>
             </form>

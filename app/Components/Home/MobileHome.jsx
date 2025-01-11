@@ -9,14 +9,13 @@ import ProductGrid from '@/app/Components/Home/ProductGrid';
 import QualityHeader from '@/app/Components/Home/QualityHeader';
 import { useEffect, useState } from 'react';
 
-export default function TestHome() {
+export default function MobileHome() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [timeLeft, setTimeLeft] = useState('00:00:00:00');
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Images du carrousel
   const carouselImages = [
     {
       id: 1,
@@ -38,12 +37,10 @@ export default function TestHome() {
     }
   ];
 
-  // Récupération des produits depuis l'API
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         const response = await fetch('https://35.85.136.46:8001/products');
-        
         const responseText = await response.text();
         console.log('Réponse brute du serveur:', responseText);
 
@@ -83,7 +80,6 @@ export default function TestHome() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Section Carousel - Responsive */}
       <div className="w-full max-w-[2000px] mx-auto">
         <Carousel 
           images={carouselImages}
@@ -92,12 +88,10 @@ export default function TestHome() {
         />
       </div>
 
-      {/* Section Quality Header - Responsive */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <QualityHeader timeLeft={timeLeft} />
       </div>
       
-      {/* Section Produits - Responsive avec gestion du chargement */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {loading ? (
           <div className="flex justify-center items-center p-8">
@@ -118,7 +112,6 @@ export default function TestHome() {
         )}
       </div>
 
-      {/* Sections catégories - Responsive */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
         <FreeDeliveryBanner className="w-full" />
         

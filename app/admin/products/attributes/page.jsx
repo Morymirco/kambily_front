@@ -1,212 +1,8 @@
 'use client'
 import { useRouter } from 'next/navigation';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
-import { FaEdit, FaSearch, FaTimes, FaTrash } from 'react-icons/fa';
-
-// Composant client séparé pour le bouton de suppression en masse
-const BulkDeleteButton = ({ selectedCount, onDelete }) => (
-  <button
-    onClick={onDelete}
-    className="bg-red-600 text-white px-3 py-1.5 rounded-lg text-sm flex items-center gap-1.5 hover:bg-red-700"
-  >
-    <FaTrash size={12} />
-    Supprimer la sélection
-  </button>
-);
-
-// Composant client séparé pour le formulaire d'ajout
-const AddAttributeForm = ({ onSubmit, onClose }) => {
-  const [attributeType, setAttributeType] = useState('size'); // 'size' ou 'color'
-  const [newValue, setNewValue] = useState({
-    name: '',
-    description: '',
-    code: '' // pour les couleurs uniquement
-  });
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const token = localStorage.getItem('access_token');
-      if (!token) {
-        router.push('/test/login');
-        return;
-      }
-
-      const endpoint = attributeType === 'size'
-        ? 'http://35.85.136.46:8001/products/sizes/create'
-        : 'http://35.85.136.46:8001/products/colors/create';
-
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify(newValue)
-      });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.detail || `Erreur lors de l'ajout`);
-      }
-
-      toast.success(`${attributeType === 'size' ? 'Taille' : 'Couleur'} ajoutée avec succès`);
-      onSubmit();
-      onClose();
-    } catch (err) {
-      console.error('Erreur:', err);
-      toast.error(err.message);
-    }
-  };
-
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-md">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-semibold">Ajouter un attribut</h2>
-          <button
-            onClick={onClose}
-            className="text-gray-500 hover:text-gray-700"
-          >
-            <FaTimes />
-          </button>
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Type d'attribut
-            </label>
-            <select
-              value={attributeType}
-              onChange={(e) => {
-                setAttributeType(e.target.value);
-                setNewValue({ name: '', description: '', code: '' });
-              }}
-              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#048B9A]/20 focus:border-[#048B9A]"
-            >
-              <option value="size">Taille</option>
-              <option value="color">Couleur</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Nom
-            </label>
-            <input
-              type="text"
-              value={newValue.name}
-              onChange={(e) => setNewValue({...newValue, name: e.target.value})}
-              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#048B9A]/20 focus:border-[#048B9A]"
-              required
-              placeholder={attributeType === 'size' ? "ex: XL, 42..." : "ex: Rouge, Bleu..."}
-            />
-          </div>
-
-          {attributeType === 'color' && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Code couleur
-              </label>
-              <div className="flex gap-2">
-                <input
-                  type="color"
-                  value={newValue.code}
-                  onChange={(e) => setNewValue({...newValue, code: e.target.value})}
-                  className="h-10 w-20 p-1 border rounded-lg"
-                  required
-                />
-                <input
-                  type="text"
-                  value={newValue.code}
-                  onChange={(e) => setNewValue({...newValue, code: e.target.value})}
-                  className="flex-1 px-3 py-2 border rounded-lg"
-                  placeholder="#000000"
-                  pattern="^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"
-                />
-              </div>
-            </div>
-          )}
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Description
-            </label>
-            <textarea
-              value={newValue.description}
-              onChange={(e) => setNewValue({...newValue, description: e.target.value})}
-              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#048B9A]/20 focus:border-[#048B9A]"
-              rows={3}
-              placeholder="Description optionnelle"
-            />
-          </div>
-
-          <div className="flex justify-end gap-3 mt-6">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 border rounded-lg hover:bg-gray-50"
-            >
-              Annuler
-            </button>
-            <button
-              type="submit"
-              className="px-4 py-2 bg-[#048B9A] text-white rounded-lg hover:bg-[#037483]"
-            >
-              Ajouter
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-};
-
-// Composant client séparé pour la ligne du tableau d'attributs
-const AttributeRow = ({ attribute, isSelected, onSelect, onEdit, onDelete }) => (
-  <tr className="hover:bg-gray-50">
-    <td className="px-4 py-4">
-      <input
-        type="checkbox"
-        checked={isSelected}
-        onChange={() => onSelect(attribute.id)}
-        className="rounded text-[#048B9A] focus:ring-[#048B9A]"
-      />
-    </td>
-    <td className="px-4 py-4">
-      <div className="font-medium">{attribute.name}</div>
-    </td>
-    <td className="px-4 py-4">
-      <div className="flex flex-wrap gap-1">
-        {attribute.values.map((value, index) => (
-          <span
-            key={index}
-            className="px-2 py-0.5 bg-gray-100 text-gray-700 rounded text-xs"
-          >
-            {value}
-          </span>
-        ))}
-      </div>
-    </td>
-    <td className="px-4 py-4 text-sm text-gray-500">
-      {attribute.description}
-    </td>
-    <td className="px-4 py-4 text-sm text-gray-500">
-      {attribute.productsCount}
-    </td>
-    <td className="px-4 py-4 text-right space-x-2">
-      <button className="text-[#048B9A] hover:text-[#037483]">
-        <FaEdit size={14} />
-      </button>
-      <button className="text-red-600 hover:text-red-800">
-        <FaTrash size={14} />
-      </button>
-    </td>
-  </tr>
-);
+import { FaEdit, FaSearch, FaTrash } from 'react-icons/fa';
 
 const AttributesPage = () => {
   const [selectedAttributes, setSelectedAttributes] = useState([]);
@@ -218,62 +14,75 @@ const AttributesPage = () => {
     description: '',
     code: '' // pour les couleurs uniquement
   });
+  const [attributes, setAttributes] = useState([]);
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
   
-  const attributes = [
-    {
-      id: 1,
-      name: 'Taille',
-      values: ['XS', 'S', 'M', 'L', 'XL', 'XXL'],
-      description: 'Tailles disponibles',
-      productsCount: 28
-    },
-    {
-      id: 2,
-      name: 'Couleur',
-      values: ['Rouge', 'Bleu', 'Vert', 'Noir', 'Blanc'],
-      description: 'Couleurs disponibles',
-      productsCount: 45
-    },
-    // ... autres attributs
-  ];
+  // Charger les attributs
+  useEffect(() => {
+    const fetchAttributes = async () => {
+      try {
+        const token = localStorage.getItem('access_token');
+        if (!token) {
+          router.push('/test/login');
+          return;
+        }
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const token = localStorage.getItem('access_token');
-      if (!token) {
-        router.push('/test/login');
-        return;
+        // Charger les tailles
+        const sizesResponse = await fetch('http://35.85.136.46:8001/products/sizes', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json'
+          }
+        });
+
+        // Charger les couleurs
+        const colorsResponse = await fetch('http://35.85.136.46:8001/products/colors', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json'
+          }
+        });
+
+        if (!sizesResponse.ok || !colorsResponse.ok) {
+          throw new Error('Erreur lors du chargement des attributs');
+        }
+
+        const sizesData = await sizesResponse.json();
+        const colorsData = await colorsResponse.json();
+
+        // Combiner et formater les attributs
+        const formattedAttributes = [
+          ...sizesData.map(size => ({
+            id: size.id,
+            name: size.name,
+            type: 'size',
+            description: size.description || 'Taille',
+            values: [size.name], // Pour les tailles, la valeur est le nom
+            productsCount: size.products_count || 0
+          })),
+          ...colorsData.map(color => ({
+            id: color.id,
+            name: color.name,
+            type: 'color',
+            description: color.description || 'Couleur',
+            values: [color.name], // Pour les couleurs, la valeur est le nom
+            code: color.code,
+            productsCount: color.products_count || 0
+          }))
+        ];
+
+        setAttributes(formattedAttributes);
+      } catch (err) {
+        console.error('Erreur:', err);
+        toast.error(err.message);
+      } finally {
+        setLoading(false);
       }
+    };
 
-      const endpoint = attributeType === 'size'
-        ? 'http://35.85.136.46:8001/products/sizes/create'
-        : 'http://35.85.136.46:8001/products/colors/create';
-
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify(newAttribute)
-      });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.detail || `Erreur lors de l'ajout`);
-      }
-
-      toast.success(`${attributeType === 'size' ? 'Taille' : 'Couleur'} ajoutée avec succès`);
-      setShowAddModal(false);
-      setNewAttribute({ name: '', description: '', code: '' });
-    } catch (err) {
-      console.error('Erreur:', err);
-      toast.error(err.message);
-    }
-  };
+    fetchAttributes();
+  }, [router]);
 
   const handleSelectAll = useCallback((e) => {
     if (e.target.checked) {
@@ -298,6 +107,76 @@ const AttributesPage = () => {
     }
   }, [selectedAttributes.length]);
 
+  const handleEdit = (attribute) => {
+    // Implement edit functionality
+  };
+
+  const handleDelete = (attributeId) => {
+    // Implement delete functionality
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const token = localStorage.getItem('access_token');
+      if (!token) {
+        router.push('/test/login');
+        return;
+      }
+
+      // Déterminer l'endpoint en fonction du type d'attribut
+      const endpoint = attributeType === 'size' 
+        ? 'http://35.85.136.46:8001/products/sizes/create'
+        : 'http://35.85.136.46:8001/products/colors/create';
+
+      const attributeData = {
+        name: newAttribute.name,
+        description: newAttribute.description || '',
+        ...(attributeType === 'color' && { hex_code: newAttribute.code })
+      };
+
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify(attributeData)
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || 'Erreur lors de la création de l\'attribut');
+      }
+
+      const data = await response.json();
+      
+      // Mettre à jour la liste des attributs
+      setAttributes(prev => [...prev, {
+        id: data.id,
+        name: data.name,
+        type: attributeType,
+        description: data.description,
+        code: data.code,
+        values: [data.name],
+        productsCount: 0
+      }]);
+
+      // Réinitialiser le formulaire
+      setNewAttribute({
+        name: '',
+        description: '',
+        code: ''
+      });
+
+      toast.success(`${attributeType === 'size' ? 'Taille' : 'Couleur'} ajoutée avec succès`);
+    } catch (err) {
+      console.error('Erreur:', err);
+      toast.error(err.message);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -310,10 +189,13 @@ const AttributesPage = () => {
           )}
         </div>
         {selectedAttributes.length > 0 && (
-          <BulkDeleteButton
-            selectedCount={selectedAttributes.length}
-            onDelete={handleBulkDelete}
-          />
+          <button
+            onClick={handleBulkDelete}
+            className="bg-red-600 text-white px-3 py-1.5 rounded-lg text-sm flex items-center gap-1.5 hover:bg-red-700"
+          >
+            <FaTrash size={12} />
+            Supprimer la sélection
+          </button>
         )}
       </div>
 
@@ -419,37 +301,84 @@ const AttributesPage = () => {
 
           {/* Table */}
           <div className="bg-white rounded-lg shadow-sm">
-            <table className="w-full">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-4 py-3">
-                    <input
-                      type="checkbox"
-                      checked={selectedAttributes.length === attributes.length}
-                      onChange={handleSelectAll}
-                      className="rounded text-[#048B9A] focus:ring-[#048B9A]"
-                    />
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nom</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Valeurs</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Description</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Produits</th>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {attributes.map((attribute) => (
-                  <AttributeRow
-                    key={attribute.id}
-                    attribute={attribute}
-                    isSelected={selectedAttributes.includes(attribute.id)}
-                    onSelect={handleSelectAttribute}
-                    onEdit={() => {}}
-                    onDelete={() => {}}
-                  />
-                ))}
-              </tbody>
-            </table>
+            {loading ? (
+              <div className="flex justify-center items-center p-8">
+                <div className="w-12 h-12 border-4 border-[#048B9A] border-t-transparent rounded-full animate-spin" />
+              </div>
+            ) : (
+              <table className="w-full">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-4 py-3">
+                      <input
+                        type="checkbox"
+                        checked={selectedAttributes.length === attributes.length}
+                        onChange={handleSelectAll}
+                        className="rounded text-[#048B9A] focus:ring-[#048B9A]"
+                      />
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nom</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Description</th>
+                    {/* Pour les couleurs */}
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Code</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Produits</th>
+                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {attributes.map((attribute) => (
+                    <tr key={`${attribute.type}-${attribute.id}`} className="hover:bg-gray-50">
+                      <td className="px-4 py-4">
+                        <input
+                          type="checkbox"
+                          checked={selectedAttributes.includes(attribute.id)}
+                          onChange={() => handleSelectAttribute(attribute.id)}
+                          className="rounded text-[#048B9A] focus:ring-[#048B9A]"
+                        />
+                      </td>
+                      <td className="px-4 py-4 text-sm">
+                        <span className={`px-2 py-1 rounded-full text-xs ${
+                          attribute.type === 'color' ? 'bg-pink-100 text-pink-800' : 'bg-blue-100 text-blue-800'
+                        }`}>
+                          {attribute.type === 'color' ? 'Couleur' : 'Taille'}
+                        </span>
+                      </td>
+                      <td className="px-4 py-4 font-medium text-gray-900">{attribute.name}</td>
+                      <td className="px-4 py-4 text-sm text-gray-500">{attribute.description}</td>
+                      <td className="px-4 py-4">
+                        {attribute.type === 'color' && (
+                          <div className="flex items-center gap-2">
+                            <div 
+                              className="w-6 h-6 rounded border"
+                              style={{ backgroundColor: attribute.hex_code }}
+                            />
+                            <span className="text-sm">{attribute.hex_code}</span>
+                          </div>
+                        )}
+                      </td>
+                      <td className="px-4 py-4 text-sm text-gray-500">
+                        {attribute.productsCount} produits
+                      </td>
+                      <td className="px-4 py-4 text-right space-x-2">
+                        <button 
+                          className="text-[#048B9A] hover:text-[#037483]"
+                          onClick={() => handleEdit(attribute)}
+                        >
+                          <FaEdit size={14} />
+                        </button>
+                        <button 
+                          className="text-red-600 hover:text-red-800"
+                          onClick={() => handleDelete(attribute.id)}
+                        >
+                          <FaTrash size={14} />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
           </div>
         </div>
       </div>

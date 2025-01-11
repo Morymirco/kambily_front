@@ -1,11 +1,13 @@
 'use client'
-import { useState } from 'react';
-import toast from 'react-hot-toast';
+import { useEffect, useState } from 'react';
+import toast, { Toaster } from 'react-hot-toast';
 import { FaCheck, FaSearch, FaStar, FaTrash } from 'react-icons/fa';
 
 const ReviewsPage = () => {
   const [selectedReviews, setSelectedReviews] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [reviews, setReviews] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({
     rating: '',
     status: '',
@@ -13,36 +15,133 @@ const ReviewsPage = () => {
     startDate: '',
     endDate: ''
   });
-  
-  const reviews = [
-    {
-      id: 1,
-      author: 'Marie Camara',
-      product: {
-        id: 1,
-        name: 'Ensemble De Pyjama',
-        image: '/pyjama.png'
-      },
-      rating: 5,
-      content: 'Très satisfaite de mon achat, la qualité est au rendez-vous !',
-      date: '2024-02-28',
-      status: 'pending' // pending, approved, spam
-    },
-    // ... autres avis
-  ];
 
-  const handleApprove = (reviewId) => {
-    toast.success('Avis approuvé');
-  };
+  // Charger les avis
+  useEffect(() => {
+    const fetchReviews = async () => {
+      try {
+        const token = localStorage.getItem('access_token');
+        if (!token) {
+          router.push('/test/login');
+          return;
+        }
 
-  const handleDelete = (reviewId) => {
-    if (window.confirm('Supprimer cet avis ?')) {
-      toast.success('Avis supprimé');
+        const response = await fetch('http://35.85.136.46:8001/products/reviews', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json'
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error('Erreur lors du chargement des avis');
+        }
+
+        const data = await response.json();
+        setReviews(data);
+      } catch (err) {
+        console.error('Erreur:', err);
+        toast.error(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchReviews();
+  }, []);
+
+  const handleApprove = async (reviewId) => {
+    try {
+      const token = localStorage.getItem('access_token');
+      const response = await fetch(`http://35.85.136.46:8001/products/reviews/${reviewId}/approve`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Erreur lors de l\'approbation de l\'avis');
+      }
+
+      // Mettre à jour l'état local
+      setReviews(prevReviews => 
+        prevReviews.map(review => 
+          review.id === reviewId 
+            ? { ...review, status: 'approved' }
+            : review
+        )
+      );
+
+      toast.success('Avis approuvé avec succès');
+    } catch (err) {
+      console.error('Erreur:', err);
+      toast.error(err.message);
     }
   };
 
+  const handleDelete = async (reviewId) => {
+    if (!window.confirm('Êtes-vous sûr de vouloir supprimer cet avis ?')) return;
+
+    try {
+      const token = localStorage.getItem('access_token');
+      const response = await fetch(`http://35.85.136.46:8001/products/reviews/${reviewId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Erreur lors de la suppression de l\'avis');
+      }
+      console.log(response.json());
+      
+
+      // Mettre à jour l'état local
+      setReviews(prevReviews => prevReviews.filter(review => review.id !== reviewId));
+      toast.success('Avis supprimé avec succès');
+    } catch (err) {
+      console.error('Erreur:', err);
+      toast.error(err.message);
+    }
+  };
+
+  // Filtrer les avis selon les critères
+  const filteredReviews = reviews.filter(review => {
+    const matchesSearch = (
+      (review.comment?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
+      (review.user?.name?.toLowerCase() || '').includes(searchQuery.toLowerCase())
+    );
+    
+    const matchesRating = !filters.rating || review.rating === parseInt(filters.rating);
+    const matchesStatus = !filters.status || review.status === filters.status;
+    
+    let matchesDate = true;
+    if (filters.startDate && filters.endDate) {
+      const reviewDate = new Date(review.created_at);
+      const start = new Date(filters.startDate);
+      const end = new Date(filters.endDate);
+      matchesDate = reviewDate >= start && reviewDate <= end;
+    }
+
+    return matchesSearch && matchesRating && matchesStatus && matchesDate;
+  });
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="w-12 h-12 border-4 border-[#048B9A] border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
+      <Toaster position="top-right" />
+      
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-xl font-bold">Avis clients</h1>
@@ -151,28 +250,33 @@ const ReviewsPage = () => {
         <table className="w-full">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Auteur</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Utilisateur</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Produit</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Note</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Avis</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Commentaire</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
               <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
-            {reviews.map((review) => (
+            {filteredReviews.map((review) => (
               <tr key={review.id} className="hover:bg-gray-50">
                 <td className="px-4 py-4">
-                  <div className="font-medium">{review.author}</div>
+                  <div className="font-medium">
+                    {review.user?.name || 'Utilisateur anonyme'}
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    {review.user?.email || 'Email non disponible'}
+                  </div>
                 </td>
                 <td className="px-4 py-4">
                   <div className="flex items-center">
-                    <img
-                      src={review.product.image}
-                      alt={review.product.name}
-                      className="w-8 h-8 rounded object-cover"
-                    />
-                    <span className="ml-2 text-sm">{review.product.name}</span>
+                    <div className="ml-2">
+                      <div className="text-sm font-medium">ID: {review.product_id}</div>
+                      <div className="text-xs text-gray-500">
+                        {review.product?.name || 'Nom du produit non disponible'}
+                      </div>
+                    </div>
                   </div>
                 </td>
                 <td className="px-4 py-4">
@@ -187,16 +291,19 @@ const ReviewsPage = () => {
                   </div>
                 </td>
                 <td className="px-4 py-4">
-                  <p className="text-sm text-gray-600 line-clamp-2">{review.content}</p>
+                  <p className="text-sm text-gray-600 line-clamp-2">
+                    {review.comment || 'Aucun commentaire'}
+                  </p>
                 </td>
                 <td className="px-4 py-4 text-sm text-gray-500">
-                  {new Date(review.date).toLocaleDateString()}
+                  {new Date(review.created_at).toLocaleDateString('fr-FR')}
                 </td>
                 <td className="px-4 py-4 text-right space-x-2">
                   {review.status === 'pending' && (
                     <button
                       onClick={() => handleApprove(review.id)}
                       className="text-green-600 hover:text-green-800"
+                      title="Approuver"
                     >
                       <FaCheck size={14} />
                     </button>
@@ -204,6 +311,7 @@ const ReviewsPage = () => {
                   <button
                     onClick={() => handleDelete(review.id)}
                     className="text-red-600 hover:text-red-800"
+                    title="Supprimer"
                   >
                     <FaTrash size={14} />
                   </button>

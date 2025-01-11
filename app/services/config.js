@@ -1,24 +1,11 @@
-export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
-
-export const API_ENDPOINTS = {
-  auth: {
-    login: '/auth/login/',
-    register: '/auth/register/',
-    logout: '/auth/logout/',
-    refresh: '/auth/refresh/',
-  },
-  products: {
-    list: '/products/',
-    detail: (id) => `/products/${id}/`,
-    categories: '/categories/',
-  },
-  orders: {
-    list: '/orders/',
-    create: '/orders/create/',
-    detail: (id) => `/orders/${id}/`,
-  },
-  user: {
-    profile: '/user/profile/',
-    updateProfile: '/user/profile/update/',
+const API_CONFIG = {
+  BASE_URL: process.env.NEXT_PUBLIC_API_URL || 'https://35.85.136.46:8001',
+  ENDPOINTS: {
+    LOGIN: '/accounts/login',
+    REGISTER: '/accounts/register',
+    REFRESH_TOKEN: '/accounts/token/refresh/',
+    ME: '/accounts/me'
   }
-}; 
+}
+
+export default API_CONFIG 
