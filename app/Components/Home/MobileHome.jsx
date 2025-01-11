@@ -1,13 +1,25 @@
 'use client'
+import Product from '@/app/Components/Common/Product';
 import AccessoriesSection from '@/app/Components/Home/AccessoriesSection';
 import Carousel from '@/app/Components/Home/Carousel';
 import ClothingSection from '@/app/Components/Home/ClothingSection';
 import ElectronicsSection from '@/app/Components/Home/ElectronicsSection';
 import FreeDeliveryBanner from '@/app/Components/Home/FreeDeliveryBanner';
 import JewelrySection from '@/app/Components/Home/JewelrySection';
-import ProductGrid from '@/app/Components/Home/ProductGrid';
 import QualityHeader from '@/app/Components/Home/QualityHeader';
 import { useEffect, useState } from 'react';
+import toast from 'react-hot-toast';
+
+const ProductSkeleton = () => (
+  <div className="border rounded-xl overflow-hidden bg-white animate-pulse">
+    <div className="h-[220px] bg-gray-200" />
+    <div className="p-4 space-y-3">
+      <div className="h-4 bg-gray-200 rounded w-3/4" />
+      <div className="h-4 bg-gray-200 rounded w-1/2" />
+      <div className="h-8 bg-gray-200 rounded w-full" />
+    </div>
+  </div>
+);
 
 export default function MobileHome() {
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -40,28 +52,44 @@ export default function MobileHome() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await fetch('https://35.85.136.46:8001/products');
-        const responseText = await response.text();
-        console.log('Réponse brute du serveur:', responseText);
-
-        let data;
-        try {
-          data = JSON.parse(responseText);
-        } catch (parseError) {
-          console.error('Erreur de parsing JSON:', parseError);
-          throw new Error('Le serveur a renvoyé une réponse invalide');
-        }
+        const response = await fetch('http://35.85.136.46:8001/products/', {
+          method: 'GET',
+          mode: 'cors',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          }
+        });
 
         if (!response.ok) {
-          throw new Error(data.message || 'Erreur lors du chargement des produits');
+          throw new Error('Erreur lors du chargement des produits');
         }
 
-        console.log('Données des produits:', data);
-        setProducts(data);
-        setLoading(false);
+        const data = await response.json();
+        console.log('Données brutes:', data);
+        
+        const productsArray = Array.isArray(data) ? data : data.results || [];
+        
+        const transformedProducts = productsArray
+          .map(product => ({
+            id: product.id,
+            title: product.name,
+            image: product.images?.[0]?.image || '/tshirt.png',
+            gallery: product.images?.slice(1)?.map(img => img.image) || [],
+            price: product.regular_price,
+            oldPrice: product.promo_price !== product.regular_price ? product.regular_price : null,
+            inStock: product.stock_status === 'in_stock',
+            category: product.categories?.[0]?.name || 'Non catégorisé'
+          }))
+          .slice(0, 4);
+
+        console.log('Produits transformés:', transformedProducts);
+        setProducts(transformedProducts);
       } catch (err) {
         console.error('Erreur:', err);
         setError(err.message);
+        toast.error('Erreur lors du chargement des produits');
+      } finally {
         setLoading(false);
       }
     };
@@ -88,34 +116,43 @@ export default function MobileHome() {
         />
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-4">
         <QualityHeader timeLeft={timeLeft} />
       </div>
       
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-4">
         {loading ? (
-          <div className="flex justify-center items-center p-8">
-            <div className="w-12 h-12 border-4 border-[#048B9A] border-t-transparent rounded-full animate-spin" />
+          <div className="py-8 grid grid-cols-2 gap-4">
+            {[...Array(4)].map((_, index) => (
+              <ProductSkeleton key={index} />
+            ))}
           </div>
         ) : error ? (
           <div className="text-center text-red-500 p-8">
             {error}
           </div>
         ) : (
-          <div className="py-8">
-            <ProductGrid 
-              products={products} 
-              fullWidthIndex={2}
-              className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
-            />
+          <div className="py-8 grid grid-cols-2 gap-4">
+            {products.map((product) => (
+              <Product
+                key={product.id}
+                image={product.image}
+                gallery={product.gallery}
+                title={product.title}
+                price={product.price}
+                oldPrice={product.oldPrice}
+                inStock={product.inStock}
+                category={product.category}
+              />
+            ))}
           </div>
         )}
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+      <div className="max-w-7xl mx-auto px-4 space-y-8">
         <FreeDeliveryBanner className="w-full" />
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 gap-8">
           <JewelrySection className="w-full" />
           <ElectronicsSection className="w-full" />
           <ClothingSection className="w-full" />
