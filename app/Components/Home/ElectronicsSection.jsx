@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import SmallProductCard from './SmallProductCard';
 
 export default function ElectronicsSection() {
   return (
@@ -6,7 +7,7 @@ export default function ElectronicsSection() {
       <div className="bg-white rounded-lg overflow-hidden">
         <div className="relative aspect-square">
           <Image
-            src="/electronique/vr-headset.jpg"
+            src="/realite.webp"
             alt="Casque VR"
             fill
             className="object-contain p-4"
@@ -30,25 +31,25 @@ export default function ElectronicsSection() {
         </div>
       </div>
 
-      <div className="space-y-4">
-        <div className="flex items-center gap-3">
-          <div className="w-20 h-20 relative rounded-lg overflow-hidden bg-gray-50">
-            <Image
-              src="/electronique/mouse.jpg"
-              alt="Souris gaming"
-              fill
-              className="object-contain p-2"
-            />
-          </div>
-          <div>
-            <h3 className="text-sm font-medium">
-              Souris sans fil silencieuse à lumière RVB, souris de jeu
-            </h3>
-            <div className="text-[#048B9A] font-medium mt-1">
-              52,000GNF
-            </div>
-          </div>
-        </div>
+      <div className="space-y-2">
+        <SmallProductCard 
+          imageUrl="/pochette.webp"
+          title="Réalité Virtuelle Casque, Portable 3D Virtuel Réalité Lunettes Pour Films Et Jeux"
+          price={185000}
+          originalPrice={210000}
+        />
+        <SmallProductCard 
+          imageUrl="/realite.webp"
+          title="Réalité Virtuelle Casque, Portable 3D Virtuel Réalité Lunettes Pour Films Et Jeux"
+          price={185000}
+          originalPrice={210000}
+        />
+        <SmallProductCard 
+          imageUrl="/lumiere.webp"
+          title="Réalité Virtuelle Casque, Portable 3D Virtuel Réalité Lunettes Pour Films Et Jeux"
+          price={185000}
+          originalPrice={210000}
+        />
       </div>
     </div>
   );

@@ -1,14 +1,13 @@
 'use client'
 import Product from '@/app/Components/Common/Product';
-import AccessoriesSection from '@/app/Components/Home/AccessoriesSection';
 import Carousel from '@/app/Components/Home/Carousel';
-import ClothingSection from '@/app/Components/Home/ClothingSection';
 import ElectronicsSection from '@/app/Components/Home/ElectronicsSection';
 import FreeDeliveryBanner from '@/app/Components/Home/FreeDeliveryBanner';
 import JewelrySection from '@/app/Components/Home/JewelrySection';
 import QualityHeader from '@/app/Components/Home/QualityHeader';
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
+import Image from 'next/image';
 
 const ProductSkeleton = () => (
   <div className="border rounded-xl overflow-hidden bg-white animate-pulse">
@@ -116,7 +115,7 @@ export default function MobileHome() {
         />
       </div>
 
-      <div className="max-w-7xl mx-auto px-4">
+      <div className="max-w-7xl mx-auto ">
         <QualityHeader timeLeft={timeLeft} />
       </div>
       
@@ -132,7 +131,7 @@ export default function MobileHome() {
             {error}
           </div>
         ) : (
-          <div className="py-8 grid grid-cols-2 gap-4">
+          <div className="py-2 grid grid-cols-2 gap-4">
             {products.map((product) => (
               <Product
                 key={product.id}
@@ -149,14 +148,28 @@ export default function MobileHome() {
         )}
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 space-y-8">
+      <div className="max-w-7xl mx-auto  space-y-8">
         <FreeDeliveryBanner className="w-full" />
         
         <div className="grid grid-cols-1 gap-8">
           <JewelrySection className="w-full" />
+          <div className="max-w-7xl mx-auto">
+          <div className="flex items-center gap-3 mb-4">
+          <div className="text-[#048B9A]">
+            <Image src="/icons/paiement.png" alt="Quality" width={60} height={60} />
+          </div>
+          <div>
+            <h2 className="text-sm font-medium">Paiement Sécurisé</h2>
+            <p className="text-xs text-gray-400 leading-tight">
+              Nous nous engageons à vous offrir une expérience d'achat en ligne sûre et fiable.
+            </p>
+          </div>
+        </div>
+      </div>
+
           <ElectronicsSection className="w-full" />
-          <ClothingSection className="w-full" />
-          <AccessoriesSection className="w-full" />
+          {/* <ClothingSection className="w-full" />
+          <AccessoriesSection className="w-full" /> */}
         </div>
       </div>
     </div>

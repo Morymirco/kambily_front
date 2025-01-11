@@ -1,14 +1,34 @@
+'use client'
 import Image from 'next/image';
+import { useEffect, useState } from 'react';
+import CategoryBanner from './CategoryBanner';
 
 export default function JewelrySection() {
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await fetch('http://35.85.136.46:8001/products');
+        const data = await response.json();
+        setProducts(data.slice(0, 2)); // On prend seulement les 2 premiers produits
+      } catch (error) {
+        console.error('Erreur lors du chargement des produits:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
   return (
     <>
       <div className="px-4 py-3">
         <div className="flex items-center gap-3 mb-4">
           <div className="text-[#048B9A]">
-            <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" strokeWidth="2"/>
-            </svg>
+            <Image src="/icons/price.png" alt="Quality" width={100} height={100} />
           </div>
           <div>
             <h2 className="text-sm font-medium">Meilleures Offres</h2>
@@ -19,49 +39,46 @@ export default function JewelrySection() {
         </div>
 
         <div className="grid grid-cols-2 gap-4">
-          <JewelryItem
-            image="/bijoux/bagues.jpg"
-            title="21/23 Pièces/Set De Bagues À La Mode"
-            price="40,000 GNF"
-          />
-          <JewelryItem
-            image="/bijoux/collier.jpg"
-            title="2 pièces Collier à papillon"
-            price="18,000 GNF"
-          />
+          {loading ? (
+            // Skeleton loading
+            [...Array(2)].map((_, index) => (
+              <div key={index} className="bg-white rounded-lg overflow-hidden shadow-sm animate-pulse">
+                <div className="aspect-square bg-gray-200" />
+                <div className="p-3">
+                  <div className="h-4 bg-gray-200 rounded w-3/4 mb-2" />
+                  <div className="h-4 bg-gray-200 rounded w-1/4" />
+                </div>
+              </div>
+            ))
+          ) : (
+            products.map((product) => (
+              <JewelryItem
+                key={product.id}
+                image={product.image || "/bijoux/default.jpg"}
+                title={product.name}
+                price={`${product.price.toLocaleString()} GNF`}
+                inStock={product.stock_status === 'instock'}
+              />
+            ))
+          )}
         </div>
       </div>
 
-      <div className="m-4 relative rounded-lg overflow-hidden">
-        <Image
-          src="/bijoux/collier-diamant.jpg"
-          alt="Collection de bijoux"
-          width={400}
-          height={300}
-          className="w-full h-[200px] object-cover"
-        />
-        <div className="absolute inset-0 bg-black/30 p-4 flex flex-col justify-between">
-          <div>
-            <div className="inline-block bg-[#048B9A] text-white text-xs px-2 py-1 rounded">
-              BIJOUTERIE
-            </div>
-            <h2 className="text-white text-xl font-bold mt-2">
-              Éblouissez-vous avec notre collection de bijoux
-            </h2>
-            <p className="text-white/90 text-sm mt-1">
-              Parcourez notre collection pour trouver des bijoux qui parlent de votre style unique.
-            </p>
-          </div>
-          <button className="text-white text-sm font-medium">
-            Explorer →
-          </button>
-        </div>
-      </div>
+      <CategoryBanner 
+        imageUrl="/chaine.jpg"
+        imageAlt="Collection de bijoux"
+        category="BIJOUTERIE"
+        title="Éblouissez-vous avec notre collection de bijoux"
+        description="Parcourez notre collection pour trouver des bijoux qui parlent de votre style unique."
+        onClick={() => {
+          console.log('Explorer la collection de bijoux');
+        }}
+      />
     </>
   );
 }
 
-function JewelryItem({ image, title, price }) {
+function JewelryItem({ image, title, price, inStock = true }) {
   return (
     <div className="bg-white rounded-lg overflow-hidden shadow-sm">
       <div className="relative aspect-square">
@@ -73,13 +90,15 @@ function JewelryItem({ image, title, price }) {
         />
       </div>
       <div className="p-3">
-        <h3 className="text-sm font-medium">{title}</h3>
+        <h3 className="text-sm font-medium line-clamp-2">{title}</h3>
         <div className="text-[#048B9A] font-medium mt-1">{price}</div>
-        <div className="flex items-center gap-2 text-xs text-green-600 mt-1">
-          <span className="inline-block w-2 h-2 bg-green-600 rounded-full"></span>
-          In Stock
-        </div>
-        <button className="w-full mt-2 bg-[#048B9A] text-white py-2 rounded-lg text-sm">
+        {inStock && (
+          <div className="flex items-center gap-2 text-xs text-green-600 mt-1">
+            <span className="inline-block w-2 h-2 bg-green-600 rounded-full"></span>
+            En stock
+          </div>
+        )}
+        <button className="w-full mt-2 bg-[#048B9A] text-white py-2 rounded-lg text-sm hover:bg-[#037483] transition-colors">
           Ajouter au panier
         </button>
       </div>

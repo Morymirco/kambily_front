@@ -1,6 +1,6 @@
 'use client'
 import { useState } from 'react';
-import { FaBell, FaGift, FaAd, FaTrash } from 'react-icons/fa';
+import { FaAd, FaBell, FaGift, FaTrash } from 'react-icons/fa';
 
 const MarketingPage = () => {
   // États pour les différentes sections

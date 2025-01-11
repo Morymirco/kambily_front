@@ -5,7 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
-import { FaEnvelope, FaGlobe, FaMoon, FaPhone, FaSun } from 'react-icons/fa';
+import { FaEnvelope, FaGlobe, FaPhone, FaSun, FaTimes } from 'react-icons/fa';
 import MobileNav from './MobileNav';
 
 export default function Navbar() {
@@ -503,12 +503,12 @@ export default function Navbar() {
                         )}
                       </div>
 
-                      {/* Reste du contenu du popup */}
+                      {/* Liste des produits */}
                       {cartItems.length > 0 ? (
                         <>
                           <div className="p-4 max-h-80 overflow-y-auto">
                             {cartItems.map((item, index) => (
-                              <div key={index} className="flex items-center gap-4 mb-4">
+                              <div key={index} className="flex items-center gap-4 mb-4 relative">
                                 <div className="relative w-16 h-16 rounded-lg overflow-hidden flex-shrink-0">
                                   <Image
                                     src={item.image}
@@ -528,6 +528,14 @@ export default function Navbar() {
                                     {item.price.toLocaleString()} GNF
                                   </p>
                                 </div>
+                                {/* Bouton de suppression */}
+                                <button 
+                                  onClick={() => removeFromCart(item.id)}
+                                  className="absolute top-0 right-0 p-1 text-gray-400 hover:text-red-500 transition-colors"
+                                  aria-label="Supprimer du panier"
+                                >
+                                  <FaTimes size={14} />
+                                </button>
                               </div>
                             ))}
                           </div>
