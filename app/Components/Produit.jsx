@@ -231,7 +231,7 @@ const Produit = ({ image, gallery = [], title, price, inStock, category }) => {
           {/* Bouton Ajouter au panier */}
           <button className="w-full bg-[#048B9A] text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
             <FaShoppingCart className="text-sm" />
-            Ajouter au panier
+            Ajouter
           </button>
         </div>
       </div>

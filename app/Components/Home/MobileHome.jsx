@@ -151,9 +151,9 @@ export default function MobileHome() {
       <div className="max-w-7xl mx-auto  space-y-8">
         <FreeDeliveryBanner className="w-full" />
         
-        <div className="grid grid-cols-1 gap-8">
+        <div className="grid grid-cols-1 gap-8 px-4 py-3">
           <JewelrySection className="w-full" />
-          <div className="max-w-7xl mx-auto">
+          <div className="max-w-7xl mx-auto px-4 py-3">
           <div className="flex items-center gap-3 mb-4">
           <div className="text-[#048B9A]">
             <Image src="/icons/paiement.png" alt="Quality" width={60} height={60} />

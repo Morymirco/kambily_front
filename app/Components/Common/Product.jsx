@@ -427,7 +427,7 @@ const Produit = ({ image, gallery = [], title, price, oldPrice, inStock, categor
                     {/* Bouton d'action avec largeur réduite */}
                     <button className="w-[200px] bg-[#12B886] text-white h-12 rounded-lg flex items-center justify-center gap-2 hover:bg-[#0CA678] transition-colors">
                       <FaShoppingCart />
-                      Ajouter au panier
+                      Ajouter
                     </button>
                   </div>
   

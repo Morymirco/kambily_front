@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function TimerSection({ timeLeft }) {
   return (
@@ -17,7 +18,9 @@ export default function TimerSection({ timeLeft }) {
       </div>
 
       <div className="flex justify-between items-center mt-3 border-t pt-3">
-        <div className="font-medium text-sm">Livraison Gratuite</div>
+        <div className="font-medium text-sm flex items-center gap-2">
+            <Image src="/camion.png" alt="Quality" width={20} height={20} className="inline-block " />
+            Livraison Gratuite</div>
         <Link href="#" className="text-xs text-[#048B9A] flex items-center gap-1">
           Voir Plus 
           <span className="text-xs">→</span>

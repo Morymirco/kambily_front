@@ -1,4 +1,4 @@
-'use client'
+  'use client'
 import { usePathname } from 'next/navigation';
 import { ReactNode } from 'react';
 import Footer from './../Components/Footer';
@@ -12,10 +12,11 @@ const MainLayout = ({ children }: MainLayoutProps) => {
   // Utiliser usePathname pour vérifier la route actuelle
   const pathname = usePathname();
   const isAdminRoute = pathname?.startsWith('/admin');
+  const isDriverRoute = pathname?.startsWith('/driver');
 
   return (
     <div className="flex min-h-screen flex-col">
-      {!isAdminRoute && <Navbar />}
+      {!isAdminRoute && !isDriverRoute && <Navbar />}
       
       <main className="flex-grow">
         {/* Container principal avec padding responsive */}
@@ -24,7 +25,7 @@ const MainLayout = ({ children }: MainLayoutProps) => {
         </div>
       </main>
 
-      {!isAdminRoute && <Footer />}
+      {!isAdminRoute && !isDriverRoute && <Footer />}
     </div>
   );
 };
