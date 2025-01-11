@@ -6,7 +6,7 @@ import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 
 export default function Carousel({ images, currentSlide, setCurrentSlide }) {
   return (
-    <div className="relative w-full overflow-hidden">
+    <div className="relative w-full overflow-hidden rounded-2xl">
       <div className="relative h-[200px] sm:h-[300px] md:h-[400px] lg:h-[500px]">
         {images.map((image, index) => (
           <div
@@ -19,15 +19,15 @@ export default function Carousel({ images, currentSlide, setCurrentSlide }) {
               src={image.src}
               alt={image.alt}
               fill
-              className="object-cover"
+              className="object-cover rounded-2xl"
               priority={index === 0}
             />
           </div>
         ))}
       </div>
 
-      {/* Indicateurs de navigation */}
-      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
+      {/* Indicateurs de navigation avec coins arrondis */}
+      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2 bg-black/20 p-2 rounded-full">
         {images.map((_, index) => (
           <button
             key={index}
@@ -42,7 +42,7 @@ export default function Carousel({ images, currentSlide, setCurrentSlide }) {
         ))}
       </div>
 
-      {/* Boutons précédent/suivant */}
+      {/* Boutons précédent/suivant avec coins arrondis */}
       <div className="absolute inset-0 flex items-center justify-between p-4">
         <button
           onClick={() => setCurrentSlide(prev => (prev === 0 ? images.length - 1 : prev - 1))}
