@@ -598,8 +598,13 @@ const Boutique = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await fetch('https://api.kambily.store/products', {
+        const response = await fetch('https://api.kambily.store/products/', {
           method: 'GET',
+          mode: 'cors',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          }
         });
 
         if (!response.ok) {
@@ -622,7 +627,6 @@ const Boutique = () => {
           category: product.categories?.[0]?.name || 'Non catégorisé'
         }));
 
-        console.log('Produits transformés:', transformedProducts);
         setProducts(transformedProducts);
         setFilteredProducts(transformedProducts);
       } catch (err) {

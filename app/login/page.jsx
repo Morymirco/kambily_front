@@ -8,7 +8,7 @@ import { motion } from 'framer-motion';
 
 export default function Login() {
   const router = useRouter();
-  const { login, loading: authLoading } = useAuth();
+
   
   const [formData, setFormData] = useState({
     email: '',
