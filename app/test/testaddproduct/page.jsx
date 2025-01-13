@@ -53,7 +53,7 @@ export default function AddProductPage() {
   // Récupérer les catégories principales
   const fetchCategories = async () => {
     try {
-      const response = await fetch('http://35.85.136.46:8001/products/categories', {
+      const response = await fetch('https://api.kambily.store/products/categories', {
         method: 'GET',
         mode: 'cors',
         headers: {
@@ -78,7 +78,7 @@ export default function AddProductPage() {
   // Récupérer les couleurs
   const fetchColors = async () => {
     try {
-      const response = await fetch('http://35.85.136.46:8001/products/colors', {
+      const response = await fetch('https://api.kambily.store/products/colors', {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('access_token')}`
         }
@@ -94,7 +94,7 @@ export default function AddProductPage() {
   // Récupérer les tailles
   const fetchSizes = async () => {
     try {
-      const response = await fetch('http://35.85.136.46:8001/products/sizes', {
+      const response = await fetch('https://api.kambily.store/products/sizes', {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('access_token')}`
         }
@@ -110,7 +110,7 @@ export default function AddProductPage() {
   // Récupérer les tags
   const fetchTags = async () => {
     try {
-      const response = await fetch('http://35.85.136.46:8001/products/tags', {
+      const response = await fetch('https://api.kambily.store/products/tags', {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('access_token')}`
         }
@@ -216,7 +216,7 @@ export default function AddProductPage() {
       }
       console.log('Données envoyées:', formDataObject);
 
-      const response = await fetch('http://35.85.136.46:8001/products/create', {
+      const response = await fetch('https://api.kambily.store/products/create', {
         method: 'POST',
         mode: 'cors',
         headers: {

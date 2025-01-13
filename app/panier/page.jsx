@@ -5,7 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useState } from 'react';
 import toast, { Toaster } from 'react-hot-toast';
-import { FaEdit, FaMapMarkerAlt, FaMapPin, FaSearchLocation, FaTrash } from 'react-icons/fa';
+import { FaEdit, FaMapMarkerAlt, FaMapPin, FaSearchLocation, FaTrash, FaPlus } from 'react-icons/fa';
 
 const containerStyle = {
   width: '100%',
@@ -67,6 +67,33 @@ const Panier = () => {
     city: "Conakry",
     phone: "+224 000 00 00"
   };
+
+  // Ajouter cet état pour gérer les adresses sauvegardées
+  const [savedAddresses, setSavedAddresses] = useState([
+    {
+      id: 1,
+      title: "Domicile",
+      street: "123 Rue Example",
+      city: "Conakry",
+      country: "Guinée",
+      phone: "+224 624 XX XX XX",
+      isDefault: true,
+      coordinates: { lat: 9.6412, lng: -13.5784 }
+    },
+    {
+      id: 2,
+      title: "Bureau",
+      street: "456 Avenue Business",
+      city: "Conakry",
+      country: "Guinée",
+      phone: "+224 624 XX XX XX",
+      isDefault: false,
+      coordinates: { lat: 9.6315, lng: -13.5784 }
+    }
+  ]);
+  const [selectedAddressId, setSelectedAddressId] = useState(
+    savedAddresses.find(addr => addr.isDefault)?.id || null
+  );
 
   const updateQuantity = (id, change) => {
     setCartItems(cartItems.map(item => {
@@ -328,21 +355,62 @@ const Panier = () => {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
-                  className="bg-gray-50 p-4 rounded-lg"
+                  className="space-y-3"
                 >
-                  <div className="flex gap-3">
-                    <div className="text-[#048B9A]">
-                      <FaMapMarkerAlt />
+                  {/* Liste des adresses sauvegardées */}
+                  {savedAddresses.map((addr) => (
+                    <div
+                      key={addr.id}
+                      onClick={() => setSelectedAddressId(addr.id)}
+                      className={`relative p-4 rounded-lg cursor-pointer transition-all ${
+                        selectedAddressId === addr.id
+                          ? 'border-2 border-[#048B9A] bg-[#048B9A]/5'
+                          : 'border border-gray-200 hover:border-[#048B9A] bg-gray-50'
+                      }`}
+                    >
+                      <div className="flex gap-3">
+                        <div className="text-[#048B9A]">
+                          <FaMapMarkerAlt />
+                        </div>
+                        <div className="flex-1 space-y-1">
+                          <div className="flex items-center justify-between">
+                            <p className="font-medium">{addr.title}</p>
+                            {addr.isDefault && (
+                              <span className="text-xs bg-[#048B9A]/10 text-[#048B9A] px-2 py-1 rounded-full">
+                                Par défaut
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-sm text-gray-600">{addr.street}</p>
+                          <p className="text-sm text-gray-600">{addr.city}</p>
+                          <p className="text-sm text-gray-600">{addr.phone}</p>
+                        </div>
+                      </div>
+                      
+                      {/* Radio button */}
+                      <div className="absolute top-4 right-4">
+                        <div className={`w-4 h-4 rounded-full border-2 ${
+                          selectedAddressId === addr.id
+                            ? 'border-[#048B9A] bg-[#048B9A]'
+                            : 'border-gray-300'
+                        }`} />
+                      </div>
                     </div>
-                    <div className="space-y-1">
-                      <p className="font-medium">{defaultAddress.name}</p>
-                      <p className="text-sm text-gray-600">{defaultAddress.address}</p>
-                      <p className="text-sm text-gray-600">{defaultAddress.city}</p>
-                      <p className="text-sm text-gray-600">{defaultAddress.phone}</p>
-                    </div>
-                  </div>
+                  ))}
+
+                  {/* Bouton pour ajouter une nouvelle adresse */}
+                  <motion.button
+                    onClick={() => setShowAddressForm(true)}
+                    className="w-full p-4 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center gap-2 text-gray-500 hover:border-[#048B9A] hover:text-[#048B9A] transition-colors"
+                    whileHover={{ scale: 1.01 }}
+                    whileTap={{ scale: 0.99 }}
+                  >
+                    <FaPlus className="w-4 h-4" />
+                    Ajouter une nouvelle adresse
+                  </motion.button>
                 </motion.div>
               ) : (
+                // Le formulaire d'ajout/modification d'adresse existant
                 <motion.form
                   onSubmit={handleSaveAddress}
                   initial={{ opacity: 0, y: 10 }}

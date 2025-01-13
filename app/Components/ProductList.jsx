@@ -1,7 +1,7 @@
 'use client'
 import { useEffect } from 'react';
 import useStore from '../hooks/useStore';
-import { useApi } from '../providers/ApiProvider';
+
 
 export default function ProductList() {
   const { products, loading, error } = useApi();

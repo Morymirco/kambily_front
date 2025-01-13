@@ -3,7 +3,6 @@ import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { FaUser, FaEnvelope, FaLock, FaPhone, FaGoogle, FaFacebook, FaEye, FaEyeSlash } from 'react-icons/fa';
-import { useAuth } from '@/app/providers/AuthProvider';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 

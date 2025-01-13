@@ -2,7 +2,7 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import Image from 'next/image';
 import { useState } from 'react';
-import { FaAddressCard, FaCog, FaHeart, FaShoppingBag, FaSignOutAlt, FaUser, FaGlobe, FaMoon, FaSun, FaCreditCard, FaPlus, FaTimes, FaExclamationTriangle, FaTrash, FaEdit, FaMapMarkerAlt, FaBox, FaCheck, FaTruck, FaStar, FaDownload, FaPrint } from 'react-icons/fa';
+import { FaAddressCard, FaCog, FaCreditCard, FaExclamationTriangle, FaGlobe, FaHeart, FaMoon, FaPlus, FaShoppingBag, FaSignOutAlt, FaTimes, FaTrash, FaUser } from 'react-icons/fa';
 
 import ProductCard from '@/app/Components/Common/ProductCard';
 import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
@@ -225,7 +225,7 @@ const ProfileContent = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [profileData, setProfileData] = useState({
     firstName: 'Mory',
-    lastName: 'Camara',
+    lastName: 'Koulibaly',
     email: 'mory@example.com',
     phone: '+224 621 00 00 00',
     bio: 'Passionné de mode et de technologie',
@@ -284,24 +284,24 @@ const ProfileContent = () => {
           >
             {/* En-tête du profil */}
             <motion.div 
-              className="flex items-center gap-6"
+              className="flex flex-col sm:flex-row items-center gap-6 p-4"
               variants={inputVariants}
             >
               <motion.div 
                 className="relative"
                 whileHover={{ scale: 1.05 }}
               >
-                <div className="w-24 h-24 rounded-full overflow-hidden">
+                <div className="w-28 h-28 sm:w-24 sm:h-24 rounded-full overflow-hidden">
                   <Image
                     src={profileData.avatar}
                     alt="Photo de profil"
-                    width={96}
-                    height={96}
+                    width={112}
+                    height={112}
                     className="object-cover w-full h-full"
                   />
                 </div>
               </motion.div>
-              <div>
+              <div className="text-center sm:text-left flex-1">
                 <motion.h2 
                   className="text-2xl font-bold mb-2"
                   variants={inputVariants}
@@ -317,7 +317,7 @@ const ProfileContent = () => {
               </div>
               <motion.button
                 onClick={() => setIsEditing(true)}
-                className="ml-auto bg-[#048B9A] text-white px-4 py-2 rounded-lg hover:bg-[#037483] transition-colors"
+                className="w-full sm:w-auto mt-4 sm:mt-0 bg-[#048B9A] text-white px-4 py-2 rounded-lg hover:bg-[#037483] transition-colors"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
@@ -326,26 +326,26 @@ const ProfileContent = () => {
             </motion.div>
 
             {/* Informations du profil */}
-            <motion.div className="grid gap-6" variants={formVariants}>
+            <motion.div className="grid gap-6 px-4" variants={formVariants}>
               <motion.div 
-                className="border rounded-lg p-6 space-y-4"
+                className="border rounded-lg p-6 space-y-6"
                 variants={inputVariants}
               >
-                <h3 className="text-lg font-semibold mb-4">Informations personnelles</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
+                <h3 className="text-lg font-semibold">Informations personnelles</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  <div className="space-y-2">
                     <p className="text-sm text-gray-500">Prénom</p>
                     <p className="font-medium">{profileData.firstName}</p>
                   </div>
-                  <div>
+                  <div className="space-y-2">
                     <p className="text-sm text-gray-500">Nom</p>
                     <p className="font-medium">{profileData.lastName}</p>
                   </div>
-                  <div>
+                  <div className="space-y-2">
                     <p className="text-sm text-gray-500">Email</p>
-                    <p className="font-medium">{profileData.email}</p>
+                    <p className="font-medium break-all">{profileData.email}</p>
                   </div>
-                  <div>
+                  <div className="space-y-2">
                     <p className="text-sm text-gray-500">Téléphone</p>
                     <p className="font-medium">{profileData.phone}</p>
                   </div>
@@ -354,7 +354,7 @@ const ProfileContent = () => {
 
               {/* Statistiques */}
               <motion.div 
-                className="grid grid-cols-3 gap-4"
+                className="grid grid-cols-1 sm:grid-cols-3 gap-4"
                 variants={formVariants}
               >
                 {[
@@ -364,12 +364,12 @@ const ProfileContent = () => {
                 ].map((stat, index) => (
                   <motion.div
                     key={index}
-                    className="border rounded-lg p-4 text-center"
+                    className="border rounded-lg p-6 text-center"
                     variants={statsVariants}
                     whileHover={{ scale: 1.05 }}
                   >
                     <motion.p 
-                      className="text-2xl font-bold text-[#048B9A]"
+                      className="text-3xl font-bold text-[#048B9A] mb-2"
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
                       transition={{ delay: index * 0.1 }}
@@ -389,7 +389,7 @@ const ProfileContent = () => {
               e.preventDefault();
               setIsEditing(false);
             }}
-            className="space-y-8"
+            className="space-y-8 p-4"
             variants={formVariants}
             initial="hidden"
             animate="visible"
@@ -1027,7 +1027,7 @@ const SettingsContent = () => {
             <div className="flex items-center gap-3">
               <FaMoon className="text-[#048B9A]" /> 
               <div>
-                <h4 className="font-medium mb-1">Mode {theme === 'dark' ? 'sombre' : 'clair'}</h4>
+                <h4 className="font-medium mb-1">Mode</h4>
                 <p className="text-sm text-gray-500">
                   Changer l'apparence de l'application
                 </p>
@@ -1037,7 +1037,7 @@ const SettingsContent = () => {
               <input 
                 type="checkbox" 
                 className="sr-only peer" 
-                checked={theme === 'dark'}
+               
                 onChange={()=>{}}
               />
               <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#048B9A]"></div>

@@ -71,7 +71,7 @@ export default function RegisterPage() {
       console.log('Données à envoyer: FormData');
 
       // 1. Inscription
-      const registerResponse = await fetch('http://35.85.136.46:8001/accounts/register', {
+      const registerResponse = await fetch('https://api.kambily.store/accounts/register', {
         method: 'POST',
         body: formDataToSend
       });
@@ -96,7 +96,7 @@ export default function RegisterPage() {
       }
 
       // 2. Connexion automatique après inscription
-      const loginResponse = await fetch('http://35.85.136.46:8001/accounts/login', {
+      const loginResponse = await fetch('https://api.kambily.store/accounts/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
