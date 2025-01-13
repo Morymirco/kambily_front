@@ -8,7 +8,7 @@ import { motion } from 'framer-motion';
 
 export default function Register() {
   const router = useRouter();
-  const { register, loading: authLoading } = useAuth();
+  
   
   const [formData, setFormData] = useState({
     first_name: '',
