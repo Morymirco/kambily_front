@@ -5,10 +5,11 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { FaEnvelope, FaFacebook, FaGoogle, FaLock } from 'react-icons/fa';
+import { useAuth } from '@/app/providers/AuthProvider';
 
 export default function Login() {
   const router = useRouter();
-
+  const { login } = useAuth();
   
   const [formData, setFormData] = useState({
     email: '',
@@ -24,7 +25,6 @@ export default function Login() {
       ...prev,
       [name]: type === 'checkbox' ? checked : value
     }));
-    // Réinitialiser l'erreur quand l'utilisateur commence à taper
     if (error) setError(null);
   };
 
@@ -34,42 +34,23 @@ export default function Login() {
     setError(null);
 
     try {
-      const response = await fetch('https://api.kambily.store/accounts/login/', {
-        method: 'POST',
-        mode: 'cors',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify({
-          email: formData.email,
-          password: formData.password
-        })
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Email ou mot de passe incorrect');
-      }
-
-      // Stocker le token dans le localStorage
-      localStorage.setItem('access_token', data.access);
+      const result = await login(formData.email, formData.password);
       
-      // Stocker les informations utilisateur si nécessaire
-      if (data.user) {
-        localStorage.setItem('user', JSON.stringify(data.user));
+      if (result.success) {
+        // Redirection vers la page précédente ou la page d'accueil
+        const redirectUrl = localStorage.getItem('redirectAfterLogin');
+        if (redirectUrl) {
+          localStorage.removeItem('redirectAfterLogin');
+          router.push(redirectUrl);
+        } else {
+          router.push('/profile');
+        }
+      } else {
+        throw new Error(result.error || 'Email ou mot de passe incorrect');
       }
-
-      // Redirection vers la page profile
-      router.push('/profile');
-
     } catch (err) {
       console.error('Erreur de connexion:', err);
-      setError(err.message || 'Une erreur est survenue lors de la connexion');
-      // Nettoyer le localStorage en cas d'erreur
-      localStorage.removeItem('access_token');
-      localStorage.removeItem('user');
+      setError(err.message);
     } finally {
       setLoading(false);
     }

@@ -5,9 +5,11 @@ import Image from 'next/image';
 import { FaUser, FaEnvelope, FaLock, FaPhone, FaGoogle, FaFacebook, FaEye, FaEyeSlash } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
+import { useAuth } from '@/app/providers/AuthProvider';
 
 export default function Register() {
   const router = useRouter();
+  const { login } = useAuth();
   
   
   const [formData, setFormData] = useState({
@@ -74,13 +76,29 @@ export default function Register() {
         registerFormData.append('image', formData.profile_image);
       }
 
-      await register(registerFormData);
+      const response = await fetch('https://api.kambily.store/accounts/register/', {
+        method: 'POST',
+        body: registerFormData
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Erreur lors de l\'inscription');
+      }
+
+      // Connexion automatique après inscription réussie
+      const loginResult = await login(formData.email, formData.password);
       
-      // Si l'inscription réussit, rediriger vers la page d'accueil
-      router.push('/');
+      if (loginResult.success) {
+        router.push('/profile');
+      } else {
+        throw new Error('Erreur lors de la connexion automatique');
+      }
+
     } catch (err) {
       console.error('Erreur d\'inscription:', err);
-      setError(err.message || 'Une erreur est survenue lors de l\'inscription');
+      setError(err.message);
     } finally {
       setLoading(false);
     }

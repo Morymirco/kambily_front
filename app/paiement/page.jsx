@@ -2,8 +2,9 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaCreditCard, FaMobileAlt, FaMoneyBill, FaLock } from 'react-icons/fa';
+import { FaCreditCard, FaMobileAlt, FaMoneyBill, FaLock, FaTag, FaCheckCircle } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
+import { toast } from 'react-hot-toast';
 
 const Payment = () => {
   const router = useRouter();
@@ -17,6 +18,9 @@ const Payment = () => {
     city: '',
     country: 'Guinée'
   });
+  const [promoCode, setPromoCode] = useState('');
+  const [isApplyingPromo, setIsApplyingPromo] = useState(false);
+  const [promoApplied, setPromoApplied] = useState(false);
 
   // Résumé de la commande (à connecter avec votre panier)
   const orderSummary = {
@@ -53,6 +57,26 @@ const Payment = () => {
       console.error('Erreur de paiement:', error);
       setIsProcessing(false);
       // Gérer l'erreur (vous pouvez ajouter un toast ici)
+    }
+  };
+
+  // Fonction pour appliquer le code promo
+  const handleApplyPromoCode = async (e) => {
+    e.preventDefault();
+    if (!promoCode.trim()) return;
+
+    setIsApplyingPromo(true);
+    try {
+      // Simulation d'une requête API
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // Succès (à remplacer par votre logique réelle)
+      setPromoApplied(true);
+      toast.success('Code promo appliqué avec succès !');
+    } catch (error) {
+      toast.error('Code promo invalide');
+    } finally {
+      setIsApplyingPromo(false);
     }
   };
 
@@ -311,6 +335,56 @@ const Payment = () => {
           <div className="bg-white rounded-lg shadow-sm p-6 sticky top-6">
             <h2 className="text-xl font-semibold mb-6">Résumé de la commande</h2>
             
+            {/* Code Promo */}
+            <div className="mb-6 pb-6 border-b">
+              <h3 className="text-sm font-medium mb-3 flex items-center gap-2">
+                <FaTag className="text-[#048B9A]" />
+                Code Promo
+              </h3>
+              
+              <form onSubmit={handleApplyPromoCode} className="space-y-2">
+                <input
+                  type="text"
+                  value={promoCode}
+                  onChange={(e) => setPromoCode(e.target.value)}
+                  placeholder="Entrez votre code promo"
+                  className="w-full px-4 py-2 text-sm border border-gray-300 rounded-lg focus:ring-[#048B9A] focus:border-[#048B9A]"
+                  disabled={isApplyingPromo || promoApplied}
+                />
+                <button
+                  type="submit"
+                  disabled={isApplyingPromo || promoApplied || !promoCode.trim()}
+                  className="w-full px-4 py-2 text-sm bg-[#048B9A] text-white rounded-lg hover:bg-[#037483] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  {isApplyingPromo ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      <span>Application...</span>
+                    </>
+                  ) : promoApplied ? (
+                    <>
+                      <FaCheckCircle />
+                      <span>Appliqué</span>
+                    </>
+                  ) : (
+                    'Appliquer'
+                  )}
+                </button>
+              </form>
+
+              {promoApplied && (
+                <motion.div 
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mt-2 text-sm text-green-600 flex items-center gap-2"
+                >
+                  <FaCheckCircle />
+                  <span>Réduction de 15,000 GNF appliquée</span>
+                </motion.div>
+              )}
+            </div>
+            
+            {/* Détails de la commande */}
             <motion.div 
               className="space-y-4 mb-6"
               variants={containerVariants}

@@ -7,6 +7,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { FaEnvelope, FaGlobe, FaPhone, FaSun, FaTimes } from 'react-icons/fa';
 import MobileNav from './MobileNav';
+import { useAuth } from '@/app/providers/AuthProvider';
 
 export default function Navbar() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -17,6 +18,7 @@ export default function Navbar() {
   const [isLoggedIn, setIsLoggedIn] = useState(true);
   const [showCartPopup, setShowCartPopup] = useState(false);
   const cartPopupTimer = useRef(null);
+  const { user, isAuthenticated } = useAuth();
 
   
   const languages = [
@@ -576,30 +578,41 @@ export default function Navbar() {
 
               {/* Icône Utilisateur - Caché sur mobile */}
               <Link 
-                href="/profile" 
+                href={isAuthenticated ? "/profile" : "/login"}
                 className="hidden sm:block text-gray-600 hover:text-[#048B9A] transition-colors"
               >
-                {isLoggedIn ? (
-                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 border-current flex items-center justify-center overflow-hidden">
-                    <Image
-                      src="/team/mory.jpg"
-                      alt="Profile"
-                      width={32}
-                      height={32}
-                      className="w-full h-full object-cover"
-                    />
+                {isAuthenticated && user ? (
+                  <div className="relative w-8 h-8 rounded-full border-2 border-[#048B9A] overflow-hidden">
+                    {user.image ? (
+                      <Image
+                        src={user.image}
+                        alt="Profile"
+                        fill
+                        className="object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-[#048B9A]/10 flex items-center justify-center">
+                        <span className="text-[#048B9A] text-sm font-medium">
+                          {user.first_name ? user.first_name[0].toUpperCase() : user.email[0].toUpperCase()}
+                        </span>
+                      </div>
+                    )}
+                    {/* Indicateur en ligne */}
+                    <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full"></div>
                   </div>
                 ) : (
-                  <svg 
-                    viewBox="0 0 24 24" 
-                    className="w-5 h-5 sm:w-6 sm:h-6" 
-                    fill="none" 
-                    stroke="currentColor" 
-                    strokeWidth="2"
-                  >
-                    <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
-                    <circle cx="12" cy="7" r="4" />
-                  </svg>
+                  <div className="w-8 h-8 rounded-full border-2 border-gray-300 flex items-center justify-center hover:border-[#048B9A] transition-colors">
+                    <svg 
+                      viewBox="0 0 24 24" 
+                      className="w-4 h-4" 
+                      fill="none" 
+                      stroke="currentColor" 
+                      strokeWidth="2"
+                    >
+                      <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
+                      <circle cx="12" cy="7" r="4" />
+                    </svg>
+                  </div>
                 )}
               </Link>
             </div>

@@ -430,10 +430,10 @@ const Panier = () => {
       <div className="grid md:grid-cols-3 gap-4 sm:gap-8">
         {/* Liste des produits */}
         <div className="md:col-span-2 space-y-4 sm:space-y-6 w-full">
-          <AnimatePresence>
+          <AnimatePresence mode="wait">
             {cartItems.map((item) => (
               <motion.div
-                key={item.id}
+                key={item.product.id}
                 className="bg-white rounded-lg shadow-sm p-3 sm:p-4 flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-4 w-full"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -573,23 +573,6 @@ const Panier = () => {
           className="bg-white rounded-lg shadow-sm p-3 sm:p-6 space-y-4 sm:space-y-6 w-full"
           variants={itemVariants}
         >
-          {/* Code promo */}
-          <div className="space-y-2 sm:space-y-3">
-            <h3 className="font-medium text-sm sm:text-base">Code promo</h3>
-            <div className="flex gap-2 w-full">
-              <input
-                type="text"
-                value={promoCode}
-                onChange={(e) => setPromoCode(e.target.value)}
-                placeholder="Entrez votre code"
-                className="flex-1 px-3 py-2 text-sm border rounded-lg min-w-0"
-              />
-              <button className="px-3 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm whitespace-nowrap">
-                Appliquer
-              </button>
-            </div>
-          </div>
-
           {/* Adresse d'expédition */}
           <div className="space-y-3">
             <div className="flex justify-between items-center">
@@ -880,16 +863,6 @@ const Panier = () => {
                 <span className="text-gray-600">Expédition</span>
                 <span>{shippingMethod === 'express' ? '25,000' : 'Gratuit'}</span>
               </div>
-              {promoCode && (
-                <motion.div 
-                  className="flex justify-between text-green-600"
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                >
-                  <span>Réduction</span>
-                  <span>-15,000 GNF</span>
-                </motion.div>
-              )}
               <div className="flex justify-between font-medium text-lg pt-4 border-t">
                 <span>Total</span>
                 <span>{calculateTotal().toLocaleString()} GNF</span>
