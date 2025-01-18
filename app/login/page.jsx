@@ -1,11 +1,11 @@
 'use client'
+import { useAuth } from '@/app/providers/AuthProvider';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { FaEnvelope, FaFacebook, FaGoogle, FaLock } from 'react-icons/fa';
-import { useAuth } from '@/app/providers/AuthProvider';
 
 export default function Login() {
   const router = useRouter();

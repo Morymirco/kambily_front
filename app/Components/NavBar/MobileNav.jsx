@@ -3,10 +3,12 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
+import { useAuth } from '@/app/providers/AuthProvider';
 
 const MobileNav = () => {
   const pathname = usePathname();
   const [isLoggedIn, setIsLoggedIn] = useState(true);
+  const { user, isAuthenticated } = useAuth();
 
   const navItems = [
     {
@@ -64,14 +66,23 @@ const MobileNav = () => {
     {
       label: 'Profil',
       path: '/profile',
-      icon: isLoggedIn ? (
-        <Image
-          src="/team/mory.jpg"
-          alt="Profile"
-          width={24}
-          height={24}
-          className="w-6 h-6 rounded-full"
-        />
+      icon: isAuthenticated ? (
+        <div className="relative w-6 h-6 rounded-full overflow-hidden">
+          {user ? (
+            <Image
+              src={user.image}
+              alt="Profile"
+              fill
+              className="object-cover"
+            />
+          ) : (
+            <div className="w-full h-full bg-[#048B9A]/10 flex items-center justify-center rounded-full">
+              <span className="text-[#048B9A] text-xs font-medium">
+                {user.first_name ? user.first_name[0].toUpperCase() : user.email[0].toUpperCase()}
+              </span>
+            </div>
+          )}
+        </div>
       ) : (
         <Image
           src="/icons/profile.svg"
