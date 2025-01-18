@@ -89,6 +89,17 @@ export default function Login() {
     setError("La connexion avec Facebook n'est pas encore disponible");
   };
 
+  const handleLoginSuccess = (token) => {
+    localStorage.setItem('token', token);
+    
+    // Récupérer l'URL de redirection
+    const redirectUrl = localStorage.getItem('redirectAfterLogin');
+    localStorage.removeItem('redirectAfterLogin'); // Nettoyer
+    
+    // Rediriger vers la page précédente ou la page d'accueil
+    window.location.href = redirectUrl || '/';
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8">
       <div className="w-full max-w-md space-y-8">

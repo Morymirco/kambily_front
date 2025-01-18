@@ -6,46 +6,57 @@ import { useEffect, useState } from 'react';
 import { FaChevronLeft, FaChevronRight, FaEye, FaFacebookF, FaFilter, FaLink, FaSearch, FaShoppingCart, FaTimes, FaTwitter, FaWhatsapp } from 'react-icons/fa';
 
 // Composant Toast modifié
-const Toast = ({ message, image, onView }) => (
+const Toast = ({ message, image, onView, isError }) => (
   <div className="fixed bottom-4 right-4 z-50 animate-slide-up">
-    <div className="bg-white border rounded-lg shadow-lg p-4 w-[300px] flex items-center gap-4">
+    <div className={`bg-white border rounded-lg shadow-lg p-4 w-[300px] flex items-center gap-4 ${
+      isError ? 'border-red-500' : 'border-green-500'
+    }`}>
       {/* Image du produit */}
-      <div className="relative w-16 h-16 flex-shrink-0 rounded-md overflow-hidden">
-        <Image
-          src={image}
-          alt="Product"
-          fill
-          className="object-cover"
-        />
-      </div>
+      {!isError && (
+        <div className="relative w-16 h-16 flex-shrink-0 rounded-md overflow-hidden">
+          <Image
+            src={image}
+            alt="Product"
+            fill
+            className="object-cover"
+          />
+        </div>
+      )}
 
       {/* Contenu */}
       <div className="flex-1 min-w-0">
-        <div className="flex items-start justify-between gap-2">
-          {/* Message et icône */}
-          <div className="flex items-center gap-1.5 text-green-600 font-medium text-sm">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-            </svg>
-            Ajouté au panier
-          </div>
+        <div className="flex items-center gap-1.5 font-medium text-sm">
+          {isError ? (
+            <div className="text-red-600">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+              Erreur
+            </div>
+          ) : (
+            <div className="text-green-600">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+              Ajouté au panier
+            </div>
+          )}
         </div>
 
-        {/* Nom du produit */}
         <p className="text-gray-600 text-sm mt-1 truncate">
           {message}
         </p>
 
-        {/* Bouton Voir */}
-        <Link href='/panier'>
-        <button
-          onClick={onView}
-          className="mt-2 text-[#048B9A] text-sm font-medium hover:text-[#037383] transition-colors"
-        >
-          Voir le panier
-        </button>
-        
-        </Link>
+        {!isError && (
+          <Link href='/panier'>
+            <button
+              onClick={onView}
+              className="mt-2 text-[#048B9A] text-sm font-medium hover:text-[#037383] transition-colors"
+            >
+              Voir le panier
+            </button>
+          </Link>
+        )}
       </div>
     </div>
   </div>
@@ -142,6 +153,43 @@ const ProductCard = ({ id, image, gallery = [], title, price, inStock, category,
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [copySuccess, setCopySuccess] = useState(false);
+  const [error, setError] = useState(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  // Vérifier l'authentification au chargement du composant
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const checkAuth = async () => {
+      if (!token) {
+        setIsAuthenticated(false);
+        return;
+      }
+
+      try {
+        // Vérifier si le token est valide avec l'API
+        const response = await fetch('https://api.kambily.store/auth/verify/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (response.ok) {
+          setIsAuthenticated(true);
+        } else {
+          // Si le token n'est pas valide, le supprimer
+          localStorage.removeItem('token');
+          setIsAuthenticated(false);
+        }
+      } catch (error) {
+        console.error('Erreur de vérification du token:', error);
+        setIsAuthenticated(false);
+      }
+    };
+
+    checkAuth();
+  }, []);
 
   const handleOpenModal = () => {
     setIsLoading(true);
@@ -151,15 +199,58 @@ const ProductCard = ({ id, image, gallery = [], title, price, inStock, category,
     }, 500);
   };
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     setIsAddingToCart(true);
-    setTimeout(() => {
-      setIsAddingToCart(false);
+    
+    try {
+      const token = localStorage.getItem('access_token');
+      
+      if (!token) {
+        // Sauvegarder l'URL actuelle pour rediriger après la connexion
+        localStorage.setItem('redirectAfterLogin', window.location.pathname);
+        window.location.href = '/login';
+        return;
+      }
+
+      const response = await fetch(`https://api.kambily.store/carts/create/${id}/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          quantity: quantity
+        })
+      });
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          // Token expiré ou invalide
+          localStorage.removeItem('token');
+          localStorage.setItem('redirectAfterLogin', window.location.pathname);
+          window.location.href = '/login';
+          return;
+        }
+        throw new Error('Erreur lors de l\'ajout au panier');
+      }
+
+      const data = await response.json();
       setShowToast(true);
       setTimeout(() => {
         setShowToast(false);
-      }, 4000); // Durée augmentée à 4 secondes
-    }, 800);
+      }, 4000);
+
+    } catch (error) {
+      console.error('Erreur:', error);
+      setError(error.message || 'Une erreur est survenue lors de l\'ajout au panier');
+      setShowToast(true);
+      setTimeout(() => {
+        setShowToast(false);
+        setError(null);
+      }, 4000);
+    } finally {
+      setIsAddingToCart(false);
+    }
   };
 
   const handleViewCart = () => {
@@ -436,9 +527,10 @@ const ProductCard = ({ id, image, gallery = [], title, price, inStock, category,
       {/* Toast notification modifiée */}
       {showToast && (
         <Toast 
-          message={title}
+          message={error || title}
           image={image}
           onView={handleViewCart}
+          isError={!!error}
         />
       )}
 
@@ -651,13 +743,10 @@ const ProductCard = ({ id, image, gallery = [], title, price, inStock, category,
 };
 
 const ProductSkeleton = () => (
-  <div className="border rounded-xl overflow-hidden bg-white animate-pulse">
-    <div className="h-[300px] bg-gray-200" />
-    <div className="p-4 space-y-3">
-      <div className="h-4 bg-gray-200 rounded w-3/4" />
-      <div className="h-4 bg-gray-200 rounded w-1/2" />
-      <div className="h-8 bg-gray-200 rounded w-full" />
-    </div>
+  <div className="bg-white rounded-lg p-4 space-y-3">
+    <div className="w-full h-48 bg-gray-200 rounded-lg animate-pulse" />
+    <div className="h-4 bg-gray-200 rounded animate-pulse w-3/4" />
+    <div className="h-4 bg-gray-200 rounded animate-pulse w-1/2" />
   </div>
 );
 
