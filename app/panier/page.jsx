@@ -3,9 +3,10 @@ import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
 import { AnimatePresence, motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import toast, { Toaster } from 'react-hot-toast';
-import { FaEdit, FaMapMarkerAlt, FaMapPin, FaSearchLocation, FaTrash, FaPlus } from 'react-icons/fa';
+import { FaEdit, FaMapMarkerAlt, FaMapPin, FaPlus, FaSearchLocation, FaTrash } from 'react-icons/fa';
 
 const containerStyle = {
   width: '100%',
@@ -28,9 +29,106 @@ const itemVariants = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.5 } }
 };
 
+const CartSkeleton = () => (
+  <div className="w-full max-w-[1400px] mx-auto px-3 sm:px-4 md:px-16 py-3 sm:py-6">
+    {/* Titre skeleton */}
+    <div className="w-48 h-8 bg-gray-200 rounded-lg animate-pulse mb-8" />
+
+    <div className="grid md:grid-cols-3 gap-4 sm:gap-8">
+      {/* Colonne principale - Liste des produits */}
+      <div className="md:col-span-2 space-y-4 sm:space-y-6">
+        {/* Articles skeleton */}
+        {[1, 2, 3].map((item) => (
+          <div 
+            key={item} 
+            className="bg-white rounded-lg shadow-sm p-3 sm:p-4 flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-4"
+          >
+            {/* Image skeleton */}
+            <div className="w-16 h-16 sm:w-24 sm:h-24 bg-gray-200 rounded-lg animate-pulse" />
+
+            {/* Détails produit skeleton */}
+            <div className="flex-1 space-y-2">
+              <div className="w-3/4 h-4 bg-gray-200 rounded animate-pulse" />
+              
+              {/* Tailles et couleurs skeleton */}
+              <div className="space-y-2">
+                <div className="flex gap-2 items-center">
+                  <div className="w-12 h-3 bg-gray-200 rounded animate-pulse" />
+                  <div className="flex gap-1">
+                    {[1, 2, 3].map(i => (
+                      <div key={i} className="w-6 h-6 bg-gray-200 rounded animate-pulse" />
+                    ))}
+                  </div>
+                </div>
+                <div className="flex gap-2 items-center">
+                  <div className="w-14 h-3 bg-gray-200 rounded animate-pulse" />
+                  <div className="flex gap-1">
+                    {[1, 2, 3].map(i => (
+                      <div key={i} className="w-4 h-4 bg-gray-200 rounded-full animate-pulse" />
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Prix skeleton */}
+              <div className="w-24 h-4 bg-gray-200 rounded animate-pulse" />
+            </div>
+
+            {/* Contrôles quantité skeleton */}
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-gray-200 rounded-lg animate-pulse" />
+              <div className="w-12 h-8 bg-gray-200 rounded animate-pulse" />
+              <div className="w-8 h-8 bg-gray-200 rounded-lg animate-pulse" />
+              <div className="w-6 h-6 bg-gray-200 rounded-full animate-pulse ml-2" />
+            </div>
+          </div>
+        ))}
+
+        {/* Bouton Continuer les achats skeleton */}
+        <div className="w-40 h-10 bg-gray-200 rounded-lg animate-pulse" />
+      </div>
+
+      {/* Colonne résumé */}
+      <div className="space-y-6">
+        {/* Résumé de la commande skeleton */}
+        <div className="bg-white rounded-lg shadow-sm p-6 space-y-4">
+          <div className="w-48 h-6 bg-gray-200 rounded animate-pulse" />
+          
+          {/* Lignes de prix skeleton */}
+          <div className="space-y-3">
+            <div className="flex justify-between">
+              <div className="w-20 h-4 bg-gray-200 rounded animate-pulse" />
+              <div className="w-24 h-4 bg-gray-200 rounded animate-pulse" />
+            </div>
+            <div className="flex justify-between">
+              <div className="w-24 h-4 bg-gray-200 rounded animate-pulse" />
+              <div className="w-20 h-4 bg-gray-200 rounded animate-pulse" />
+            </div>
+            <div className="flex justify-between pt-4 border-t">
+              <div className="w-16 h-5 bg-gray-200 rounded animate-pulse" />
+              <div className="w-32 h-5 bg-gray-200 rounded animate-pulse" />
+            </div>
+          </div>
+
+          {/* Bouton paiement skeleton */}
+          <div className="w-full h-12 bg-gray-200 rounded-lg animate-pulse mt-4" />
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
 const Panier = () => {
+  const router = useRouter();
+
+  // Regrouper tous les états au début du composant
+  const [cartItems, setCartItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [updating, setUpdating] = useState(false);
+  const [deletingItemId, setDeletingItemId] = useState(null);
   const [promoCode, setPromoCode] = useState('');
-  const [shippingMethod, setShippingMethod] = useState('standard'); // standard ou express
+  const [shippingMethod, setShippingMethod] = useState('standard');
   const [showAddressForm, setShowAddressForm] = useState(false);
   const [position, setPosition] = useState(defaultCenter);
   const [showMap, setShowMap] = useState(false);
@@ -39,36 +137,8 @@ const Panier = () => {
   const [searchAddress, setSearchAddress] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [quantities, setQuantities] = useState({
-    1: 1, // id du produit: quantité
+    1: 1,
   });
-  
-  // Exemple de produits dans le panier
-  const cartItems = [
-    {
-      id: 1,
-      name: "Ensemble De Pyjama",
-      price: 65000,
-      quantity: 1,
-      image: "/pyjama.png"
-    },
-    {
-      id: 2,
-      name: "T-shirt Houston",
-      price: 85000,
-      quantity: 1,
-      image: "/houston_tshirt.png"
-    }
-  ];
-
-  // Exemple d'adresse par défaut
-  const defaultAddress = {
-    name: "John Doe",
-    address: "123 Rue Principale",
-    city: "Conakry",
-    phone: "+224 000 00 00"
-  };
-
-  // Ajouter cet état pour gérer les adresses sauvegardées
   const [savedAddresses, setSavedAddresses] = useState([
     {
       id: 1,
@@ -95,31 +165,154 @@ const Panier = () => {
     savedAddresses.find(addr => addr.isDefault)?.id || null
   );
 
-  const updateQuantity = (id, change) => {
-    setCartItems(cartItems.map(item => {
-      if (item.id === id) {
-        const newQuantity = Math.max(1, item.quantity + change);
-        return { ...item, quantity: newQuantity };
+  // Effet pour charger le panier
+  useEffect(() => {
+    fetchCart();
+  }, []);
+
+  const fetchCart = async () => {
+    try {
+      const token = localStorage.getItem('access_token');
+      if (!token) {
+        router.push('/login');
+        return;
       }
-      return item;
-    }));
+
+      const response = await fetch('https://api.kambily.store/carts/', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Erreur lors du chargement du panier');
+      }
+
+      const data = await response.json();
+      console.log(data);
+      
+      setCartItems(data);
+    } catch (err) {
+      setError(err.message);
+      toast.error(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const removeItem = (id) => {
-    setCartItems(cartItems.filter(item => item.id !== id));
+  const updateQuantity = async (itemId, newQuantity) => {
+    if (newQuantity < 1) return;
+    
+    setUpdating(true);
+    try {
+      const token = localStorage.getItem('access_token');
+      
+      if (!itemId) {
+        throw new Error('ID de l\'article non défini');
+      }
+
+      // Récupérer l'article actuel pour avoir la quantité exacte
+      const currentItem = cartItems.find(item => item.product.id === itemId);
+      if (!currentItem) return;
+
+      // Calculer la différence de quantité
+      const quantityDiff = newQuantity - currentItem.quantity;
+
+      const response = await fetch(`https://api.kambily.store/carts/update/${itemId}/`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ 
+          quantity: quantityDiff > 0 ? 1 : -1, // Incrémenter ou décrémenter de 1
+          product_id: itemId
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Erreur lors de la mise à jour de la quantité');
+      }
+
+      // Actualiser le panier après la mise à jour
+      await fetchCart();
+
+      toast.success('Quantité mise à jour');
+    } catch (err) {
+      toast.error(err.message);
+    } finally {
+      setUpdating(false);
+    }
   };
 
-  const shippingCost = {
-    standard: 0,
-    express: 25000
+  const removeItem = async (itemId) => {
+    setDeletingItemId(itemId);
+    try {
+      const token = localStorage.getItem('access_token');
+      const response = await fetch(`https://api.kambily.store/carts/remove/${itemId}/`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Erreur lors de la suppression');
+      }
+
+      const removedItem = cartItems.find(item => item.product.id === itemId);
+      if (removedItem) {
+        toast.custom((t) => (
+          <div className="fixed bottom-4 right-4 z-50 animate-slide-up">
+            <div className="bg-white border border-gray-200 rounded-lg shadow-lg p-4 w-[300px] flex items-center gap-4">
+              <div className="relative w-16 h-16 flex-shrink-0 rounded-md overflow-hidden">
+                <Image
+                  src={removedItem.product.images?.[0]?.image || '/placeholder.png'}
+                  alt={removedItem.product.name}
+                  fill
+                  className="object-cover"
+                />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-1.5 font-medium text-sm text-green-600">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  Article supprimé
+                </div>
+                <p className="text-gray-600 text-sm mt-1 truncate">
+                  {removedItem.product.name}
+                </p>
+              </div>
+            </div>
+          </div>
+        ), {
+          duration: 3000,
+        });
+      }
+
+      await fetchCart();
+    } catch (err) {
+      toast.error(err.message);
+    } finally {
+      setDeletingItemId(null);
+    }
   };
 
+  // Calculer le total
   const calculateTotal = () => {
-    const subtotal = cartItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
-    const shipping = shippingCost[shippingMethod];
-    const discount = promoCode ? 15000 : 0;
-    return subtotal + shipping - discount;
+    const subtotal = cartItems.reduce((sum, item) => {
+      return sum + (item.product.regular_price * item.quantity);
+    }, 0);
+    
+    const shipping = shippingMethod === 'express' ? 25000 : 0;
+    return subtotal + shipping;
   };
+
+  if (loading) {
+    return <CartSkeleton />;
+  }
 
   // Fonction pour formater les coordonnées
   const formatCoordinates = (lat, lng) => {
@@ -251,8 +444,8 @@ const Panier = () => {
                 {/* Image du produit */}
                 <div className="relative w-16 h-16 sm:w-24 sm:h-24 flex-shrink-0">
                   <Image
-                    src={item.image}
-                    alt={item.name}
+                    src={item.product.images?.[0]?.image || '/placeholder.png'}
+                    alt={item.product.name}
                     fill
                     className="object-cover rounded-lg"
                   />
@@ -260,39 +453,102 @@ const Panier = () => {
 
                 {/* Détails du produit */}
                 <div className="flex-1 min-w-0 w-[calc(100%-5rem)] sm:w-auto">
-                  <h3 className="font-medium text-sm sm:text-base truncate">{item.name}</h3>
-                  <p className="text-gray-500 text-xs sm:text-sm">Taille: M</p>
-                  <p className="text-[#048B9A] font-medium text-sm sm:text-base">
-                    {item.price.toLocaleString()} GNF
+                  <h3 className="font-medium text-sm sm:text-base truncate">{item.product.name}</h3>
+                  
+                  {/* Couleurs et tailles */}
+                  <div className="mt-2 space-y-1">
+                    {/* Tailles */}
+                    {item.product.sizes && item.product.sizes.length > 0 ? (
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-gray-500">Taille:</span>
+                        <div className="flex gap-1">
+                          {item.product.sizes.map((size) => (
+                            <div
+                              key={size.id}
+                              className={`px-2 py-0.5 text-xs rounded ${
+                                size.id === item.selected_size
+                                  ? 'bg-[#048B9A] text-white'
+                                  : 'bg-gray-100 text-gray-600'
+                              }`}
+                            >
+                              {size.name}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-gray-500">Taille:</span>
+                        <span className="text-xs text-gray-400 italic">Taille unique</span>
+                      </div>
+                    )}
+
+                    {/* Couleurs */}
+                    {item.product.colors && item.product.colors.length > 0 ? (
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-gray-500">Couleur:</span>
+                        <div className="flex gap-1">
+                          {item.product.colors.map((color) => (
+                            <div
+                              key={color.id}
+                              className={`w-4 h-4 rounded-full border ${
+                                color.id === item.selected_color
+                                  ? 'border-[#048B9A] ring-1 ring-[#048B9A] ring-offset-1'
+                                  : 'border-gray-300'
+                              }`}
+                              style={{ backgroundColor: color.code }}
+                              title={color.name}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-gray-500">Couleur:</span>
+                        <span className="text-xs text-gray-400 italic">Couleur unique</span>
+                      </div>
+                    )}
+                  </div>
+
+                  <p className="text-[#048B9A] font-medium text-sm sm:text-base mt-2">
+                    {item.product.regular_price.toLocaleString()} GNF
                   </p>
                 </div>
-
-                {/* Contrôles de quantité et suppression */}
-                <div className="flex items-center gap-2 sm:gap-4 w-full sm:w-auto justify-end">
-                  <div className="flex items-center gap-1 sm:gap-2">
+                
+                <div className="mt-4 flex items-center justify-between">
+                  {/* Contrôles de quantité et suppression */}
+                  <div className="flex items-center gap-2 sm:gap-4 w-full sm:w-auto justify-end">
+                    <div className="flex items-center gap-1 sm:gap-2">
+                      <button
+                        onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
+                        disabled={updating || item.quantity <= 1}
+                        className="w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center border rounded-lg hover:bg-gray-50 text-sm disabled:opacity-50"
+                      >
+                        -
+                      </button>
+                      <span className="w-8 sm:w-12 text-center text-sm">
+                        {item.quantity}
+                      </span>
+                      <button
+                        onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
+                        disabled={updating}
+                        className="w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center border rounded-lg hover:bg-gray-50 text-sm disabled:opacity-50"
+                      >
+                        +
+                      </button>
+                    </div>
                     <button
-                      onClick={() => decrementQuantity(item.id)}
-                      className="w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center border rounded-lg hover:bg-gray-50 text-sm"
+                      onClick={() => removeItem(item.product.id)}
+                      disabled={deletingItemId === item.product.id}
+                      className={`text-red-500 hover:text-red-600 disabled:opacity-50 w-6 h-6 flex items-center justify-center`}
                     >
-                      -
-                    </button>
-                    <span className="w-8 sm:w-12 text-center text-sm">
-                      {quantities[item.id] || 1}
-                    </span>
-                    <button
-                      onClick={() => incrementQuantity(item.id)}
-                      className="w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center border rounded-lg hover:bg-gray-50 text-sm"
-                    >
-                      +
+                      {deletingItemId === item.product.id ? (
+                        <div className="w-4 h-4 border-2 border-red-500 border-t-transparent rounded-full animate-spin" />
+                      ) : (
+                        <FaTrash className="w-3 h-3 sm:w-4 sm:h-4" />
+                      )}
                     </button>
                   </div>
-                  <motion.button 
-                    className="text-red-500 p-1 sm:p-2"
-                    whileHover={{ scale: 1.2 }}
-                    whileTap={{ scale: 0.9 }}
-                  >
-                    <FaTrash className="w-3 h-3 sm:w-4 sm:h-4" />
-                  </motion.button>
                 </div>
               </motion.div>
             ))}
@@ -618,7 +874,7 @@ const Panier = () => {
             <div className="space-y-3">
               <div className="flex justify-between">
                 <span className="text-gray-600">Sous-total</span>
-                <span>{cartItems.reduce((acc, item) => acc + (item.price * item.quantity), 0).toLocaleString()} GNF</span>
+                <span>{cartItems.reduce((acc, item) => acc + (item.product.regular_price * item.quantity), 0).toLocaleString()} GNF</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Expédition</span>
