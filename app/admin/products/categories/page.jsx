@@ -38,7 +38,7 @@ const CategoriesPage = () => {
           return;
         }
 
-        const response = await fetch('http://35.85.136.46:8001/products/categories', {
+        const response = await fetch('https://api.kambily.store/categories/', {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Accept': 'application/json'
@@ -307,7 +307,7 @@ const CategoriesPage = () => {
         }
       }
 
-      const response = await fetch('http://35.85.136.46:8001/products/categories/create', {
+      const response = await fetch('https://api.kambily.store/categories/create', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

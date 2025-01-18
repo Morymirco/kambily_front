@@ -1,10 +1,10 @@
 'use client'
-import { useState } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import { FaEnvelope, FaLock, FaGoogle, FaFacebook } from 'react-icons/fa';
-import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { FaEnvelope, FaFacebook, FaGoogle, FaLock } from 'react-icons/fa';
 
 export default function Login() {
   const router = useRouter();
@@ -34,19 +34,59 @@ export default function Login() {
     setError(null);
 
     try {
-      await login({
-        email: formData.email,
-        password: formData.password
+      const response = await fetch('https://api.kambily.store/accounts/login/', {
+        method: 'POST',
+        mode: 'cors',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password
+        })
       });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Email ou mot de passe incorrect');
+      }
+
+      // Stocker le token dans le localStorage
+      localStorage.setItem('access_token', data.access);
       
-      // Si la connexion réussit, rediriger vers la page d'accueil
-      router.push('/');
+      // Stocker les informations utilisateur si nécessaire
+      if (data.user) {
+        localStorage.setItem('user', JSON.stringify(data.user));
+      }
+
+      // Redirection vers la page profile
+      router.push('/profile');
+
     } catch (err) {
       console.error('Erreur de connexion:', err);
       setError(err.message || 'Une erreur est survenue lors de la connexion');
+      // Nettoyer le localStorage en cas d'erreur
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('user');
     } finally {
       setLoading(false);
     }
+  };
+
+  // Gérer la connexion avec Google
+  const handleGoogleLogin = async () => {
+    setError(null);
+    // Implémenter la connexion Google ici
+    setError("La connexion avec Google n'est pas encore disponible");
+  };
+
+  // Gérer la connexion avec Facebook
+  const handleFacebookLogin = async () => {
+    setError(null);
+    // Implémenter la connexion Facebook ici
+    setError("La connexion avec Facebook n'est pas encore disponible");
   };
 
   return (
@@ -176,6 +216,7 @@ export default function Login() {
 
           <div className="mt-6 grid grid-cols-2 gap-3">
             <button 
+              onClick={handleGoogleLogin}
               disabled={loading}
               className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
             >
@@ -183,6 +224,7 @@ export default function Login() {
               Google
             </button>
             <button 
+              onClick={handleFacebookLogin}
               disabled={loading}
               className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
             >

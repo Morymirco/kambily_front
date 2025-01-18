@@ -34,10 +34,12 @@ export default function CreateCategory() {
         return;
       }
 
-      const response = await fetch('https://api.kambily.store/products/list_categories', {
+      const response = await fetch('https://api.kambily.store/categories', {
+        method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`
         }
+       
       });
 
       console.log('Réponse catégories:', response);
@@ -101,7 +103,7 @@ export default function CreateCategory() {
 
       console.log('Données à envoyer:', dataToSend);
 
-      const response = await fetch('https://api.kambily.store/products/create_category', {
+      const response = await fetch('https://api.kambily.store/categorie/create', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

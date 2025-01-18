@@ -53,7 +53,7 @@ export default function AddProductPage() {
   // Récupérer les catégories principales
   const fetchCategories = async () => {
     try {
-      const response = await fetch('https://api.kambily.store/products/categories', {
+      const response = await fetch('https://api.kambily.store/categories/', {
         method: 'GET',
         mode: 'cors',
         headers: {
@@ -78,7 +78,7 @@ export default function AddProductPage() {
   // Récupérer les couleurs
   const fetchColors = async () => {
     try {
-      const response = await fetch('https://api.kambily.store/products/colors', {
+      const response = await fetch('https://api.kambily.store/colors/', {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('access_token')}`
         }
@@ -94,7 +94,7 @@ export default function AddProductPage() {
   // Récupérer les tailles
   const fetchSizes = async () => {
     try {
-      const response = await fetch('https://api.kambily.store/products/sizes', {
+      const response = await fetch('https://api.kambily.store/sizes/', {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('access_token')}`
         }
@@ -110,7 +110,7 @@ export default function AddProductPage() {
   // Récupérer les tags
   const fetchTags = async () => {
     try {
-      const response = await fetch('https://api.kambily.store/products/tags', {
+      const response = await fetch('https://api.kambily.store/tags/', {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('access_token')}`
         }
@@ -147,81 +147,58 @@ export default function AddProductPage() {
     setLoading(true);
     setError(null);
 
-    // Validation des champs requis
-    if (!formData.name || !formData.short_description || !formData.long_description || 
-        !formData.regular_price || !formData.sku || !formData.quantity ||
-        !formData.weight || !formData.length || !formData.width || !formData.height) {
-      setError("Veuillez remplir tous les champs obligatoires");
-      setLoading(false);
-      return;
-    }
-
     try {
       const formDataToSend = new FormData();
 
-      // Ajouter les champs de base
-      Object.keys(formData).forEach(key => {
-        if (!['categories', 'colors', 'sizes', 'etiquettes'].includes(key)) {
-          formDataToSend.append(key, formData[key]);
-        }
+      // Ajouter les champs de base comme avant
+      formDataToSend.append('name', formData.name);
+      formDataToSend.append('short_description', formData.short_description);
+      formDataToSend.append('long_description', formData.long_description);
+      formDataToSend.append('regular_price', formData.regular_price.toString());
+      formDataToSend.append('promo_price', formData.promo_price ? formData.promo_price.toString() : formData.regular_price.toString());
+      formDataToSend.append('sku', formData.sku);
+      formDataToSend.append('stock_status', formData.stock_status.toString());
+      formDataToSend.append('weight', formData.weight.toString());
+      formDataToSend.append('length', formData.length.toString());
+      formDataToSend.append('width', formData.width.toString());
+      formDataToSend.append('height', formData.height.toString());
+      formDataToSend.append('product_type', formData.product_type);
+      formDataToSend.append('etat_stock', formData.etat_stock);
+      formDataToSend.append('quantity', formData.quantity.toString());
+
+      // Modification de l'envoi des tableaux - envoi de chaque ID séparément
+      formData.categories.forEach((categoryId) => {
+        formDataToSend.append('categories[]', categoryId);
       });
 
-      // Si le prix promo n'est pas défini, utiliser le prix régulier
-      if (!formData.promo_price) {
-        formDataToSend.set('promo_price', formData.regular_price);
-      }
+      formData.colors.forEach((colorId) => {
+        formDataToSend.append('colors[]', colorId);
+      });
 
-      // Convertir les tableaux en JSON strings
-      formDataToSend.append('categories', JSON.stringify(
-        formData.categories.map(id => parseInt(id, 10))
-      ));
+      formData.sizes.forEach((sizeId) => {
+        formDataToSend.append('sizes[]', sizeId);
+      });
 
-      if (formData.product_type === 'variable') {
-        formDataToSend.append('colors', JSON.stringify(
-          formData.colors.map(id => parseInt(id, 10))
-        ));
-        formDataToSend.append('sizes', JSON.stringify(
-          formData.sizes.map(id => parseInt(id, 10))
-        ));
-      } else {
-        formDataToSend.append('colors', JSON.stringify([]));
-        formDataToSend.append('sizes', JSON.stringify([]));
-      }
-
-      formDataToSend.append('etiquettes', JSON.stringify(
-        formData.etiquettes.map(id => parseInt(id, 10))
-      ));
-
-      // Validation des relations
-      if (formData.categories.length === 0) {
-        throw new Error('Veuillez sélectionner au moins une catégorie');
-      }
-
-      if (formData.product_type === 'variable') {
-        if (formData.colors.length === 0) {
-          throw new Error('Pour un produit variable, veuillez sélectionner au moins une couleur');
-        }
-        if (formData.sizes.length === 0) {
-          throw new Error('Pour un produit variable, veuillez sélectionner au moins une taille');
-        }
-      }
+      formData.etiquettes.forEach((tagId) => {
+        formDataToSend.append('etiquettes[]', tagId);
+      });
 
       // Ajouter les images
-      imageFiles.forEach(file => formDataToSend.append('images', file));
+      imageFiles.forEach((file) => {
+        formDataToSend.append('images[]', file);
+      });
 
-      // Log des données envoyées pour vérification
-      const formDataObject = {};
+      // Log pour déboguer
+      console.log('Données envoyées:');
       for (let [key, value] of formDataToSend.entries()) {
-        formDataObject[key] = value;
+        console.log(`${key}:`, value);
       }
-      console.log('Données envoyées:', formDataObject);
 
       const response = await fetch('https://api.kambily.store/products/create', {
         method: 'POST',
-        mode: 'cors',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
-          'Accept': 'application/json'
+          'Accept': 'application/json',
         },
         body: formDataToSend
       });

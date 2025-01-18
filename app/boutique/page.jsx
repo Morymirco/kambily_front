@@ -51,6 +51,86 @@ const Toast = ({ message, image, onView }) => (
   </div>
 );
 
+// Composant ImageCarousel
+const ImageCarousel = ({ images, title }) => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  const goToNext = () => {
+    setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
+  };
+
+  const goToPrevious = () => {
+    setCurrentIndex((prevIndex) => 
+      prevIndex === 0 ? images.length - 1 : prevIndex - 1
+    );
+  };
+
+  useEffect(() => {
+    // Rotation automatique toutes les 5 secondes
+    const timer = setInterval(goToNext, 5000);
+    return () => clearInterval(timer);
+  }, []);
+
+  return (
+    <div className="relative w-full h-full group">
+      <Image
+        src={images[currentIndex]}
+        alt={`${title} - image ${currentIndex + 1}`}
+        fill
+        className="object-cover transition-transform duration-300 group-hover:scale-105"
+        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+      />
+      
+      {images.length > 1 && (
+        <>
+          {/* Boutons de navigation */}
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              goToPrevious();
+            }}
+            className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-white/80 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-white z-10"
+          >
+            <FaChevronLeft className="w-4 h-4 text-gray-600" />
+          </button>
+          
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              goToNext();
+            }}
+            className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-white/80 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-white z-10"
+          >
+            <FaChevronRight className="w-4 h-4 text-gray-600" />
+          </button>
+
+          {/* Indicateurs de position */}
+          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
+            {images.map((_, index) => (
+              <button
+                key={index}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setCurrentIndex(index);
+                }}
+                className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${
+                  currentIndex === index 
+                    ? 'bg-white w-4' 
+                    : 'bg-white/60 hover:bg-white/80'
+                }`}
+                aria-label={`Aller à l'image ${index + 1}`}
+              />
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+};
+
 // Composant ProductCard mis à jour
 const ProductCard = ({ id, image, gallery = [], title, price, inStock, category, viewMode }) => {
   const [showModal, setShowModal] = useState(false);
@@ -104,8 +184,8 @@ const ProductCard = ({ id, image, gallery = [], title, price, inStock, category,
     return (
       <div className=" rounded-xl  overflow-hidden bg-white group">
         <div className="flex">
-          {/* Colonne gauche : Image/Carousel avec largeur augmentée et coins arrondis */}
-          <div className="w-[320px] h-[280px] relative flex-shrink-0 p-3">
+          {/* Colonne gauche : Image/Carousel avec largeur réduite */}
+          <div className="w-[280px] h-[240px] relative flex-shrink-0 p-3">
             <div className="relative w-full h-full rounded-xl overflow-hidden">
               <Link href={`/boutique/${id}`}>
                 <div className="relative w-full h-full">
@@ -117,7 +197,7 @@ const ProductCard = ({ id, image, gallery = [], title, price, inStock, category,
                       alt={title}
                       fill
                       className="object-cover"
-                      sizes="320px"
+                      sizes="280px"
                     />
                   )}
                 </div>
@@ -188,7 +268,7 @@ const ProductCard = ({ id, image, gallery = [], title, price, inStock, category,
           </div>
 
           {/* Colonne droite : Description et bouton */}
-          <div className="w-[300px] p-6 border-l flex flex-col justify-between flex-shrink-0 bg-gray-50">
+          <div className="w-[260px] p-6 border-l flex flex-col justify-between flex-shrink-0 bg-gray-50">
             <p className="text-sm text-gray-600 line-clamp-4">
               Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
             </p>
@@ -227,8 +307,8 @@ const ProductCard = ({ id, image, gallery = [], title, price, inStock, category,
         <div className={`
           relative overflow-hidden rounded-2xl cursor-pointer
           ${viewMode === 'list' 
-            ? 'w-[300px] h-[300px]' 
-            : 'h-[160px] sm:h-[300px] w-full'}
+            ? 'w-[280px] h-[240px]' 
+            : 'h-[140px] sm:h-[260px] w-full'}
         `}>
           <Link href={`/boutique/${id}`}>
             <div className="relative w-full h-full">
@@ -1015,9 +1095,9 @@ const Boutique = () => {
           animate="show"
           className={`grid w-full gap-1 sm:gap-3 ${
             viewMode === 'grid'
-              ? 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4'
+              ? 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-5'
               : 'grid-cols-1'
-          } max-w-[1500px] mx-auto`}
+          } max-w-[1400px] mx-auto`}
         >
           <AnimatePresence>
             {loading || isFiltering ? (
