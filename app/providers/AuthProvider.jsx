@@ -1,6 +1,6 @@
 'use client'
-import { createContext, useContext, useEffect, useState } from 'react';
 import { jwtDecode } from "jwt-decode";
+import { createContext, useContext, useEffect, useState } from 'react';
 
 const AuthContext = createContext();
 

@@ -1,15 +1,19 @@
 'use client'
-import { useState } from 'react';
-import Link from 'next/link';
 import Image from 'next/image';
-import { FaEnvelope, FaLock, FaGoogle, FaFacebook } from 'react-icons/fa';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { toast, Toaster } from 'react-hot-toast';
+import { FaEnvelope, FaFacebook, FaGoogle, FaLock, FaSpinner } from 'react-icons/fa';
 
 export default function Login() {
+  const router = useRouter();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
     rememberMe: false
   });
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -19,14 +23,68 @@ export default function Login() {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Login data:', formData);
-    // Ajoutez ici votre logique de connexion
+    setLoading(true);
+
+    try {
+      const response = await fetch('https://api.kambily.store/auth/login/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.detail || 'Erreur de connexion');
+      }
+
+      // Stocker le token
+      localStorage.setItem('access_token', data.access);
+      localStorage.setItem('refresh_token', data.refresh);
+
+      // Récupérer les informations de l'utilisateur
+      const userResponse = await fetch('https://api.kambily.store/auth/user/', {
+        headers: {
+          'Authorization': `Bearer ${data.access}`,
+        }
+      });
+
+      const userData = await userResponse.json();
+
+      if (!userResponse.ok) {
+        throw new Error('Erreur lors de la récupération des informations utilisateur');
+      }
+
+      // Stocker les informations utilisateur
+      localStorage.setItem('user', JSON.stringify(userData));
+
+      toast.success('Connexion réussie !');
+
+      // Redirection selon le rôle
+      if (userData.is_staff || userData.is_superuser) {
+        router.push('/admin/dashboard');
+      } else {
+        router.push('/profile');
+      }
+
+    } catch (error) {
+      console.error('Erreur:', error);
+      toast.error(error.message || 'Email ou mot de passe incorrect');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8">
+      <Toaster position="top-right" />
       <div className="w-full max-w-md space-y-8">
         <div className="text-center">
           <Image
@@ -116,9 +174,17 @@ export default function Login() {
 
           <button
             type="submit"
-            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#048B9A] hover:bg-[#037483] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#048B9A]"
+            disabled={loading}
+            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#048B9A] hover:bg-[#037483] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#048B9A] disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Se connecter
+            {loading ? (
+              <div className="flex items-center">
+                <FaSpinner className="animate-spin mr-2" />
+                Connexion en cours...
+              </div>
+            ) : (
+              'Se connecter'
+            )}
           </button>
         </form>
 
