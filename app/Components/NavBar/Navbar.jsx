@@ -49,6 +49,35 @@ export default function Navbar() {
   ];
 
   const pathname = usePathname();
+  useEffect(() => {
+    // Définition des couleurs
+    const colors = [
+      '#ed1c66', '#6a23d5', '#23a6d5', '#23d5ab', 
+      '#f03e3e', '#e8890c', '#e73c7e'
+    ];
+    
+    // Fonction pour obtenir des couleurs aléatoires
+    const getRandomColors = () => {
+      const shuffled = [...colors].sort(() => 0.5 - Math.random());
+      return shuffled.slice(0, 4); // Prend 4 couleurs aléatoires
+    };
+
+    // Fonction pour mettre à jour le gradient
+    const updateGradient = () => {
+      const selectedColors = getRandomColors();
+      const gradient = `linear-gradient(-45deg, ${selectedColors.join(', ')})`;
+      const banner = document.getElementById('dynamic-banner');
+      if (banner) {
+        banner.style.background = gradient;
+      }
+    };
+
+    // Mettre à jour le gradient toutes les 10 secondes
+    const interval = setInterval(updateGradient, 10000);
+
+    // Nettoyer l'intervalle lors du démontage du composant
+    return () => clearInterval(interval);
+  }, []);
 
   // Charger les articles du panier
   useEffect(() => {
