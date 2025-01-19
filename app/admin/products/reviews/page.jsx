@@ -26,7 +26,8 @@ const ReviewsPage = () => {
           return;
         }
 
-        const response = await fetch('http://35.85.136.46:8001/products/reviews', {
+
+        const response = await fetch('https://api.kambily.store/products/reviews', {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Accept': 'application/json'
@@ -53,7 +54,7 @@ const ReviewsPage = () => {
   const handleApprove = async (reviewId) => {
     try {
       const token = localStorage.getItem('access_token');
-      const response = await fetch(`http://35.85.136.46:8001/products/reviews/${reviewId}/approve`, {
+      const response = await fetch(`https://api.kambily.store/products/reviews/${reviewId}/approve`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -86,7 +87,7 @@ const ReviewsPage = () => {
 
     try {
       const token = localStorage.getItem('access_token');
-      const response = await fetch(`http://35.85.136.46:8001/products/reviews/${reviewId}`, {
+      const response = await fetch(`https://api.kambily.store/products/reviews/${reviewId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,

@@ -42,7 +42,7 @@ export default function TestHome() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await fetch('https://35.85.136.46:8001/products');
+        const response = await fetch('https://api.kambily.store/products');
         
         const responseText = await response.text();
         console.log('Réponse brute du serveur:', responseText);

@@ -47,7 +47,7 @@ export default function EditProduct() {
           return;
         }
 
-        const response = await fetch(`http://35.85.136.46:8001/products/${params.id}`, {
+        const response = await fetch(`https://api.kambily.store/products/${params.id}`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
@@ -97,7 +97,7 @@ export default function EditProduct() {
         const token = localStorage.getItem('access_token');
         
         // Charger les catégories
-        const categoriesResponse = await fetch('http://35.85.136.46:8001/categories', {
+        const categoriesResponse = await fetch('https://api.kambily.store/categories', {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -106,7 +106,7 @@ export default function EditProduct() {
         setAvailableCategories(categoriesData);
 
         // Charger les étiquettes
-        const etiquettesResponse = await fetch('http://35.85.136.46:8001/etiquettes', {
+        const etiquettesResponse = await fetch('https://api.kambily.store/etiquettes', {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -115,7 +115,7 @@ export default function EditProduct() {
         setAvailableEtiquettes(etiquettesData);
 
         // Charger les couleurs
-        const colorsResponse = await fetch('http://35.85.136.46:8001/colors', {
+        const colorsResponse = await fetch('https://api.kambily.store/colors', {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -124,7 +124,7 @@ export default function EditProduct() {
         setAvailableColors(colorsData);
 
         // Charger les tailles
-        const sizesResponse = await fetch('http://35.85.136.46:8001/sizes', {
+        const sizesResponse = await fetch('https://api.kambily.store/sizes', {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -146,7 +146,7 @@ export default function EditProduct() {
     setSaving(true);
 
     try {
-      const response = await fetch(`http://35.85.136.46:8001/products/${params.id}`, {
+        const response = await fetch(`https://api.kambily.store/products/${params.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

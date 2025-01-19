@@ -1,23 +1,15 @@
 'use client'
-import { useAuth } from '@/app/providers/AuthProvider';
-import { motion } from 'framer-motion';
-import Image from 'next/image';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { FaEnvelope, FaFacebook, FaGoogle, FaLock } from 'react-icons/fa';
+import Link from 'next/link';
+import Image from 'next/image';
+import { FaEnvelope, FaLock, FaGoogle, FaFacebook } from 'react-icons/fa';
 
 export default function Login() {
-  const router = useRouter();
-  const { login } = useAuth();
-  
   const [formData, setFormData] = useState({
     email: '',
     password: '',
     rememberMe: false
   });
-  const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -25,60 +17,12 @@ export default function Login() {
       ...prev,
       [name]: type === 'checkbox' ? checked : value
     }));
-    if (error) setError(null);
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    setLoading(true);
-    setError(null);
-
-    try {
-      const result = await login(formData.email, formData.password);
-      
-      if (result.success) {
-        // Redirection vers la page précédente ou la page d'accueil
-        const redirectUrl = localStorage.getItem('redirectAfterLogin');
-        if (redirectUrl) {
-          localStorage.removeItem('redirectAfterLogin');
-          router.push(redirectUrl);
-        } else {
-          router.push('/profile');
-        }
-      } else {
-        throw new Error(result.error || 'Email ou mot de passe incorrect');
-      }
-    } catch (err) {
-      console.error('Erreur de connexion:', err);
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Gérer la connexion avec Google
-  const handleGoogleLogin = async () => {
-    setError(null);
-    // Implémenter la connexion Google ici
-    setError("La connexion avec Google n'est pas encore disponible");
-  };
-
-  // Gérer la connexion avec Facebook
-  const handleFacebookLogin = async () => {
-    setError(null);
-    // Implémenter la connexion Facebook ici
-    setError("La connexion avec Facebook n'est pas encore disponible");
-  };
-
-  const handleLoginSuccess = (token) => {
-    localStorage.setItem('token', token);
-    
-    // Récupérer l'URL de redirection
-    const redirectUrl = localStorage.getItem('redirectAfterLogin');
-    localStorage.removeItem('redirectAfterLogin'); // Nettoyer
-    
-    // Rediriger vers la page précédente ou la page d'accueil
-    window.location.href = redirectUrl || '/';
+    console.log('Login data:', formData);
+    // Ajoutez ici votre logique de connexion
   };
 
   return (
@@ -104,16 +48,6 @@ export default function Login() {
         </div>
 
         <form className="mt-8 space-y-6 w-full" onSubmit={handleSubmit}>
-          {error && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="bg-red-50 text-red-500 p-3 rounded-md text-sm"
-            >
-              {error}
-            </motion.div>
-          )}
-
           <div className="space-y-4">
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
@@ -132,7 +66,6 @@ export default function Login() {
                   onChange={handleChange}
                   className="appearance-none block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#048B9A] focus:border-[#048B9A]"
                   placeholder="exemple@email.com"
-                  disabled={loading}
                 />
               </div>
             </div>
@@ -154,7 +87,6 @@ export default function Login() {
                   onChange={handleChange}
                   className="appearance-none block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#048B9A] focus:border-[#048B9A]"
                   placeholder="••••••••"
-                  disabled={loading}
                 />
               </div>
             </div>
@@ -169,7 +101,6 @@ export default function Login() {
                 checked={formData.rememberMe}
                 onChange={handleChange}
                 className="h-4 w-4 text-[#048B9A] focus:ring-[#048B9A] border-gray-300 rounded"
-                disabled={loading}
               />
               <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
                 Se souvenir de moi
@@ -185,14 +116,9 @@ export default function Login() {
 
           <button
             type="submit"
-            disabled={loading}
-            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#048B9A] hover:bg-[#037483] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#048B9A] disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#048B9A] hover:bg-[#037483] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#048B9A]"
           >
-            {loading ? (
-              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-            ) : (
-              'Se connecter'
-            )}
+            Se connecter
           </button>
         </form>
 
@@ -207,19 +133,11 @@ export default function Login() {
           </div>
 
           <div className="mt-6 grid grid-cols-2 gap-3">
-            <button 
-              onClick={handleGoogleLogin}
-              disabled={loading}
-              className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
+            <button className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
               <FaGoogle className="mr-2" />
               Google
             </button>
-            <button 
-              onClick={handleFacebookLogin}
-              disabled={loading}
-              className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
+            <button className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
               <FaFacebook className="mr-2" />
               Facebook
             </button>

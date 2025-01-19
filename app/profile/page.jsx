@@ -3,11 +3,33 @@ import { AnimatePresence, motion } from 'framer-motion';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { FaAddressCard, FaCog, FaCreditCard, FaExclamationTriangle, FaGlobe, FaHeart, FaMoon, FaPlus, FaShoppingBag, FaSignOutAlt, FaTimes, FaTrash, FaUser } from 'react-icons/fa';
+import { toast } from 'react-hot-toast';
+import { FaAddressCard, FaCog, FaCreditCard, FaEdit, FaExclamationTriangle, FaGlobe, FaHeart, FaMapMarkerAlt, FaMoon, FaPlus, FaShoppingBag, FaSignOutAlt, FaTimes, FaTrash, FaUser } from 'react-icons/fa';
 
 import ProductCard from '@/app/Components/Common/ProductCard';
-import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
+import { useAuth } from '@/app/providers/AuthProvider';
 import Link from 'next/link';
+
+const WishlistSkeleton = () => (
+  <div className="space-y-6">
+    <div className="h-8 w-48 bg-gray-200 rounded-lg animate-pulse mb-8" />
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {[1, 2, 3, 4, 5, 6].map((item) => (
+        <div key={item} className="bg-white rounded-lg shadow-sm overflow-hidden">
+          {/* Image skeleton */}
+          <div className="aspect-square relative bg-gray-200 animate-pulse" />
+          
+          {/* Content skeleton */}
+          <div className="p-4 space-y-3">
+            <div className="h-5 bg-gray-200 rounded w-3/4 animate-pulse" />
+            <div className="h-4 bg-gray-200 rounded w-1/2 animate-pulse" />
+            <div className="h-6 bg-gray-200 rounded w-1/3 animate-pulse" />
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+);
 
 const Profile = () => {
   const router = useRouter();
@@ -15,6 +37,7 @@ const Profile = () => {
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const { authFetch } = useAuth();
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -480,79 +503,139 @@ const Profile = () => {
   };
 
   const OrdersContent = () => {
+    const [orders, setOrders] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const { authFetch } = useAuth();
     const [showTrackingModal, setShowTrackingModal] = useState(false);
     const [selectedOrderId, setSelectedOrderId] = useState(null);
 
-    // Récupérer la clé API depuis les variables d'environnement
-    const googleMapsApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+    useEffect(() => {
+      fetchOrders();
+    }, []);
 
-    // Exemple de données de commande
-    const orders = [
-      {
-        id: '10234',
-        date: '12 Mars 2024',
-        status: 'Livrée',
-        total: '150,000 GNF',
-        items: [
-          { id: 1, image: '/products/product-1.jpg' },
-          { id: 2, image: '/products/product-2.jpg' },
-          { id: 3, image: '/products/product-3.jpg' }
-        ],
-        tracking: {
-          currentLocation: { lat: 9.6412, lng: -13.5784 },
-          deliveryLocation: { lat: 9.6315, lng: -13.5784 }
+    const fetchOrders = async () => {
+      try {
+        const response = await authFetch('https://api.kambily.store/orders/');
+        
+        if (!response.ok) {
+          throw new Error('Erreur lors de la récupération des commandes');
         }
-      },
-      // ... autres commandes
-    ];
+
+        const data = await response.json();
+        console.log(data);
+        setOrders(data);
+      } catch (err) {
+        console.error('Erreur:', err);
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (loading) {
+      return (
+        <div className="space-y-4">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="border rounded-lg p-6 animate-pulse">
+              <div className="h-4 bg-gray-200 rounded w-1/4 mb-4"></div>
+              <div className="space-y-3">
+                <div className="h-3 bg-gray-200 rounded"></div>
+                <div className="h-3 bg-gray-200 rounded w-5/6"></div>
+              </div>
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    if (error) {
+      return (
+        <div className="text-center py-8">
+          <p className="text-red-500">{error}</p>
+          <button 
+            onClick={fetchOrders}
+            className="mt-4 text-[#048B9A] hover:underline"
+          >
+            Réessayer
+          </button>
+        </div>
+      );
+    }
+
+    if (orders.length === 0) {
+      return (
+        <div className="text-center py-8">
+          <p className="text-gray-500 mb-4">Vous n'avez pas encore de commandes</p>
+          <Link 
+            href="/boutique"
+            className="text-[#048B9A] hover:underline"
+          >
+            Commencer vos achats
+          </Link>
+        </div>
+      );
+    }
 
     return (
-      <div>
-        <h2 className="text-xl font-semibold mb-6">Mes Commandes</h2>
-        <div className="space-y-4">
-          {orders.map((order) => (
-            <div key={order.id} className="border rounded-lg p-6 hover:border-[#048B9A] transition-colors">
-              <div className="flex justify-between items-start mb-6">
-                <div>
-                  <div className="flex items-center gap-3 mb-2">
-                    <h3 className="font-medium text-lg">Commande #{order.id}</h3>
-                    <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">
-                      {order.status}
-                    </span>
-                  </div>
-                  <p className="text-gray-500">Passée le {order.date}</p>
+      <div className="space-y-6">
+        {orders.map((order) => (
+          <div 
+            key={order.id} 
+            className="border rounded-lg p-6 hover:border-[#048B9A] transition-colors"
+          >
+            <div className="flex justify-between items-start mb-6">
+              <div>
+                <div className="flex items-center gap-3 mb-2">
+                  <h3 className="font-medium text-lg">Commande #{order.id}</h3>
+                  <span className={`px-3 py-1 rounded-full text-sm ${
+                    order.status === 'completed' ? 'bg-green-100 text-green-800' :
+                    order.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                    'bg-gray-100 text-gray-800'
+                  }`}>
+                    {order.status === 'completed' ? 'Livrée' :
+                     order.status === 'pending' ? 'En cours' :
+                     order.status}
+                  </span>
                 </div>
-                <Link 
-                  href={`/order/${order.id}`}
-                  className="text-[#048B9A] hover:underline"
-                >
-                  Voir les détails
-                </Link>
+                <p className="text-gray-500">
+                  Passée le {new Date(order.created_at).toLocaleDateString()}
+                </p>
               </div>
+              <Link 
+                href={`/commandes/${order.id}`}
+                className="text-[#048B9A] hover:underline"
+              >
+                Voir les détails
+              </Link>
+            </div>
 
-              <div className="flex gap-4 mb-4">
-                {order.items.slice(0, 2).map((item) => (
-                  <div key={item.id} className="relative w-16 h-16 rounded-lg overflow-hidden">
-                    <Image
-                      src={item.image}
-                      alt="Product"
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
-                ))}
-                {order.items.length > 2 && (
-                  <div className="w-16 h-16 rounded-lg bg-gray-100 flex items-center justify-center text-gray-500">
-                    +{order.items.length - 2}
-                  </div>
-                )}
-              </div>
-
-              <div className="flex justify-between items-center pt-4 border-t">
-                <div className="flex items-center gap-2">
-                  <span className="text-gray-500">Total:</span>
-                  <span className="font-medium text-lg">{order.total}</span>
+            <div className="flex gap-4 mb-4">
+              {order.items && Array.isArray(order.items) && order.items.slice(0, 3).map((item) => (
+                <div key={item.id} className="relative w-16 h-16 rounded-lg overflow-hidden">
+                  <Image
+                    src={item.product?.images?.[0]?.image || '/placeholder.png'}
+                    alt={item.product?.name || 'Product image'}
+                    fill
+                    className="object-cover"
+                  />
                 </div>
+              ))}
+              {order.items && order.items.length > 3 && (
+                <div className="w-16 h-16 rounded-lg bg-gray-100 flex items-center justify-center text-gray-500">
+                  +{order.items.length - 3}
+                </div>
+              )}
+            </div>
+
+            <div className="flex justify-between items-center pt-4 border-t">
+              <div className="flex items-center gap-2">
+                <span className="text-gray-500">Total:</span>
+                <span className="font-medium text-lg">
+                  {order.total_price?.toLocaleString() || 0} GNF
+                </span>
+              </div>
+              {order.status !== 'completed' && (
                 <button 
                   onClick={() => {
                     setSelectedOrderId(order.id);
@@ -562,114 +645,85 @@ const Profile = () => {
                 >
                   Suivre la livraison
                 </button>
-              </div>
+              )}
             </div>
-          ))}
-        </div>
-
-        {/* Modal de suivi de livraison */}
-        <AnimatePresence>
-          {showTrackingModal && selectedOrderId && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                className="bg-white rounded-lg shadow-xl p-6 max-w-3xl w-full max-h-[90vh] overflow-y-auto"
-              >
-                <div className="flex justify-between items-start mb-6">
-                  <h3 className="text-xl font-semibold">
-                    Suivi de la commande #{selectedOrderId}
-                  </h3>
-                  <button 
-                    onClick={() => setShowTrackingModal(false)}
-                    className="text-gray-500 hover:text-gray-700"
-                  >
-                    <FaTimes className="w-5 h-5" />
-                  </button>
-                </div>
-
-                {/* Carte de suivi */}
-                <div className="mb-6 rounded-lg overflow-hidden">
-                  <LoadScript googleMapsApiKey={googleMapsApiKey}>
-                    <GoogleMap
-                      mapContainerStyle={{ width: '100%', height: '400px' }}
-                      center={orders.find(o => o.id === selectedOrderId)?.tracking.currentLocation}
-                      zoom={13}
-                    >
-                      <Marker 
-                        position={orders.find(o => o.id === selectedOrderId)?.tracking.currentLocation} 
-                      />
-                      <Marker 
-                        position={orders.find(o => o.id === selectedOrderId)?.tracking.deliveryLocation}
-                        icon={{
-                          url: '/marker-destination.png',
-                          scaledSize: { width: 40, height: 40 }
-                        }}
-                      />
-                    </GoogleMap>
-                  </LoadScript>
-                </div>
-              </motion.div>
-            </div>
-          )}
-        </AnimatePresence>
+          </div>
+        ))}
       </div>
     );
   };
 
   const WishlistContent = () => {
-    // Exemple de données pour les produits favoris
-    const wishlistProducts = [
-      {
-        id: 1,
-        image: '/products/product-1.jpg',
-        gallery: ['/products/product-1.jpg', '/products/product-2.jpg'],
-        title: 'T-shirt Premium',
-        price: '150,000',
-        oldPrice: '200,000',
-        inStock: true,
-        description: 'T-shirt en coton premium avec design exclusif',
-        isFavorite: true
-      },
-      {
-        id: 2,
-        image: '/products/product-2.jpg',
-        gallery: ['/products/product-2.jpg', '/products/product-3.jpg'],
-        title: 'Sneakers Classic',
-        price: '350,000',
-        oldPrice: '400,000',
-        inStock: true,
-        description: 'Sneakers confortables pour un style décontracté',
-        isFavorite: true
-      },
-      {
-        id: 3,
-        image: '/products/product-3.jpg',
-        gallery: ['/products/product-3.jpg', '/products/product-1.jpg'],
-        title: 'Sac à main Designer',
-        price: '450,000',
-        inStock: true,
-        description: 'Sac à main élégant en cuir véritable',
-        isFavorite: true
+    const [favorites, setFavorites] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const { authFetch } = useAuth();
+
+    useEffect(() => {
+      fetchFavorites();
+    }, []);
+
+    const fetchFavorites = async () => {
+      try {
+        const response = await authFetch('https://api.kambily.store/favorites/');
+        
+        if (!response.ok) {
+          throw new Error('Erreur lors de la récupération des favoris');
+        }
+
+        const data = await response.json();
+        console.log(data);
+        setFavorites(data);
+      } catch (err) {
+        setError(err.message);
+        toast.error(err.message);
+      } finally {
+        setLoading(false);
       }
-    ];
+    };
+
+    if (loading) {
+      return <WishlistSkeleton />;
+    }
+
+    if (error) {
+      return (
+        <div className="text-center py-12">
+          <p className="text-red-500">{error}</p>
+        </div>
+      );
+    }
+
+    if (favorites.length === 0) {
+      return (
+        <div className="text-center py-12">
+          <p className="text-gray-500 mb-4">Vous n'avez pas encore de favoris</p>
+          <Link 
+            href="/boutique"
+            className="text-[#048B9A] hover:underline"
+          >
+            Découvrir nos produits
+          </Link>
+        </div>
+      );
+    }
 
     return (
       <div>
         <h2 className="text-xl font-semibold mb-6">Ma Liste de Souhaits</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {wishlistProducts.map((product) => (
+          {favorites.map((favorite) => (
             <ProductCard
-              key={product.id}
-              image={product.image}
-              gallery={product.gallery}
-              title={product.title}
-              price={product.price}
-              oldPrice={product.oldPrice}
-              inStock={product.inStock}
-              description={product.description}
-              isFavorite={product.isFavorite}
+              key={favorite.id}
+              id={favorite.product.id}
+              image={favorite.product.images?.[0]?.image || '/3.png'}
+              gallery={favorite.product.images?.slice(1).map(img => img.image) || []}
+              title={favorite.product.name}
+              price={favorite.product.regular_price}
+              oldPrice={favorite.product.promo_price}
+              inStock={favorite.product.stock_status === 'in_stock'}
+              description={favorite.product.short_description}
+              isFavorite={true}
             />
           ))}
         </div>
@@ -677,267 +731,293 @@ const Profile = () => {
     );
   };
 
+  const containerStyle = {
+    width: '100%',
+    height: '300px'
+  };
+
+  // Position par défaut (Conakry)
+  const defaultCenter = {
+    lat: 9.6412,
+    lng: -13.5784
+  };
+
   const AddressesContent = () => {
-    const [addresses, setAddresses] = useState([
-      {
-        id: 1,
-        title: 'Adresse 1',
-        street: '123 Rue Example',
-        city: 'Conakry',
-        country: 'Guinée',
-        phone: '+224 624 XX XX XX'
-      },
-      {
-        id: 2,
-        title: 'Adresse 2',
-        street: '456 Avenue Example',
-        city: 'Conakry',
-        country: 'Guinée',
-        phone: '+224 624 XX XX XX'
+    const [addresses, setAddresses] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [showAddressForm, setShowAddressForm] = useState(false);
+    const [position, setPosition] = useState(defaultCenter);
+    const [showMap, setShowMap] = useState(false);
+    const [address, setAddress] = useState('');
+    const [selectedLocation, setSelectedLocation] = useState(null);
+    const [searchAddress, setSearchAddress] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+    const { authFetch } = useAuth();
+
+    useEffect(() => {
+      fetchAddresses();
+    }, []);
+
+    const fetchAddresses = async () => {
+      try {
+        const response = await authFetch('https://api.kambily.store/addresses/');
+        if (!response.ok) throw new Error('Erreur lors du chargement des adresses');
+        const data = await response.json();
+        setAddresses(data);
+      } catch (error) {
+        console.error('Erreur:', error);
+        toast.error('Impossible de charger vos adresses');
+      } finally {
+        setLoading(false);
       }
-    ]);
+    };
 
-    const [showAddModal, setShowAddModal] = useState(false);
-    const [showEditModal, setShowEditModal] = useState(false);
-    const [showDeleteModal, setShowDeleteModal] = useState(false);
-    const [selectedAddress, setSelectedAddress] = useState(null);
-    const [newAddress, setNewAddress] = useState({
-      title: '',
-      street: '',
-      city: '',
-      country: 'Guinée',
-      phone: ''
-    });
-
-    const handleAddAddress = (e) => {
+    const handleAddAddress = async (e) => {
       e.preventDefault();
-      setAddresses([...addresses, { ...newAddress, id: addresses.length + 1 }]);
-      setNewAddress({ title: '', street: '', city: '', country: 'Guinée', phone: '' });
-      setShowAddModal(false);
+      setIsLoading(true);
+
+      try {
+        const response = await authFetch('https://api.kambily.store/addresses/create/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            addresse: address,
+            ville: selectedLocation?.address || '',
+            pays: 'Guinée',
+            telephone: formData.telephone,
+            latitude: position.lat,
+            longitude: position.lng,
+            is_default: formData.is_default
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error('Erreur lors de l\'ajout de l\'adresse');
+        }
+
+        await fetchAddresses();
+        setShowAddressForm(false);
+        toast.success('Adresse ajoutée avec succès');
+      } catch (error) {
+        console.error('Erreur:', error);
+        toast.error(error.message);
+      } finally {
+        setIsLoading(false);
+      }
     };
 
-    const handleEditAddress = (address) => {
-      setSelectedAddress(address);
-      setShowEditModal(true);
+    // Fonction pour rechercher une adresse
+    const searchByAddress = async () => {
+      try {
+        const response = await fetch(
+          `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(searchAddress)}&key=VOTRE_CLE_API`
+        );
+        const data = await response.json();
+        if (data.results[0]) {
+          const { lat, lng } = data.results[0].geometry.location;
+          setPosition({ lat, lng });
+          setSelectedLocation({
+            coordinates: `${lat}, ${lng}`,
+            address: data.results[0].formatted_address
+          });
+        }
+      } catch (error) {
+        console.error('Erreur de recherche:', error);
+      }
     };
 
-    const handleUpdateAddress = (e) => {
-      e.preventDefault();
-      setAddresses(addresses.map(addr => 
-        addr.id === selectedAddress.id ? selectedAddress : addr
-      ));
-      setShowEditModal(false);
+    // Gestionnaire de clic sur la carte
+    const handleMapClick = async (e) => {
+      const lat = e.latLng.lat();
+      const lng = e.latLng.lng();
+      setPosition({ lat, lng });
+
+      try {
+        const response = await fetch(
+          `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=VOTRE_CLE_API`
+        );
+        const data = await response.json();
+        setSelectedLocation({
+          coordinates: `${lat}, ${lng}`,
+          address: data.results[0]?.formatted_address || 'Adresse non trouvée'
+        });
+      } catch (error) {
+        console.error('Erreur de géocodage:', error);
+      }
     };
 
-    const handleDeleteAddress = (address) => {
-      setSelectedAddress(address);
-      setShowDeleteModal(true);
-    };
-
-    const confirmDelete = () => {
-      setAddresses(addresses.filter(addr => addr.id !== selectedAddress.id));
-      setShowDeleteModal(false);
-    };
+    if (loading) {
+      return (
+        <div className="flex justify-center items-center h-64">
+          <div className="w-8 h-8 border-4 border-[#048B9A] border-t-transparent rounded-full animate-spin" />
+        </div>
+      );
+    }
 
     return (
-      <div>
-        <h2 className="text-xl font-semibold mb-6">Mes Adresses</h2>
-        <div className="grid md:grid-cols-2 gap-4">
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="space-y-6"
+      >
+        <h2 className="text-xl font-semibold">Mes Adresses</h2>
+
+        {showAddressForm && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-white rounded-lg p-6 space-y-6"
+          >
+            <div className="flex justify-between items-center mb-3">
+              <h3 className="text-lg font-medium">Ajouter une nouvelle adresse</h3>
+              <button
+                onClick={() => setShowAddressForm(false)}
+                className="text-gray-400 hover:text-gray-500"
+              >
+                <FaTimes className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleAddAddress} className="space-y-4">
+              {/* Adresse complète */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Adresse complète
+                </label>
+                <textarea
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                  rows={3}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-[#048B9A] focus:border-[#048B9A]"
+                  required
+                />
+              </div>
+
+              {/* Téléphone */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Téléphone
+                </label>
+                <input
+                  type="tel"
+                  value={formData.telephone}
+                  onChange={(e) => setFormData({ ...formData, telephone: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-[#048B9A] focus:border-[#048B9A]"
+                  required
+                />
+              </div>
+
+              {/* Ville */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Ville
+                </label>
+                <input
+                  type="text"
+                  value={selectedLocation?.address || ''}
+                  readOnly
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50"
+                />
+              </div>
+
+              {/* Adresse par défaut */}
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="is_default"
+                  checked={formData.is_default}
+                  onChange={(e) => setFormData({ ...formData, is_default: e.target.checked })}
+                  className="h-4 w-4 text-[#048B9A] focus:ring-[#048B9A] border-gray-300 rounded"
+                />
+                <label htmlFor="is_default" className="ml-2 text-sm text-gray-700">
+                  Définir comme adresse par défaut
+                </label>
+              </div>
+
+              {/* Boutons */}
+              <div className="flex justify-end gap-4">
+                <button
+                  type="button"
+                  onClick={() => setShowAddressForm(false)}
+                  className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                >
+                  Annuler
+                </button>
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="px-4 py-2 bg-[#048B9A] text-white rounded-lg hover:bg-[#037483] transition-colors flex items-center gap-2"
+                >
+                  {isLoading ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      <span>Enregistrement...</span>
+                    </>
+                  ) : (
+                    'Enregistrer'
+                  )}
+                </button>
+              </div>
+            </form>
+          </motion.div>
+        )}
+
+        <div className="grid gap-4 sm:grid-cols-2">
           {addresses.map((address) => (
-            <div key={address.id} className="border rounded-lg p-4">
-              <div className="flex justify-between items-start mb-4">
-                <h3 className="font-medium">{address.title}</h3>
-                <div className="space-x-2">
-                  <button 
-                    onClick={() => handleEditAddress(address)}
-                    className="text-[#048B9A] hover:underline"
-                  >
-                    Modifier
-                  </button>
-                  <button 
-                    onClick={() => handleDeleteAddress(address)}
-                    className="text-red-500 hover:underline"
-                  >
-                    Supprimer
-                  </button>
+            <motion.div
+              key={address.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="p-4 border rounded-lg hover:border-[#048B9A] transition-colors relative group"
+            >
+              {address.is_default && (
+                <span className="absolute top-2 right-2 bg-[#048B9A]/10 text-[#048B9A] text-xs px-2 py-1 rounded-full">
+                  Par défaut
+                </span>
+              )}
+
+              <div className="flex items-start gap-3">
+                <FaMapMarkerAlt className="w-5 h-5 text-[#048B9A] flex-shrink-0 mt-1" />
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-medium">{address.addresse}</h3>
+                  <p className="text-sm text-gray-600 mt-1">{address.ville}</p>
+                  <p className="text-sm text-gray-600">{address.pays}</p>
+                  <p className="text-sm text-gray-600 mt-1">{address.telephone}</p>
                 </div>
               </div>
-              <p className="text-gray-600">{address.street}</p>
-              <p className="text-gray-600">{address.city}, {address.country}</p>
-              <p className="text-gray-600">{address.phone}</p>
-            </div>
+
+              <div className="mt-4 flex justify-end gap-2">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="p-2 text-gray-500 hover:text-[#048B9A] transition-colors"
+                >
+                  <FaEdit className="w-4 h-4" />
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="p-2 text-gray-500 hover:text-red-500 transition-colors"
+                >
+                  <FaTrash className="w-4 h-4" />
+                </motion.button>
+              </div>
+            </motion.div>
           ))}
-          <button 
-            onClick={() => setShowAddModal(true)}
-            className="border-2 border-dashed border-gray-300 rounded-lg p-4 flex items-center justify-center text-gray-500 hover:border-[#048B9A] hover:text-[#048B9A] transition-colors"
+          
+          <motion.button
+            onClick={() => setShowAddressForm(true)}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            className="h-[160px] border-2 border-dashed border-[#048B9A] rounded-lg flex flex-col items-center justify-center gap-3 text-[#048B9A] hover:bg-[#048B9A]/5 transition-colors p-4"
           >
-            + Ajouter une nouvelle adresse
-          </button>
+            <FaPlus className="w-6 h-6" />
+            <span>Ajouter une adresse</span>
+          </motion.button>
         </div>
-
-        {/* Modal d'ajout */}
-        <AnimatePresence>
-          {showAddModal && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                className="bg-white rounded-lg shadow-xl p-6 max-w-md w-full"
-              >
-                <h3 className="text-lg font-semibold mb-4">Ajouter une adresse</h3>
-                <form onSubmit={handleAddAddress} className="space-y-4">
-                  <input
-                    type="text"
-                    placeholder="Titre de l'adresse"
-                    value={newAddress.title}
-                    onChange={(e) => setNewAddress({...newAddress, title: e.target.value})}
-                    className="w-full px-4 py-2 border rounded-lg focus:ring-[#048B9A] focus:border-[#048B9A]"
-                    required
-                  />
-                  <input
-                    type="text"
-                    placeholder="Rue"
-                    value={newAddress.street}
-                    onChange={(e) => setNewAddress({...newAddress, street: e.target.value})}
-                    className="w-full px-4 py-2 border rounded-lg focus:ring-[#048B9A] focus:border-[#048B9A]"
-                    required
-                  />
-                  <input
-                    type="text"
-                    placeholder="Ville"
-                    value={newAddress.city}
-                    onChange={(e) => setNewAddress({...newAddress, city: e.target.value})}
-                    className="w-full px-4 py-2 border rounded-lg focus:ring-[#048B9A] focus:border-[#048B9A]"
-                    required
-                  />
-                  <input
-                    type="tel"
-                    placeholder="Téléphone"
-                    value={newAddress.phone}
-                    onChange={(e) => setNewAddress({...newAddress, phone: e.target.value})}
-                    className="w-full px-4 py-2 border rounded-lg focus:ring-[#048B9A] focus:border-[#048B9A]"
-                    required
-                  />
-                  <div className="flex gap-3">
-                    <button
-                      type="submit"
-                      className="flex-1 bg-[#048B9A] text-white px-4 py-2 rounded-lg hover:bg-[#037483]"
-                    >
-                      Ajouter
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setShowAddModal(false)}
-                      className="flex-1 px-4 py-2 border rounded-lg hover:bg-gray-50"
-                    >
-                      Annuler
-                    </button>
-                  </div>
-                </form>
-              </motion.div>
-            </div>
-          )}
-        </AnimatePresence>
-
-        {/* Modal de modification */}
-        <AnimatePresence>
-          {showEditModal && selectedAddress && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                className="bg-white rounded-lg shadow-xl p-6 max-w-md w-full"
-              >
-                <h3 className="text-lg font-semibold mb-4">Modifier l'adresse</h3>
-                <form onSubmit={handleUpdateAddress} className="space-y-4">
-                  <input
-                    type="text"
-                    placeholder="Titre de l'adresse"
-                    value={selectedAddress.title}
-                    onChange={(e) => setSelectedAddress({...selectedAddress, title: e.target.value})}
-                    className="w-full px-4 py-2 border rounded-lg focus:ring-[#048B9A] focus:border-[#048B9A]"
-                    required
-                  />
-                  <input
-                    type="text"
-                    placeholder="Rue"
-                    value={selectedAddress.street}
-                    onChange={(e) => setSelectedAddress({...selectedAddress, street: e.target.value})}
-                    className="w-full px-4 py-2 border rounded-lg focus:ring-[#048B9A] focus:border-[#048B9A]"
-                    required
-                  />
-                  <input
-                    type="text"
-                    placeholder="Ville"
-                    value={selectedAddress.city}
-                    onChange={(e) => setSelectedAddress({...selectedAddress, city: e.target.value})}
-                    className="w-full px-4 py-2 border rounded-lg focus:ring-[#048B9A] focus:border-[#048B9A]"
-                    required
-                  />
-                  <input
-                    type="tel"
-                    placeholder="Téléphone"
-                    value={selectedAddress.phone}
-                    onChange={(e) => setSelectedAddress({...selectedAddress, phone: e.target.value})}
-                    className="w-full px-4 py-2 border rounded-lg focus:ring-[#048B9A] focus:border-[#048B9A]"
-                    required
-                  />
-                  <div className="flex gap-3">
-                    <button
-                      type="submit"
-                      className="flex-1 bg-[#048B9A] text-white px-4 py-2 rounded-lg hover:bg-[#037483]"
-                    >
-                      Modifier
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setShowEditModal(false)}
-                      className="flex-1 px-4 py-2 border rounded-lg hover:bg-gray-50"
-                    >
-                      Annuler
-                    </button>
-                  </div>
-                </form>
-              </motion.div>
-            </div>
-          )}
-        </AnimatePresence>
-
-        {/* Modal de suppression */}
-        <AnimatePresence>
-          {showDeleteModal && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                className="bg-white rounded-lg shadow-xl p-6 max-w-sm w-full text-center"
-              >
-                <h3 className="text-lg font-semibold mb-4">Supprimer l'adresse</h3>
-                <p className="text-gray-600 mb-6">
-                  Êtes-vous sûr de vouloir supprimer cette adresse ?
-                </p>
-                <div className="flex gap-3 justify-center">
-                  <button
-                    onClick={confirmDelete}
-                    className="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
-                  >
-                    Supprimer
-                  </button>
-                  <button
-                    onClick={() => setShowDeleteModal(false)}
-                    className="px-6 py-2 border rounded-lg hover:bg-gray-50"
-                  >
-                    Annuler
-                  </button>
-                </div>
-              </motion.div>
-            </div>
-          )}
-        </AnimatePresence>
-      </div>
+      </motion.div>
     );
   };
 

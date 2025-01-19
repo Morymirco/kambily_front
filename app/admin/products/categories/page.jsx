@@ -48,8 +48,11 @@ const CategoriesPage = () => {
         if (!response.ok) {
           throw new Error('Erreur lors du chargement des catégories');
         }
+       
 
         const data = await response.json();
+        console.log(data);
+       
         setCategories(data);
       } catch (err) {
         console.error('Erreur:', err);
@@ -205,7 +208,7 @@ const CategoriesPage = () => {
     if (!window.confirm('Êtes-vous sûr de vouloir supprimer cette catégorie ?')) return;
 
     try {
-      const response = await fetch(`http://35.85.136.46:8001/categories/${id}`, {
+      const response = await fetch(`https://api.kambily.store/categories/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
@@ -231,7 +234,7 @@ const CategoriesPage = () => {
 
     try {
       const deletePromises = selectedCategories.map(id =>
-        fetch(`http://35.85.136.46:8001/categories/${id}`, {
+        fetch(`https://api.kambily.store/categories/${id}`, {
           method: 'DELETE',
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
@@ -274,32 +277,22 @@ const CategoriesPage = () => {
         return;
       }
 
-      // Créer l'objet de données à envoyer
-      const categoryData = {
-        name: newCategory.name,
-        description: newCategory.description || "Description par défaut",
-        slug: newCategory.name.toLowerCase().replace(/\s+/g, '-'),
-        is_main: newCategory.is_main,
-        parent_category: null
-      };
-
-      console.log('Données envoyées:', categoryData);
+      // Vérifier si une catégorie parente est requise
+      if (!newCategory.is_main && !newCategory.parent_category) {
+        toast.error('Une catégorie parente est requise pour les sous-catégories');
+        return;
+      }
 
       // Créer le FormData
       const formData = new FormData();
       
-      // Ajouter les champs texte
-      formData.append('name', categoryData.name);
-      formData.append('description', categoryData.description);
-      formData.append('slug', categoryData.slug);
-      formData.append('is_main', categoryData.is_main.toString());
-      
-      // Ajouter l'image si elle existe
-      if (newCategory.image) {
-        formData.append('image', newCategory.image);
-      }
+      // Ajouter les champs requis
+      formData.append('name', newCategory.name);
+      formData.append('description', newCategory.description || "Description par défaut");
+      formData.append('slug', newCategory.name.toLowerCase().replace(/\s+/g, '-'));
+      formData.append('is_main', newCategory.is_main);
 
-      // Ajouter la catégorie parente si elle existe et que ce n'est pas une catégorie principale
+      // Ajouter la catégorie parente si ce n'est pas une catégorie principale
       if (!newCategory.is_main && newCategory.parent_category) {
         const parentCategory = categories.find(cat => cat.id === Number(newCategory.parent_category));
         if (parentCategory) {
@@ -307,7 +300,12 @@ const CategoriesPage = () => {
         }
       }
 
-      const response = await fetch('https://api.kambily.store/categories/create', {
+      // Ajouter l'image si elle existe
+      if (newCategory.image) {
+        formData.append('image', newCategory.image);
+      }
+
+      const response = await fetch('https://api.kambily.store/categories/create/', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -319,30 +317,13 @@ const CategoriesPage = () => {
       console.log('Réponse du serveur:', data);
 
       if (!response.ok) {
-        // Vérifier spécifiquement le message d'erreur de catégorie existante
         if (data.name && Array.isArray(data.name) && data.name[0].includes('already exists')) {
           throw new Error(`La catégorie "${newCategory.name}" existe déjà`);
-        }
-
-        // Pour les autres erreurs
-        if (response.status === 400) {
-          const errorMessage = typeof data === 'object' 
-            ? Object.entries(data)
-                .map(([key, value]) => {
-                  if (Array.isArray(value)) {
-                    return `${key}: ${value.join(', ')}`;
-                  }
-                  return `${key}: ${value}`;
-                })
-                .join('\n')
-            : data.toString();
-          throw new Error(errorMessage);
         }
         throw new Error(data.detail || `Erreur ${response.status}: ${data.message || 'Impossible de créer la catégorie'}`);
       }
 
       setCategories(prevCategories => [...prevCategories, data]);
-      
       setNewCategory({
         name: '',
         description: '',
@@ -353,38 +334,11 @@ const CategoriesPage = () => {
       });
       
       setShowAddModal(false);
-      toast.success('Catégorie créée avec succès !', {
-        duration: 3000,
-        position: 'top-right',
-        style: {
-          background: '#10B981',
-          color: 'white',
-        },
-      });
+      toast.success('Catégorie créée avec succès !');
 
     } catch (err) {
       console.error('Erreur détaillée:', err);
-      
-      // Afficher le toast avec un style différent selon le type d'erreur
-      if (err.message.includes('existe déjà')) {
-        toast.error(err.message, {
-          duration: 4000,
-          position: 'top-right',
-          style: {
-            background: '#FEF2F2',
-            color: '#DC2626',
-            border: '1px solid #DC2626',
-            padding: '16px',
-            borderRadius: '8px',
-          },
-          icon: '⚠️',
-        });
-      } else {
-        toast.error(err.message || 'Une erreur est survenue lors de la création de la catégorie', {
-          duration: 4000,
-          position: 'top-right',
-        });
-      }
+      toast.error(err.message || 'Une erreur est survenue lors de la création de la catégorie');
     } finally {
       setIsSubmitting(false);
     }
@@ -647,7 +601,7 @@ const CategoriesPage = () => {
                       <div className="h-10 w-10 rounded-lg overflow-hidden bg-gray-100">
                         {category.image ? (
                           <img
-                            src={category.image}
+                            src={category.image.image}
                             alt={category.name}
                             className="h-full w-full object-cover"
                           />
@@ -671,7 +625,7 @@ const CategoriesPage = () => {
                       {category.parent_category?.name || '-'}
                     </td>
                     <td className="px-4 py-4 text-sm text-gray-500">
-                      {category.products_count || 0} produits
+                      {category.x || 0} produits
                     </td>
                     <td className="px-4 py-4 text-right space-x-2">
                       <button 

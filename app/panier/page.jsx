@@ -1,4 +1,5 @@
 'use client'
+import { useAuth } from '@/app/providers/AuthProvider';
 import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
 import { AnimatePresence, motion } from 'framer-motion';
 import Image from 'next/image';
@@ -6,7 +7,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import toast, { Toaster } from 'react-hot-toast';
-import { FaEdit, FaMapMarkerAlt, FaMapPin, FaPlus, FaSearchLocation, FaTrash } from 'react-icons/fa';
+import { FaCheckCircle, FaEdit, FaMapMarkerAlt, FaMapPin, FaPlus, FaSearchLocation, FaTag, FaTrash } from 'react-icons/fa';
 
 const containerStyle = {
   width: '100%',
@@ -120,6 +121,7 @@ const CartSkeleton = () => (
 
 const Panier = () => {
   const router = useRouter();
+  const { authFetch } = useAuth();
 
   // Regrouper tous les états au début du composant
   const [cartItems, setCartItems] = useState([]);
@@ -164,6 +166,9 @@ const Panier = () => {
   const [selectedAddressId, setSelectedAddressId] = useState(
     savedAddresses.find(addr => addr.isDefault)?.id || null
   );
+  const [isCreatingOrder, setIsCreatingOrder] = useState(false);
+  const [isApplyingPromo, setIsApplyingPromo] = useState(false);
+  const [promoApplied, setPromoApplied] = useState(false);
 
   // Effet pour charger le panier
   useEffect(() => {
@@ -411,6 +416,101 @@ const Panier = () => {
     }));
   };
 
+  const createOrder = async () => {
+    if (!selectedAddressId) {
+      toast.error('Veuillez sélectionner une adresse de livraison');
+      return;
+    }
+
+    setIsCreatingOrder(true);
+    try {
+      const response = await authFetch('https://api.kambily.store/orders/create/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          shipping_address_id: selectedAddressId,
+          shipping_method: shippingMethod,
+          promo_code: promoCode,
+          items: cartItems.map(item => ({
+            product_id: item.product.id,
+            quantity: item.quantity,
+            price: item.product.regular_price
+          }))
+        })
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Erreur lors de la création de la commande');
+      }
+
+      const orderData = await response.json();
+      
+      // Rediriger vers la page de paiement avec l'ID de la commande
+      router.push(`/paiement?order_id=${orderData.id}`);
+
+    } catch (error) {
+      console.error('Erreur:', error);
+      toast.error(error.message || 'Erreur lors de la création de la commande');
+    } finally {
+      setIsCreatingOrder(false);
+    }
+  };
+
+  const handleApplyPromoCode = async (e) => {
+    e.preventDefault();
+    setIsApplyingPromo(true);
+
+    try {
+      // Vérifier d'abord si le code promo est valide
+      const checkResponse = await authFetch('https://api.kambily.store/promocode/check/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          code: promoCode
+        })
+      });
+      console.log(checkResponse);
+
+      if (!checkResponse.ok) {
+        throw new Error('Code promo invalide');
+      }
+
+      const checkData = await checkResponse.json();
+      console.log(checkData);
+      
+      // Si le code est valide, l'appliquer à la commande
+      const applyResponse = await authFetch(
+        `https://api.kambily.store/orders/apply-promo/${promoCode}/`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      if (!applyResponse.ok) {
+        throw new Error('Erreur lors de l\'application du code promo');
+      }
+
+      const applyData = await applyResponse.json();
+      setPromoApplied(true);
+      toast.success('Code promo appliqué avec succès');
+
+    } catch (error) {
+      console.error('Erreur:', error);
+      toast.error(error.message || 'Erreur lors de l\'application du code promo');
+      setPromoApplied(false);
+    } finally {
+      setIsApplyingPromo(false);
+    }
+  };
+
   return (
     <motion.div 
       className="w-full max-w-[1400px] mx-auto px-3 sm:px-4 md:px-16 py-3 sm:py-6 overflow-hidden"
@@ -565,6 +665,87 @@ const Panier = () => {
                 Continuer les achats
               </motion.button>
             </Link>
+          </motion.div>
+
+          {/* Code Promo et Vider le panier */}
+          <motion.div variants={itemVariants} className="bg-white rounded-lg shadow-sm p-4 max-w-[600px]">
+            <div className="flex justify-between items-center mb-3">
+              <h3 className="text-sm font-medium flex items-center gap-2">
+                <FaTag className="text-[#048B9A]" />
+                Code Promo
+              </h3>
+              <button
+                onClick={() => {
+                  if (window.confirm('Êtes-vous sûr de vouloir vider votre panier ?')) {
+                    const clearCart = async () => {
+                      try {
+                        const response = await authFetch('https://api.kambily.store/carts/clear/', {
+                          method: 'DELETE'
+                        });
+
+                        if (!response.ok) {
+                          throw new Error('Erreur lors de la suppression du panier');
+                        }
+
+                        await fetchCart();
+                        toast.success('Votre panier a été vidé');
+                      } catch (error) {
+                        console.error('Erreur:', error);
+                        toast.error('Erreur lors de la suppression du panier');
+                      }
+                    };
+                    clearCart();
+                  }
+                }}
+                className="text-red-500 hover:text-red-600 text-sm flex items-center gap-1"
+              >
+                <FaTrash className="w-3 h-3" />
+                Vider le panier
+              </button>
+            </div>
+            
+            <form onSubmit={handleApplyPromoCode} className="space-y-2">
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={promoCode}
+                  onChange={(e) => setPromoCode(e.target.value)}
+                  placeholder="Entrez votre code promo"
+                  className="flex-1 px-4 py-2 text-sm border border-gray-300 rounded-lg focus:ring-[#048B9A] focus:border-[#048B9A]"
+                  disabled={isApplyingPromo || promoApplied}
+                />
+                <button
+                  type="submit"
+                  disabled={isApplyingPromo || promoApplied || !promoCode.trim()}
+                  className="px-4 py-2 text-sm bg-[#048B9A] text-white rounded-lg hover:bg-[#037483] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 whitespace-nowrap"
+                >
+                  {isApplyingPromo ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      <span>Application...</span>
+                    </>
+                  ) : promoApplied ? (
+                    <>
+                      <FaCheckCircle />
+                      <span>Appliqué</span>
+                    </>
+                  ) : (
+                    'Appliquer'
+                  )}
+                </button>
+              </div>
+            </form>
+
+            {promoApplied && (
+              <motion.div 
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mt-2 text-sm text-green-600 flex items-center gap-2"
+              >
+                <FaCheckCircle />
+                <span>Réduction de 15,000 GNF appliquée</span>
+              </motion.div>
+            )}
           </motion.div>
         </div>
 
@@ -871,15 +1052,22 @@ const Panier = () => {
           </div>
 
           {/* Bouton paiement */}
-          <Link href="/paiement" className="block">
-            <motion.button
-              className="w-full bg-[#048B9A] text-white py-3 rounded-lg hover:bg-[#037483] transition-colors"
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              Procéder au paiement
-            </motion.button>
-          </Link>
+          <motion.button
+            onClick={createOrder}
+            disabled={isCreatingOrder || cartItems.length === 0}
+            className="w-full bg-[#048B9A] text-white py-3 rounded-lg hover:bg-[#037483] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+          >
+            {isCreatingOrder ? (
+              <>
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                <span>Création de la commande...</span>
+              </>
+            ) : (
+              'Procéder au paiement'
+            )}
+          </motion.button>
         </motion.div>
       </div>
     </motion.div>

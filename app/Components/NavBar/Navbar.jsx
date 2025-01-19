@@ -8,6 +8,7 @@ import { useEffect, useRef, useState } from 'react';
 import { FaEnvelope, FaGlobe, FaPhone, FaSun, FaTimes } from 'react-icons/fa';
 import MobileNav from './MobileNav';
 import { useAuth } from '@/app/providers/AuthProvider';
+import { toast } from 'react-hot-toast';
 
 export default function Navbar() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -18,7 +19,10 @@ export default function Navbar() {
   const [isLoggedIn, setIsLoggedIn] = useState(true);
   const [showCartPopup, setShowCartPopup] = useState(false);
   const cartPopupTimer = useRef(null);
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, authFetch } = useAuth();
+  const [cartItems, setCartItems] = useState([]);
+  const [cartLoading, setCartLoading] = useState(true);
+  const [deletingItemId, setDeletingItemId] = useState(null);
 
   
   const languages = [
@@ -44,61 +48,49 @@ export default function Navbar() {
     }
   ];
 
-  const cartItems = [
-    {
-      id: 1,
-      name: "Ensemble De Pyjama",
-      price: 65000,
-      quantity: 1,
-      image: "/pyjama.png"
-    }
-  ];
-
   const pathname = usePathname();
 
-  // Calculer le total du panier
-  const cartTotal = cartItems.reduce((total, item) => {
-    return total + (item.price * item.quantity);
-  }, 0);
-
+  // Charger les articles du panier
   useEffect(() => {
-    // Définition des couleurs
-    const colors = [
-      '#ed1c66', '#6a23d5', '#23a6d5', '#23d5ab', 
-      '#f03e3e', '#e8890c', '#e73c7e'
-    ];
-    
-    // Fonction pour obtenir des couleurs aléatoires
-    const getRandomColors = () => {
-      const shuffled = [...colors].sort(() => 0.5 - Math.random());
-      return shuffled.slice(0, 4); // Prend 4 couleurs aléatoires
-    };
-
-    // Fonction pour mettre à jour le gradient
-    const updateGradient = () => {
-      const selectedColors = getRandomColors();
-      const gradient = `linear-gradient(-45deg, ${selectedColors.join(', ')})`;
-      const banner = document.getElementById('dynamic-banner');
-      if (banner) {
-        banner.style.backgroundImage = gradient;
+    const fetchCart = async () => {
+      try {
+        const response = await authFetch('https://api.kambily.store/carts/');
+        if (response.ok) {
+          const data = await response.json();
+          setCartItems(data);
+        }
+      } catch (error) {
+        console.error('Erreur lors du chargement du panier:', error);
+      } finally {
+        setCartLoading(false);
       }
     };
 
-    // Animation du gradient
-    const startGradientAnimation = () => {
-      updateGradient();
-      setTimeout(startGradientAnimation, 3000); // Change toutes les 3 secondes
-    };
+    if (showCartPopup) {
+      fetchCart();
+    }
+  }, [showCartPopup]);
 
-    startGradientAnimation();
-  }, []);
+  // Calculer le total du panier
+  const cartTotal = cartItems.reduce((total, item) => {
+    return total + (item.product.regular_price * item.quantity);
+  }, 0);
 
-  // Ajoutez cette fonction pour gérer la suppression
-  const removeFromCart = (itemId) => {
-    // Remplacez ceci par votre logique de gestion d'état réelle
-    const updatedCart = cartItems.filter(item => item.id !== itemId);
-    // Mettez à jour votre état ici
-    console.log('Item removed:', itemId);
+  // Fonction pour supprimer un article
+  const removeFromCart = async (itemId) => {
+    try {
+      const response = await authFetch(`https://api.kambily.store/carts/remove/${itemId}/`, {
+        method: 'DELETE'
+      });
+
+      if (response.ok) {
+        setCartItems(prev => prev.filter(item => item.product.id !== itemId));
+        toast.success('Article supprimé du panier');
+      }
+    } catch (error) {
+      console.error('Erreur lors de la suppression:', error);
+      toast.error('Erreur lors de la suppression');
+    }
   };
 
   const handleCartMouseEnter = () => {
@@ -506,71 +498,77 @@ export default function Navbar() {
                       </div>
 
                       {/* Liste des produits */}
-                      {cartItems.length > 0 ? (
-                        <>
-                          <div className="p-4 max-h-80 overflow-y-auto">
-                            {cartItems.map((item, index) => (
-                              <div key={index} className="flex items-center gap-4 mb-4 relative">
-                                <div className="relative w-16 h-16 rounded-lg overflow-hidden flex-shrink-0">
-                                  <Image
-                                    src={item.image}
-                                    alt={item.name}
-                                    fill
-                                    className="object-cover"
-                                  />
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <h3 className="text-sm font-medium text-gray-900 truncate">
-                                    {item.name}
-                                  </h3>
-                                  <p className="text-sm text-gray-500">
-                                    Quantité: {item.quantity}
-                                  </p>
-                                  <p className="text-sm font-medium text-[#048B9A]">
-                                    {item.price.toLocaleString()} GNF
-                                  </p>
-                                </div>
-                                {/* Bouton de suppression */}
-                                <button 
-                                  onClick={() => removeFromCart(item.id)}
-                                  className="absolute top-0 right-0 p-1 text-gray-400 hover:text-red-500 transition-colors"
-                                  aria-label="Supprimer du panier"
-                                >
-                                  <FaTimes size={14} />
-                                </button>
+                      <div className="p-4 max-h-80 overflow-y-auto">
+                        {cartLoading ? (
+                          <div className="flex justify-center py-8">
+                            <div className="w-8 h-8 border-2 border-[#048B9A] border-t-transparent rounded-full animate-spin" />
+                          </div>
+                        ) : cartItems.length === 0 ? (
+                          <div className="text-center py-8">
+                            <p className="text-gray-500">Votre panier est vide</p>
+                          </div>
+                        ) : (
+                          cartItems.map((item) => (
+                            <div key={item.id} className="flex items-center gap-4 mb-4 relative">
+                              <div className="relative w-16 h-16 rounded-lg overflow-hidden flex-shrink-0">
+                                <Image
+                                  src={item.product.images?.[0]?.image || '/placeholder.png'}
+                                  alt={item.product.name}
+                                  fill
+                                  className="object-cover"
+                                />
                               </div>
-                            ))}
-                          </div>
-                          <div className="p-4 border-t">
-                            {/* Total */}
-                            <div className="flex justify-between items-center mb-4">
-                              <span className="text-gray-600">Total</span>
-                              <span className="font-bold text-lg">
-                                {cartTotal.toLocaleString()} GNF
-                              </span>
-                            </div>
-                            {/* Boutons d'action */}
-                            <div className="flex gap-2">
-                              <Link 
-                                href="/panier"
-                                className="flex-1 block bg-[#048B9A] text-white text-center px-4 py-2 rounded-lg hover:bg-[#037483] transition-colors"
+                              <div className="flex-1 min-w-0">
+                                <h3 className="text-sm font-medium text-gray-900 truncate">
+                                  {item.product.name}
+                                </h3>
+                                <p className="text-sm text-gray-500">
+                                  Quantité: {item.quantity}
+                                </p>
+                                <p className="text-sm font-medium text-[#048B9A]">
+                                  {item.product.regular_price.toLocaleString()} GNF
+                                </p>
+                              </div>
+                              <button 
+                                onClick={() => removeFromCart(item.product.id)}
+                                disabled={deletingItemId === item.product.id}
+                                className="absolute top-0 right-0 p-1 text-gray-400 hover:text-red-500 transition-colors disabled:opacity-50"
+                                aria-label="Supprimer du panier"
                               >
-                                Voir le panier
-                              </Link>
-                              <Link 
-                                href="/paiement"
-                                className="flex-1 block bg-[#C4DE85] text-white text-center px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
-                              >
-                                Commander
-                              </Link>
+                                {deletingItemId === item.product.id ? (
+                                  <div className="w-4 h-4 border-2 border-red-500 border-t-transparent rounded-full animate-spin" />
+                                ) : (
+                                  <FaTimes size={14} />
+                                )}
+                              </button>
                             </div>
-                          </div>
-                        </>
-                      ) : (
-                        <div className="p-4 text-center">
-                          <p className="text-gray-500">Votre panier est vide</p>
+                          ))
+                        )}
+                      </div>
+
+                      {/* Total et boutons d'action */}
+                      <div className="p-4 border-t">
+                        <div className="flex justify-between items-center mb-4">
+                          <span className="text-gray-600">Total</span>
+                          <span className="font-bold text-lg">
+                            {cartTotal.toLocaleString()} GNF
+                          </span>
                         </div>
-                      )}
+                        <div className="flex gap-2">
+                          <Link 
+                            href="/panier"
+                            className="flex-1 block bg-[#048B9A] text-white text-center px-4 py-2 rounded-lg hover:bg-[#037483] transition-colors"
+                          >
+                            Voir le panier
+                          </Link>
+                          <Link 
+                            href="/paiement"
+                            className="flex-1 block bg-[#C4DE85] text-white text-center px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
+                          >
+                            Commander
+                          </Link>
+                        </div>
+                      </div>
                     </motion.div>
                   )}
                 </AnimatePresence>

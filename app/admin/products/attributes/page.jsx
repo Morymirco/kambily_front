@@ -29,7 +29,7 @@ const AttributesPage = () => {
         }
 
         // Charger les tailles
-        const sizesResponse = await fetch('http://35.85.136.46:8001/products/sizes', {
+        const sizesResponse = await fetch('https://api.kambily.store/products/sizes', {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Accept': 'application/json'
@@ -37,7 +37,7 @@ const AttributesPage = () => {
         });
 
         // Charger les couleurs
-        const colorsResponse = await fetch('http://35.85.136.46:8001/products/colors', {
+        const colorsResponse = await fetch('https://api.kambily.store/products/colors', {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Accept': 'application/json'
@@ -126,8 +126,8 @@ const AttributesPage = () => {
 
       // Déterminer l'endpoint en fonction du type d'attribut
       const endpoint = attributeType === 'size' 
-        ? 'http://35.85.136.46:8001/products/sizes/create'
-        : 'http://35.85.136.46:8001/products/colors/create';
+        ? 'https://api.kambily.store/products/sizes/create'
+        : 'https://api.kambily.store/products/colors/create';
 
       const attributeData = {
         name: newAttribute.name,

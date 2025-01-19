@@ -2,10 +2,8 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { jwtDecode } from "jwt-decode";
 
-// Créer le contexte
 const AuthContext = createContext();
 
-// Hook personnalisé pour utiliser le contexte
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
@@ -14,7 +12,6 @@ export const useAuth = () => {
   return context;
 };
 
-// Provider Component
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -60,7 +57,7 @@ export function AuthProvider({ children }) {
 
   const refreshAccessToken = async (refreshToken) => {
     try {
-      const response = await fetch('https://api.kambily.store/api/token/refresh/', {
+      const response = await fetch('https://api.kambily.store/accounts/token/refresh/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -151,7 +148,6 @@ export function AuthProvider({ children }) {
     }
   };
 
-  // Valeur du contexte
   const value = {
     user,
     isAuthenticated,

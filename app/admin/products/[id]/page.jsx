@@ -29,7 +29,7 @@ export default function ProductDetailAdmin() {
           return;
         }
 
-        const response = await fetch(`http://35.85.136.46:8001/products/${params.id}`, {
+        const response = await fetch(`https://api.kambily.store/products/${params.id}/`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -121,7 +121,7 @@ export default function ProductDetailAdmin() {
   useEffect(() => {
     const fetchReviews = async () => {
       try {
-        const response = await fetch(`http://35.85.136.46:8001/products/${params.id}/reviews`, {
+        const response = await fetch(`https://api.kambily.store/products/${params.id}/reviews/`, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('access_token')}`
           }
@@ -148,7 +148,7 @@ export default function ProductDetailAdmin() {
   const handleDelete = async () => {
     setIsDeleting(true);
     try {
-      const response = await fetch(`http://35.85.136.46:8001/products/${params.id}`, {
+      const response = await fetch(`https://api.kambily.store/products/${params.id}/`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('access_token')}`

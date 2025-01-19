@@ -3,6 +3,7 @@ import MainLayout from '@/app/layouts/MainLayout';
 import { Krub } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from './providers/AuthProvider';
+import { FavoritesProvider } from './providers/FavoritesProvider';
 
 
 const krub = Krub({
@@ -83,9 +84,11 @@ export default function RootLayout({ children }) {
       </head>
       <body className={krub.className}>
         <AuthProvider>
-          <MainLayout>
-            {children}
-          </MainLayout>
+          <FavoritesProvider>
+            <MainLayout>
+              {children}
+            </MainLayout>
+          </FavoritesProvider>
         </AuthProvider>
         <ScrollToTop />
         <script

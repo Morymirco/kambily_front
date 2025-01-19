@@ -10,7 +10,7 @@ export default function JewelrySection() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await fetch('http://35.85.136.46:8001/products');
+        const response = await fetch('https://api.kambily.store/products');
         const data = await response.json();
         setProducts(data.slice(0, 2)); // On prend seulement les 2 premiers produits
       } catch (error) {

@@ -22,7 +22,7 @@ export default function ProductDetail() {
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const response = await fetch(`https://api.kambily.store/products/${params.id}`, {
+        const response = await fetch(`https://api.kambily.store/products/${params.id}/`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',

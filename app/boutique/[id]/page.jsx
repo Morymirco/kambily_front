@@ -1,14 +1,103 @@
 'use client'
+import { useAuth } from '@/app/providers/AuthProvider';
 import { AnimatePresence, motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { toast } from 'react-hot-toast';
 import { FaFacebookF, FaHeart, FaLinkedinIn, FaShare, FaShoppingCart, FaStar, FaTimes, FaTwitter, FaWhatsapp } from 'react-icons/fa';
 import { FiZoomIn } from 'react-icons/fi';
 import { IoMdClose } from 'react-icons/io';
 import ProductCard from './../../Components/Common/ProductCard';
 
+const ProductSkeleton = () => (
+  <div className="max-w-[1400px] mx-auto px-4 md:px-16 py-12">
+    {/* Fil d'Ariane skeleton */}
+    <div className="flex items-center gap-2 mb-8">
+      <div className="w-16 h-4 bg-gray-200 rounded animate-pulse" />
+      <div className="w-2 h-4 bg-gray-200 rounded animate-pulse" />
+      <div className="w-20 h-4 bg-gray-200 rounded animate-pulse" />
+      <div className="w-2 h-4 bg-gray-200 rounded animate-pulse" />
+      <div className="w-32 h-4 bg-gray-200 rounded animate-pulse" />
+    </div>
+
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+      {/* Galerie d'images skeleton */}
+      <div className="space-y-4">
+        <div className="relative aspect-square rounded-lg bg-gray-200 animate-pulse" />
+        <div className="grid grid-cols-4 gap-4">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="aspect-square rounded-lg bg-gray-200 animate-pulse" />
+          ))}
+        </div>
+      </div>
+
+      {/* Informations produit skeleton */}
+      <div className="space-y-6">
+        {/* Titre */}
+        <div className="w-3/4 h-8 bg-gray-200 rounded animate-pulse" />
+
+        {/* Prix et notation */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-32 h-8 bg-gray-200 rounded animate-pulse" />
+            <div className="w-24 h-6 bg-gray-200 rounded animate-pulse" />
+          </div>
+        </div>
+
+        {/* Description */}
+        <div className="space-y-2">
+          <div className="w-full h-4 bg-gray-200 rounded animate-pulse" />
+          <div className="w-full h-4 bg-gray-200 rounded animate-pulse" />
+          <div className="w-3/4 h-4 bg-gray-200 rounded animate-pulse" />
+        </div>
+
+        {/* Tailles */}
+        <div className="space-y-4">
+          <div className="w-20 h-6 bg-gray-200 rounded animate-pulse" />
+          <div className="flex gap-3">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="w-12 h-12 bg-gray-200 rounded-lg animate-pulse" />
+            ))}
+          </div>
+        </div>
+
+        {/* Couleurs */}
+        <div className="space-y-4">
+          <div className="w-24 h-6 bg-gray-200 rounded animate-pulse" />
+          <div className="flex gap-3">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="w-12 h-12 bg-gray-200 rounded-full animate-pulse" />
+            ))}
+          </div>
+        </div>
+
+        {/* Quantité */}
+        <div className="space-y-4">
+          <div className="w-24 h-6 bg-gray-200 rounded animate-pulse" />
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 bg-gray-200 rounded-lg animate-pulse" />
+            <div className="w-12 h-12 bg-gray-200 rounded-lg animate-pulse" />
+            <div className="w-12 h-12 bg-gray-200 rounded-lg animate-pulse" />
+          </div>
+        </div>
+
+        {/* Boutons d'action */}
+        <div className="flex gap-4 pt-6">
+          <div className="flex-1 h-14 bg-gray-200 rounded-lg animate-pulse" />
+          <div className="flex-1 h-14 bg-gray-200 rounded-lg animate-pulse" />
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
 const ProductDetail = () => {
+  const params = useParams();
+  const [product, setProduct] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [selectedSize, setSelectedSize] = useState(null);
@@ -26,14 +115,41 @@ const ProductDetail = () => {
   const [copySuccess, setCopySuccess] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
   const [showFavToast, setShowFavToast] = useState(false);
+  const [selectedColor, setSelectedColor] = useState(null);
+  const { authFetch } = useAuth();
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
+  const [isTogglingFavorite, setIsTogglingFavorite] = useState(false);
 
-  // Images du produit (à remplacer par vos vraies images)
-  const productImages = [
-    '/sex1.webp',
-    '/sex2.webp',
-    '/sex3.webp',
-    '/sex1.webp',
-  ];
+  useEffect(() => {
+    const fetchProduct = async () => {
+      try {
+        const response = await fetch(`https://api.kambily.store/products/${params.id}/`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error('Erreur lors du chargement du produit');
+        }
+
+        const data = await response.json();
+        setProduct(data);
+      } catch (err) {
+        setError(err.message);
+        toast.error(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProduct();
+  }, [params.id]);
+
+  // Récupérer les images du produit depuis l'API
+  const productImages = product?.images?.map(img => img.image) || [];
 
   // Tailles disponibles
   const sizes = ['S', 'M', 'L', 'XL'];
@@ -172,11 +288,238 @@ const ProductDetail = () => {
     }
   };
 
-  const handleFavorite = () => {
-    setIsFavorite(!isFavorite);
-    setShowFavToast(true);
-    setTimeout(() => setShowFavToast(false), 2000);
+  const toggleFavorite = async () => {
+    setIsTogglingFavorite(true);
+    try {
+      if (isFavorite) {
+        // Supprimer des favoris
+        const response = await authFetch(`https://api.kambily.store/favorites/remove/${params.id}/`, {
+          method: 'DELETE'
+        });
+
+        if (response.ok) {
+          setIsFavorite(false);
+          toast.success('Retiré des favoris');
+        }
+      } else {
+        // Ajouter aux favoris
+        const response = await authFetch(`https://api.kambily.store/favorites/create/${params.id}/`, {
+          method: 'POST'
+        });
+
+        if (response.ok) {
+          setIsFavorite(true);
+          toast.success('Ajouté aux favoris');
+        }
+      }
+    } catch (error) {
+      console.error('Erreur lors de la modification des favoris:', error);
+      toast.error('Une erreur est survenue');
+    } finally {
+      setIsTogglingFavorite(false);
+    }
   };
+
+  // Fonction pour afficher les tailles
+  const renderSizes = () => {
+    if (!product?.sizes || !Array.isArray(product.sizes) || product.sizes.length === 0) {
+      return (
+        <div className="text-gray-500 italic">
+          Taille unique
+        </div>
+      );
+    }
+    
+    return product.sizes.map((size, index) => (
+      <button
+        key={index}
+        onClick={() => setSelectedSize(size.name)}
+        className={`w-12 h-12 rounded-lg border ${
+          selectedSize === size.name
+            ? 'border-[#048B9A] text-[#048B9A]'
+            : 'border-gray-300 hover:border-gray-400'
+        } flex items-center justify-center font-medium`}
+      >
+        {size.name}
+      </button>
+    ));
+  };
+
+  // Fonction pour afficher les couleurs
+  const renderColors = () => {
+    if (!product?.colors || !Array.isArray(product.colors) || product.colors.length === 0) {
+      return (
+        <div className="text-gray-500 italic">
+          Couleur unique
+        </div>
+      );
+    }
+    
+    return (
+      <div className="flex gap-3">
+        {product.colors.map((color, index) => (
+          <button
+            key={index}
+            onClick={() => setSelectedColor(color.name)}
+            className={`w-12 h-12 rounded-lg border-2 flex items-center justify-center ${
+              selectedColor === color.name
+                ? 'border-[#048B9A]'
+                : 'border-gray-300 hover:border-gray-400'
+            }`}
+            style={{ backgroundColor: color.hex_code }}
+            title={color.name}
+          >
+            {selectedColor === color.name && (
+              <span className="text-white drop-shadow-lg">✓</span>
+            )}
+          </button>
+        ))}
+      </div>
+    );
+  };
+
+  // Fonction pour afficher les catégories
+  const renderCategories = () => {
+    if (!product?.categories || !Array.isArray(product.categories)) {
+      return (
+        <div className="text-gray-500 italic">
+          Aucune catégorie
+        </div>
+      );
+    }
+    
+    return (
+      <div className="flex flex-wrap gap-2">
+        {product.categories.map((category, index) => (
+          <Link
+            key={index}
+            href={`/boutique?category=${category.name.toLowerCase()}`}
+            className="text-[#048B9A] hover:underline text-sm bg-[#E6F4F6] px-3 py-1 rounded-full"
+          >
+            {category.name}
+          </Link>
+        ))}
+      </div>
+    );
+  };
+
+  // Fonction pour afficher les étiquettes
+  const renderTags = () => {
+    if (!product?.tags || !Array.isArray(product.tags) || product.tags.length === 0) {
+      return (
+        <div className="text-gray-500 italic">
+          Aucune étiquette
+        </div>
+      );
+    }
+    
+    return (
+      <div className="flex flex-wrap gap-2">
+        {product.tags.map((tag, index) => (
+          <Link
+            key={index}
+            href={`/boutique?tag=${tag.name.toLowerCase()}`}
+            className="text-gray-600 hover:text-[#048B9A] text-sm bg-gray-100 px-3 py-1 rounded-full hover:bg-gray-200 transition-colors"
+          >
+            #{tag.name}
+          </Link>
+        ))}
+      </div>
+    );
+  };
+
+  const handleAddToCart = async () => {
+    if (!selectedSize && product?.sizes?.length > 0) {
+      toast.error('Veuillez sélectionner une taille');
+      return;
+    }
+
+    if (!selectedColor && product?.colors?.length > 0) {
+      toast.error('Veuillez sélectionner une couleur');
+      return;
+    }
+
+    setIsAddingToCart(true);
+    try {
+      const response = await authFetch('https://api.kambily.store/carts/create/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          product_id: product.id,
+          quantity: quantity,
+          size: selectedSize || null,
+          color: selectedColor || null,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Erreur lors de l\'ajout au panier');
+      }
+
+      toast.custom((t) => (
+        <div className="fixed bottom-4 right-4 z-50 animate-slide-up">
+          <div className="bg-white border border-gray-200 rounded-lg shadow-lg p-4 w-[300px] flex items-center gap-4">
+            <div className="relative w-16 h-16 flex-shrink-0 rounded-md overflow-hidden">
+              <Image
+                src={product.images[0]?.image || '/placeholder.png'}
+                alt={product.name}
+                fill
+                className="object-cover"
+              />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-1.5 font-medium text-sm text-green-600">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+                Ajouté au panier
+              </div>
+              <p className="text-gray-600 text-sm mt-1 truncate">{product.name}</p>
+              <Link href="/panier">
+                <button className="mt-2 text-[#048B9A] text-sm font-medium hover:text-[#037383]">
+                  Voir le panier
+                </button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      ), { duration: 3000 });
+
+    } catch (error) {
+      toast.error(error.message);
+    } finally {
+      setIsAddingToCart(false);
+    }
+  };
+
+  // Vérifier si le produit est déjà en favori au chargement
+  useEffect(() => {
+    const checkFavoriteStatus = async () => {
+      try {
+        const response = await authFetch(`https://api.kambily.store/favorites/check/${params.id}/`);
+        if (response.ok) {
+          const data = await response.json();
+          setIsFavorite(data.is_favorite);
+        }
+      } catch (error) {
+        console.error('Erreur lors de la vérification des favoris:', error);
+      }
+    };
+
+    if (params.id) {
+      checkFavoriteStatus();
+    }
+  }, [params.id]);
+
+  if (loading) {
+    return <ProductSkeleton />;
+  }
+
+  if (error) {
+    return <div>Erreur: {error}</div>;
+  }
 
   return (
     <div className="max-w-[1400px] mx-auto px-4 md:px-16 py-12">
@@ -186,7 +529,7 @@ const ProductDetail = () => {
         <span className="text-gray-500">/</span>
         <Link href="/boutique" className="text-gray-500 hover:text-[#048B9A]">Boutique</Link>
         <span className="text-gray-500">/</span>
-        <span className="text-gray-900">Détails du produit</span>
+        <span className="text-gray-900">{product?.name}</span>
       </nav>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
@@ -195,8 +538,8 @@ const ProductDetail = () => {
           {/* Image principale */}
           <div className="relative aspect-square rounded-xl overflow-hidden group">
             <Image
-              src={productImages[selectedImage]}
-              alt="Product"
+              src={productImages[selectedImage] || '/placeholder.png'}
+              alt={product?.name || 'Product image'}
               fill
               className="object-cover"
               priority
@@ -253,11 +596,11 @@ const ProductDetail = () => {
             {/* Container de l'image */}
             <div className="relative w-full h-full flex items-center justify-center p-4">
               {/* Image */}
-              <div className="relative w-full h-full flex items-center justify-center">
+              <div className="relative w-full h-full flex items-center justify-center border-[#048B9A]">
                 <img
                   src={productImages[lightboxImageIndex]}
                   alt="Product zoom view"
-                  className="max-h-full max-w-full object-contain"
+                  className="max-h-full max-w-full object-contain border-2 "
                 />
               </div>
 
@@ -304,31 +647,44 @@ const ProductDetail = () => {
 
         {/* Informations produit */}
         <div className="space-y-6">
-          <h1 className="text-3xl font-bold">Ensemble De Pyjama Short & Top À Fines Brides Imprimé Cœur</h1>
+          <h1 className="text-3xl font-bold">{product?.name}</h1>
 
           {/* Prix et notation */}
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
-              <span className="text-2xl font-bold text-[#048B9A]">65,000 GNF</span>
-              <span className="text-lg text-gray-500 line-through">85,000 GNF</span>
+              <span className="text-2xl font-bold text-[#048B9A]">
+                {product?.regular_price?.toLocaleString()} GN
+              </span>
+              {product?.promo_price && (
+                <span className="text-lg text-gray-500 line-through">
+                  {product.promo_price.toLocaleString()} GNF
+                </span>
+              )}
             </div>
 
             {/* Boutons d'action */}
             <div className="flex items-center gap-3">
               {/* Bouton favoris */}
               <button 
-                onClick={handleFavorite}
-                className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${
+                onClick={toggleFavorite}
+                disabled={isTogglingFavorite}
+                className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
                   isFavorite 
-                    ? 'bg-red-50 hover:bg-red-100' 
-                    : 'bg-gray-100 hover:bg-gray-200'
+                    ? 'bg-red-50 text-red-500' 
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                 }`}
               >
-                <FaHeart 
-                  className={`w-5 h-5 transition-colors duration-300 ${
-                    isFavorite ? 'text-red-500' : 'text-gray-600'
-                  }`} 
-                />
+                {isTogglingFavorite ? (
+                  <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <FaHeart 
+                    className={`w-5 h-5 transition-colors ${
+                      isFavorite 
+                        ? 'fill-current' 
+                        : 'stroke-[2] stroke-current fill-transparent'
+                    }`}
+                  />
+                )}
               </button>
 
               {/* Bouton partager */}
@@ -343,27 +699,22 @@ const ProductDetail = () => {
 
           {/* Description */}
           <p className="text-gray-600">
-            Un ensemble de pyjama confortable et élégant, parfait pour une nuit reposante. 
-            Le top à fines brides et le short assorti sont ornés d'un charmant imprimé cœur.
+          {product?.long_description}
           </p>
 
           {/* Sélection de taille */}
           <div>
             <h3 className="font-medium mb-3">Taille</h3>
             <div className="flex gap-3">
-              {sizes.map((size) => (
-                <button
-                  key={size}
-                  onClick={() => setSelectedSize(size)}
-                  className={`w-12 h-12 rounded-lg border ${
-                    selectedSize === size
-                      ? 'border-[#048B9A] text-[#048B9A]'
-                      : 'border-gray-300 hover:border-gray-400'
-                  } flex items-center justify-center font-medium`}
-                >
-                  {size}
-                </button>
-              ))}
+              {renderSizes()}
+            </div>
+          </div>
+
+          {/* Section des couleurs */}
+          <div className="space-y-6">
+            <div>
+              <h3 className="font-medium mb-3">Couleur</h3>
+              {renderColors()}
             </div>
           </div>
 
@@ -389,9 +740,19 @@ const ProductDetail = () => {
 
           {/* Boutons d'action */}
           <div className="flex gap-4 pt-6">
-            <button className="flex-1 bg-[#048B9A] text-white h-14 rounded-lg flex items-center justify-center gap-2 hover:bg-[#037483] transition-colors">
-              <FaShoppingCart />
-              <span>Ajouter au panier</span>
+            <button 
+              onClick={handleAddToCart}
+              disabled={isAddingToCart}
+              className="flex-1 bg-[#048B9A] text-white h-14 rounded-lg flex items-center justify-center gap-2 hover:bg-[#037483] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isAddingToCart ? (
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <>
+                  <FaShoppingCart />
+                  <span>Ajouter au panier</span>
+                </>
+              )}
             </button>
             <button className="flex-1 border border-[#048B9A] text-[#048B9A] h-14 rounded-lg flex items-center justify-center gap-2 hover:bg-[#048B9A] hover:text-white transition-colors">
               Acheter maintenant
@@ -402,17 +763,15 @@ const ProductDetail = () => {
           <div className="pt-6 border-t">
             <div className="flex items-center gap-2">
               <span className="text-gray-700 font-medium">Catégories:</span>
-              <div className="flex flex-wrap gap-2">
-                {categories.map((category, index) => (
-                  <Link
-                    key={index}
-                    href={`/boutique?category=${category.toLowerCase()}`}
-                    className="text-[#048B9A] hover:underline text-sm bg-[#E6F4F6] px-3 py-1 rounded-full"
-                  >
-                    {category}
-                  </Link>
-                ))}
-              </div>
+              {renderCategories()}
+            </div>
+          </div>
+
+          {/* Étiquettes - à placer après les catégories */}
+          <div className="pt-4">
+            <div className="flex items-center gap-2">
+              <span className="text-gray-700 font-medium">Étiquettes:</span>
+              {renderTags()}
             </div>
           </div>
 

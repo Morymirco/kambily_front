@@ -1,5 +1,6 @@
 'use client'
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { FaPlus, FaTrash } from 'react-icons/fa';
@@ -35,11 +36,13 @@ export default function AddProductPage() {
   const [imagesPreviews, setImagesPreviews] = useState([]);
   const [availableTags, setAvailableTags] = useState([]);
 
+  const router = useRouter();
+
   // Vérifier l'authentification admin au chargement
   useEffect(() => {
     const token = localStorage.getItem('access_token');
     if (!token) {
-      window.location.href = '/test/login';
+      router.push('/login');
       return;
     }
 
@@ -48,7 +51,7 @@ export default function AddProductPage() {
     fetchColors();
     fetchSizes();
     fetchTags();
-  }, []);
+  }, [router]);
 
   // Récupérer les catégories principales
   const fetchCategories = async () => {
@@ -148,57 +151,99 @@ export default function AddProductPage() {
     setError(null);
 
     try {
+      const token = localStorage.getItem('access_token');
+      if (!token) {
+        router.push('/login');
+        return;
+      }
+
+      // Vérifier si des images ont été sélectionnées
+      if (imageFiles.length === 0) {
+        setError('Au moins une image est requise');
+        setLoading(false);
+        return;
+      }
+
       const formDataToSend = new FormData();
 
-      // Ajouter les champs de base comme avant
+      // Ajouter les champs de base
       formDataToSend.append('name', formData.name);
-      formDataToSend.append('short_description', formData.short_description);
-      formDataToSend.append('long_description', formData.long_description);
-      formDataToSend.append('regular_price', formData.regular_price.toString());
-      formDataToSend.append('promo_price', formData.promo_price ? formData.promo_price.toString() : formData.regular_price.toString());
       formDataToSend.append('sku', formData.sku);
       formDataToSend.append('stock_status', formData.stock_status.toString());
+      formDataToSend.append('short_description', formData.short_description);
+      formDataToSend.append('long_description', formData.long_description);
       formDataToSend.append('weight', formData.weight.toString());
       formDataToSend.append('length', formData.length.toString());
       formDataToSend.append('width', formData.width.toString());
       formDataToSend.append('height', formData.height.toString());
+      formDataToSend.append('quantity', formData.quantity.toString());
       formDataToSend.append('product_type', formData.product_type);
       formDataToSend.append('etat_stock', formData.etat_stock);
-      formDataToSend.append('quantity', formData.quantity.toString());
+      formDataToSend.append('regular_price', formData.regular_price.toString());
+      formDataToSend.append('promo_price', (formData.promo_price || formData.regular_price).toString());
 
-      // Modification de l'envoi des tableaux - envoi de chaque ID séparément
-      formData.categories.forEach((categoryId) => {
-        formDataToSend.append('categories[]', categoryId);
-      });
+      // Gérer les catégories
+      if (formData.categories.length > 0) {
+        formData.categories.forEach(categoryId => {
+          formDataToSend.append('categories', categoryId);
+        });
+      } else {
+        formDataToSend.append('categories', '[]');
+      }
 
-      formData.colors.forEach((colorId) => {
-        formDataToSend.append('colors[]', colorId);
-      });
+      // Gérer les étiquettes
+      if (formData.etiquettes.length > 0) {
+        formData.etiquettes.forEach(tagId => {
+          formDataToSend.append('etiquettes', tagId);
+        });
+      } else {
+        formDataToSend.append('etiquettes', '[]');
+      }
 
-      formData.sizes.forEach((sizeId) => {
-        formDataToSend.append('sizes[]', sizeId);
-      });
+      // Gérer les couleurs et tailles pour les produits variables
+      if (formData.product_type === 'variable') {
+        if (formData.colors.length > 0) {
+          formData.colors.forEach(colorId => {
+            formDataToSend.append('colors', colorId);
+          });
+        } else {
+          formDataToSend.append('colors', '[]');
+        }
 
-      formData.etiquettes.forEach((tagId) => {
-        formDataToSend.append('etiquettes[]', tagId);
-      });
+        if (formData.sizes.length > 0) {
+          formData.sizes.forEach(sizeId => {
+            formDataToSend.append('sizes', sizeId);
+          });
+        } else {
+          formDataToSend.append('sizes', '[]');
+        }
+      } else {
+        formDataToSend.append('colors', '[]');
+        formDataToSend.append('sizes', '[]');
+      }
 
-      // Ajouter les images
-      imageFiles.forEach((file) => {
-        formDataToSend.append('images[]', file);
+      // Gérer les images
+      imageFiles.forEach(file => {
+        // Vérifier la taille et le type de fichier
+        if (file.size > 10 * 1024 * 1024) { // 10MB max
+          throw new Error('Les images ne doivent pas dépasser 10MB');
+        }
+        if (!file.type.startsWith('image/')) {
+          throw new Error('Seuls les fichiers image sont acceptés');
+        }
+        formDataToSend.append('images', file);
       });
 
       // Log pour déboguer
-      console.log('Données envoyées:');
+      console.log('Données à envoyer:');
       for (let [key, value] of formDataToSend.entries()) {
         console.log(`${key}:`, value);
       }
 
-      const response = await fetch('https://api.kambily.store/products/create', {
+      const response = await fetch('https://api.kambily.store/products/create/', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
-          'Accept': 'application/json',
+          'Authorization': `Bearer ${token}`,
         },
         body: formDataToSend
       });
@@ -212,7 +257,6 @@ export default function AddProductPage() {
         if (data.detail) {
           errorMessage = data.detail;
         } else if (typeof data === 'object') {
-          // Parcourir toutes les erreurs possibles
           const errors = Object.entries(data)
             .map(([field, messages]) => {
               if (Array.isArray(messages)) {
@@ -230,35 +274,13 @@ export default function AddProductPage() {
         throw new Error(errorMessage);
       }
 
-      toast.success('Produit ajouté avec succès');
-      // Réinitialiser le formulaire avec tous les champs
-      setFormData({
-        name: '',
-        short_description: '',
-        long_description: '',
-        regular_price: '',
-        promo_price: '',
-        sku: '',
-        stock_status: true,
-        weight: '',
-        length: '',
-        width: '',
-        height: '',
-        product_type: 'simple',
-        etat_stock: 'En Stock',
-        quantity: '0',
-        categories: [],
-        colors: [],
-        sizes: [],
-        etiquettes: [],
-      });
-      setImageFiles([]);
-      setImagesPreviews([]);
+      toast.success('Produit créé avec succès !');
+      router.push('/admin/products');
 
     } catch (err) {
-      console.error('Erreur détaillée:', err);
+      console.error('Erreur:', err);
       setError(err.message);
-      toast.error(err.message);
+      toast.error(err.message || 'Une erreur est survenue');
     } finally {
       setLoading(false);
     }
@@ -340,13 +362,14 @@ export default function AddProductPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700">SKU</label>
+                <label className="block text-sm font-medium text-gray-700">SKU (Code produit unique)</label>
                 <input
                   type="text"
                   value={formData.sku}
                   onChange={(e) => setFormData({...formData, sku: e.target.value})}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#048B9A] focus:ring-[#048B9A]"
                   required
+                  placeholder="Ex: PROD-001"
                 />
               </div>
 
