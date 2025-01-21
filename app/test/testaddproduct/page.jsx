@@ -57,7 +57,7 @@ export default function AddProductPage() {
       socket.send(JSON.stringify({ message: "Hello, Server!" }));
     };
     
-    // Écouter les messages du serveur
+    // Écouter les messages du serveu
     socket.onmessage = function(event) {
       console.log("Message du serveur:", event.data);
       // Essayer de convertir les messages qui viennent du serveur
