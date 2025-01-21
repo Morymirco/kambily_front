@@ -1,31 +1,37 @@
-'use client'
-import Image from 'next/image';
-import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import toast from 'react-hot-toast';
-import { FaPlus, FaTrash } from 'react-icons/fa';
+"use client";
+import Image from "next/image";
+import toast from "react-hot-toast";
+import { useRouter } from "next/navigation";
+import {useEffect, useRef, useState} from "react";
+import { FaPlus, FaTrash } from "react-icons/fa";
 
 export default function AddProductPage() {
   const [formData, setFormData] = useState({
-    name: '',
-    short_description: '',
-    long_description: '',
-    regular_price: '',
-    promo_price: '',
-    sku: '',
+    name: generateRandomSlug(8),
+    short_description: generateRandomSlug(18),
+    long_description: generateRandomSlug(100),
+    regular_price: 12000,
+    promo_price: 15000,
+    sku: generateRandomSlug(8),
     stock_status: true,
-    weight: '',
-    length: '',
-    width: '',
-    height: '',
-    product_type: 'simple',
+    weight: generateRandomNumber(),
+    length: generateRandomNumber(),
+    width: generateRandomNumber(),
+    height: generateRandomNumber(),
+    product_type: 'variable',
     etat_stock: 'En Stock',
-    quantity: '0',
+    quantity: generateRandomNumber(),
     categories: [],
     colors: [],
     sizes: [],
     etiquettes: [],
+    images: []
   });
+  
+  const HOST = 'localhost'
+  const PORT = '8000'
+  const PROTOCOL_HTTP = 'http'
+  const PROTOCOL_WS = 'ws'
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -35,17 +41,67 @@ export default function AddProductPage() {
   const [imageFiles, setImageFiles] = useState([]);
   const [imagesPreviews, setImagesPreviews] = useState([]);
   const [availableTags, setAvailableTags] = useState([]);
+  const ref = useRef(null)
 
   const router = useRouter();
 
+  function websocketManagement(){
+    // Créer une connexion WebSocket avec l'URL du serveur
+    const socket = new WebSocket(`${PROTOCOL_WS}://${HOST}:${PORT}/websocket/`);
+    
+    // Lorsque la connexion est ouverte
+    socket.onopen = function(event) {
+      console.log("Connexion WebSocket établie avec succès.");
+      
+      // Vous pouvez envoyer un message une fois la connexion établie
+      socket.send(JSON.stringify({ message: "Hello, Server!" }));
+    };
+    
+    // Écouter les messages du serveur
+    socket.onmessage = function(event) {
+      console.log("Message du serveur:", event.data);
+      // Essayer de convertir les messages qui viennent du serveur
+      try {
+        const jsonData = JSON.parse(event.data);
+        if(jsonData.code === 1){
+          // cela veux dire que un produit a été ajouté par l'administrateur
+          // mettre une logique pour que tous les clients sache
+          // ça peut etre reactualiser la variables qui contient les produits de la base de donnée en local
+          //etc
+        }
+      }catch (e) {
+        console.error("Erreur de decodage du message du serveur: " + e.message);
+      }
+    };
+    
+    // Lorsque la connexion est fermée
+    socket.onclose = function(event) {
+      console.log("Connexion WebSocket fermée.");
+    };
+    
+    // En cas d'erreur
+    socket.onerror = function(error) {
+      console.error("Erreur WebSocket:", error);
+    };
+  }
+  
   // Vérifier l'authentification admin au chargement
   useEffect(() => {
+    // Avant la déconnexion ou avant de rediriger l'utilisateur
+    const currentRoute = window.location.pathname;  // Cela récupère la route actuelle
+    localStorage.setItem('redirectRoute', currentRoute);  // Stocke la route dans le localStorage
+    
     const token = localStorage.getItem('access_token');
     if (!token) {
       router.push('/login');
       return;
     }
-
+    localStorage.setItem('access_token', token);
+    
+    // gestion des websocket
+    websocketManagement()
+    
+    
     // Charger les données nécessaires
     fetchCategories();
     fetchColors();
@@ -82,15 +138,19 @@ export default function AddProductPage() {
   const fetchColors = async () => {
     try {
       const response = await fetch('https://api.kambily.store/colors/', {
+        method: 'GET',
+        mode: 'cors',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+          'Accept': 'application/json'
         }
       });
       const data = await response.json();
       setAvailableColors(data);
     } catch (err) {
-      console.error('Erreur lors du chargement des couleurs:', err);
-      toast.error('Erreur lors du chargement des couleurs');
+      console.error('Erreur lors du chargement des colors:', err);
+      toast.error('Erreur lors du chargement des colors');
     }
   };
 
@@ -98,8 +158,12 @@ export default function AddProductPage() {
   const fetchSizes = async () => {
     try {
       const response = await fetch('https://api.kambily.store/sizes/', {
+        method: 'GET',
+        mode: 'cors',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+          'Accept': 'application/json'
         }
       });
       const data = await response.json();
@@ -125,7 +189,27 @@ export default function AddProductPage() {
       toast.error('Erreur lors du chargement des étiquettes');
     }
   };
-
+  
+  function generateRandomSlug(length) {
+    if (typeof length !== 'number' || length <= 0) {
+      throw new Error('Le paramètre length doit être un nombre positif.');
+    }
+    
+    const characters = 'abcdefghijklmnopqrstuvwxyz-'; // Alphabet utilisé pour générer le mot
+    let randomWord = '';
+    
+    for (let i = 0; i < length; i++) {
+      const randomIndex = Math.floor(Math.random() * characters.length);
+      randomWord += characters[randomIndex];
+    }
+    
+    return randomWord;
+  }
+  
+  function generateRandomNumber() {
+    return Math.floor(Math.random() * 100);
+  }
+  
   // Gérer l'ajout d'images
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
@@ -145,153 +229,85 @@ export default function AddProductPage() {
   };
 
   // Soumettre le formulaire
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
     try {
-      const token = localStorage.getItem('access_token');
-      if (!token) {
-        router.push('/login');
+      const token = localStorage.getItem ('access_token');
+      if ( !token) {
+        router.push ('/login');
         return;
       }
-
+      
       // Vérifier si des images ont été sélectionnées
       if (imageFiles.length === 0) {
-        setError('Au moins une image est requise');
-        setLoading(false);
+        setError ('Au moins une image est requise');
+        setLoading (false);
         return;
       }
+      
+      // Créez un objet FormData
+      const dataSended = new FormData();
 
-      const formDataToSend = new FormData();
-
-      // Ajouter les champs de base
-      formDataToSend.append('name', formData.name);
-      formDataToSend.append('sku', formData.sku);
-      formDataToSend.append('stock_status', formData.stock_status.toString());
-      formDataToSend.append('short_description', formData.short_description);
-      formDataToSend.append('long_description', formData.long_description);
-      formDataToSend.append('weight', formData.weight.toString());
-      formDataToSend.append('length', formData.length.toString());
-      formDataToSend.append('width', formData.width.toString());
-      formDataToSend.append('height', formData.height.toString());
-      formDataToSend.append('quantity', formData.quantity.toString());
-      formDataToSend.append('product_type', formData.product_type);
-      formDataToSend.append('etat_stock', formData.etat_stock);
-      formDataToSend.append('regular_price', formData.regular_price.toString());
-      formDataToSend.append('promo_price', (formData.promo_price || formData.regular_price).toString());
-
-      // Gérer les catégories
-      if (formData.categories.length > 0) {
-        formData.categories.forEach(categoryId => {
-          formDataToSend.append('categories', categoryId);
-        });
-      } else {
-        formDataToSend.append('categories', '[]');
-      }
-
-      // Gérer les étiquettes
-      if (formData.etiquettes.length > 0) {
-        formData.etiquettes.forEach(tagId => {
-          formDataToSend.append('etiquettes', tagId);
-        });
-      } else {
-        formDataToSend.append('etiquettes', '[]');
-      }
-
-      // Gérer les couleurs et tailles pour les produits variables
-      if (formData.product_type === 'variable') {
-        if (formData.colors.length > 0) {
-          formData.colors.forEach(colorId => {
-            formDataToSend.append('colors', colorId);
-          });
-        } else {
-          formDataToSend.append('colors', '[]');
-        }
-
-        if (formData.sizes.length > 0) {
-          formData.sizes.forEach(sizeId => {
-            formDataToSend.append('sizes', sizeId);
-          });
-        } else {
-          formDataToSend.append('sizes', '[]');
-        }
-      } else {
-        formDataToSend.append('colors', '[]');
-        formDataToSend.append('sizes', '[]');
-      }
-
-      // Gérer les images
-      imageFiles.forEach(file => {
-        // Vérifier la taille et le type de fichier
-        if (file.size > 10 * 1024 * 1024) { // 10MB max
-          throw new Error('Les images ne doivent pas dépasser 10MB');
-        }
-        if (!file.type.startsWith('image/')) {
-          throw new Error('Seuls les fichiers image sont acceptés');
-        }
-        formDataToSend.append('images', file);
+      dataSended.append('name', formData.name);
+      dataSended.append('short_description', formData.short_description);
+      dataSended.append('long_description', formData.long_description);
+      dataSended.append('regular_price', formData.regular_price);
+      dataSended.append('promo_price', formData.promo_price);
+      dataSended.append('sku', formData.sku);
+      dataSended.append('stock_status', formData.stock_status);
+      dataSended.append('weight', formData.weight);
+      dataSended.append('length', formData.length);
+      dataSended.append('width', formData.width);
+      dataSended.append('height', formData.height);
+      dataSended.append('product_type', formData.product_type);
+      dataSended.append('etat_stock', formData.etat_stock);
+      dataSended.append('quantity', formData.quantity);
+      dataSended.append('categories', `[${formData.categories}]`);
+      dataSended.append('sizes', `[${formData.sizes}]`);
+      dataSended.append('etiquettes', `[${formData.etiquettes}]`);
+      dataSended.append('colors', `[${formData.colors}]`)
+      
+      
+      // Si vous avez plusieurs fichiers, parcourez-les et ajoutez-les
+      Array.from(ref.current.files).forEach((file, index) => {
+        dataSended.append('images', file); // 'images' sera la clé dans FormData
       });
-
-      // Log pour déboguer
-      console.log('Données à envoyer:');
-      for (let [key, value] of formDataToSend.entries()) {
-        console.log(`${key}:`, value);
-      }
-
-      const response = await fetch('https://api.kambily.store/products/create/', {
+      
+      
+      const url = 'http://localhost:8000/products/create/';
+      const meta = {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
+        body: dataSended,
+        headers : {
+          'Authorization' : `Bearer ${token}`,
         },
-        body: formDataToSend
+      };
+      const promise = fetch(url, meta)
+      promise.then(response => response.json() ) // pour ne pas bloquer l'interface user
+      .then(data => {
+        console.log(data);
+        setLoading(false)
+      })
+      .catch(error => {
+        setError(error.message);
+        setLoading(false)
+        console.log(error.message);
       });
-
-      const data = await response.json();
-      console.log('Réponse du serveur:', data);
-
-      if (!response.ok) {
-        let errorMessage = 'Erreur lors de la création du produit';
-        
-        if (data.detail) {
-          errorMessage = data.detail;
-        } else if (typeof data === 'object') {
-          const errors = Object.entries(data)
-            .map(([field, messages]) => {
-              if (Array.isArray(messages)) {
-                return `${field}: ${messages.join(', ')}`;
-              }
-              return `${field}: ${messages}`;
-            })
-            .join('\n');
-          
-          if (errors) {
-            errorMessage = errors;
-          }
-        }
-        
-        throw new Error(errorMessage);
-      }
-
-      toast.success('Produit créé avec succès !');
-      router.push('/admin/products');
-
-    } catch (err) {
-      console.error('Erreur:', err);
-      setError(err.message);
-      toast.error(err.message || 'Une erreur est survenue');
-    } finally {
-      setLoading(false);
+    }catch (e) {
+      setError(error.message);
+      setLoading(false)
     }
-  };
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
       <div className="max-w-4xl mx-auto">
         <h1 className="text-2xl font-bold mb-8">Ajouter un nouveau produit</h1>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6" encType="multipart/form-data">
           {/* Informations de base */}
           <div className="bg-white p-6 rounded-lg shadow-sm">
             <h2 className="text-lg font-semibold mb-4">Informations de base</h2>
@@ -312,8 +328,10 @@ export default function AddProductPage() {
                   <label className="block text-sm font-medium text-gray-700">Prix régulier</label>
                   <input
                     type="number"
+                    step={0.01}
+                    min={0}
                     value={formData.regular_price}
-                    onChange={(e) => setFormData({...formData, regular_price: e.target.value})}
+                    onChange={(e) => setFormData({...formData, regular_price: parseFloat(e.target.value)})}
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#048B9A] focus:ring-[#048B9A]"
                     required
                   />
@@ -322,8 +340,10 @@ export default function AddProductPage() {
                   <label className="block text-sm font-medium text-gray-700">Prix promotionnel</label>
                   <input
                     type="number"
+                    step={0.01}
+                    min={0}
                     value={formData.promo_price}
-                    onChange={(e) => setFormData({...formData, promo_price: e.target.value})}
+                    onChange={(e) => setFormData({...formData, promo_price: parseFloat(e.target.value)})}
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#048B9A] focus:ring-[#048B9A]"
                   />
                 </div>
@@ -377,21 +397,23 @@ export default function AddProductPage() {
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Poids (kg)</label>
                   <input
-                    type="number"
-                    step="0.01"
-                    value={formData.weight}
-                    onChange={(e) => setFormData({...formData, weight: e.target.value})}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#048B9A] focus:ring-[#048B9A]"
-                    required
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={formData.weight}
+                      onChange={(e) => setFormData ({...formData, weight: parseFloat (e.target.value)})}
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#048B9A] focus:ring-[#048B9A]"
+                      required
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Longueur (cm)</label>
                   <input
-                    type="number"
-                    step="0.01"
-                    value={formData.length}
-                    onChange={(e) => setFormData({...formData, length: e.target.value})}
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={formData.length}
+                      onChange={(e) => setFormData({...formData, length: parseFloat(e.target.value)})}
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#048B9A] focus:ring-[#048B9A]"
                     required
                   />
@@ -404,8 +426,9 @@ export default function AddProductPage() {
                   <input
                     type="number"
                     step="0.01"
+                    min={0}
                     value={formData.width}
-                    onChange={(e) => setFormData({...formData, width: e.target.value})}
+                    onChange={(e) => setFormData({...formData, width: parseFloat(e.target.value)})}
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#048B9A] focus:ring-[#048B9A]"
                     required
                   />
@@ -415,8 +438,9 @@ export default function AddProductPage() {
                   <input
                     type="number"
                     step="0.01"
+                    min={0}
                     value={formData.height}
-                    onChange={(e) => setFormData({...formData, height: e.target.value})}
+                    onChange={(e) => setFormData({...formData, height: parseFloat(e.target.value)})}
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#048B9A] focus:ring-[#048B9A]"
                     required
                   />
@@ -430,8 +454,8 @@ export default function AddProductPage() {
                   onChange={(e) => setFormData({...formData, product_type: e.target.value})}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#048B9A] focus:ring-[#048B9A]"
                 >
-                  <option value="simple">Simple</option>
-                  <option value="variable">Variable</option>
+                  <option value="simple">simple</option>
+                  <option value="variable">variable</option>
                 </select>
               </div>
 
@@ -454,7 +478,7 @@ export default function AddProductPage() {
                   type="number"
                   min="0"
                   value={formData.quantity}
-                  onChange={(e) => setFormData({...formData, quantity: e.target.value})}
+                  onChange={(e) => setFormData({...formData, quantity: parseInt(e.target.value, 10)})}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#048B9A] focus:ring-[#048B9A]"
                   required
                 />
@@ -478,45 +502,52 @@ export default function AddProductPage() {
                     <p className="text-sm text-gray-500 italic">Aucune catégorie principale disponible</p>
                   ) : (
                     availableCategories.map(category => (
-                      <label key={category.id} className="flex items-center p-2 hover:bg-white rounded-md transition-colors">
-                        <input
-                          type="checkbox"
-                          checked={formData.categories.includes(category.id)}
-                          onChange={(e) => {
-                            const categoryId = parseInt(category.id, 10);
-                            const newCategories = e.target.checked
-                              ? [...formData.categories, categoryId]
-                              : formData.categories.filter(id => id !== categoryId);
-                            setFormData({...formData, categories: newCategories});
-                          }}
-                          className="rounded border-gray-300 text-[#048B9A] focus:ring-[#048B9A]"
-                        />
-                        <span className="ml-2 text-sm text-gray-700">{category.name}</span>
-                      </label>
+                        <label key={category.id}
+                               className="flex items-center p-2 hover:bg-white rounded-md transition-colors">
+                          <input
+                              type="checkbox"
+                              checked={formData.categories.includes (category.id)}
+                              onChange={(e) => {
+                                const isChecked = e.target.checked;
+                                let updatedCategories;
+                                if (isChecked) {
+                                  updatedCategories = [...formData.categories, category.id];
+                                } else {
+                                  updatedCategories = formData.categories.filter ((id) => id !== category.id);
+                                }
+                                setFormData ({...formData, categories: updatedCategories});
+                              }}
+                              className="rounded border-gray-300 text-[#048B9A] focus:ring-[#048B9A]"
+                          />
+                          <span className="ml-2 text-sm text-gray-700">{category.name}</span>
+                        </label>
                     ))
                   )}
                 </div>
               </div>
-
+              
               {/* Couleurs - Visible uniquement si le type est "variable" */}
               {formData.product_type === 'variable' && (
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <h3 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
-                    <span className="w-2 h-2 bg-[#048B9A] rounded-full"></span>
-                    Couleurs
-                  </h3>
-                  <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto custom-scrollbar">
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <h3 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
+                      <span className="w-2 h-2 bg-[#048B9A] rounded-full"></span>
+                      Couleurs
+                    </h3>
+                    <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto custom-scrollbar">
                     {availableColors.map(color => (
                       <label key={color.id} className="flex items-center p-2 hover:bg-white rounded-md transition-colors">
                         <input
                           type="checkbox"
                           checked={formData.colors.includes(color.id)}
                           onChange={(e) => {
-                            const colorId = parseInt(color.id, 10);
-                            const newColors = e.target.checked
-                              ? [...formData.colors, colorId]
-                              : formData.colors.filter(id => id !== colorId);
-                            setFormData({...formData, colors: newColors});
+                            const isChecked = e.target.checked;
+                            let updatedColors;
+                            if (isChecked) {
+                              setFormData({...formData, colors: [...formData.colors, color.id]});
+                            }else {
+                              updatedColors = formData.colors.filter(id => id !== color.id);
+                            }
+                            setFormData({...formData, colors: updatedColors});
                           }}
                           className="rounded border-gray-300 text-[#048B9A] focus:ring-[#048B9A]"
                         />
@@ -555,13 +586,16 @@ export default function AddProductPage() {
                       >
                         <input
                           type="checkbox"
-                          checked={formData.sizes.includes(size.id)}
+                          checked={formData.sizes.includes (size.id)}
                           onChange={(e) => {
-                            const sizeId = parseInt(size.id, 10);
-                            const newSizes = e.target.checked
-                              ? [...formData.sizes, sizeId]
-                              : formData.sizes.filter(id => id !== sizeId);
-                            setFormData({...formData, sizes: newSizes});
+                            const isChecked = e.target.checked;
+                            let updatedSizes;
+                            if (isChecked) {
+                              updatedSizes = [...formData.sizes, size.id];
+                            } else {
+                              updatedSizes = formData.sizes.filter ((id) => id !== size.id);
+                            }
+                            setFormData ({...formData, sizes: updatedSizes});
                           }}
                           className="sr-only"
                         />
@@ -591,11 +625,14 @@ export default function AddProductPage() {
                         type="checkbox"
                         checked={formData.etiquettes.includes(tag.id)}
                         onChange={(e) => {
-                          const tagId = parseInt(tag.id, 10);
-                          const newTags = e.target.checked
-                            ? [...formData.etiquettes, tagId]
-                            : formData.etiquettes.filter(id => id !== tagId);
-                          setFormData({...formData, etiquettes: newTags});
+                          const isChecked = e.target.checked;
+                          let updateEtiquettes;
+                          if (isChecked) {
+                            updateEtiquettes = [...formData.etiquettes, tag.id];
+                          } else {
+                            updateEtiquettes = formData.etiquettes.filter ((id) => id !== tag.id);
+                          }
+                          setFormData ({...formData, etiquettes: updateEtiquettes});
                         }}
                         className="rounded border-gray-300 text-[#048B9A] focus:ring-[#048B9A]"
                       />
@@ -639,9 +676,10 @@ export default function AddProductPage() {
                 <input
                   type="file"
                   multiple
-                  accept="image/*"
+                  accept="image/png, image/jpeg"
                   onChange={handleImageChange}
                   className="hidden"
+                  ref={ref}
                 />
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
                   <FaPlus className="w-8 h-8 text-gray-400" />
