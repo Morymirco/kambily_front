@@ -277,7 +277,7 @@ export default function AddProductPage() {
       });
       
       
-      const url = 'http://localhost:8000/products/create/';
+      const url = 'https://api.kambily.store/products/create/';
       const meta = {
         method: 'POST',
         body: dataSended,
@@ -553,8 +553,8 @@ export default function AddProductPage() {
                         />
                         <span className="ml-2 text-sm text-gray-700 flex items-center gap-2">
                           {color.hex_code && (
-                            <span 
-                              className="w-4 h-4 rounded-full border border-gray-200" 
+                            <span
+                              className="w-4 h-4 rounded-full border border-gray-200"
                               style={{ backgroundColor: color.hex_code }}
                             ></span>
                           )}
@@ -575,12 +575,12 @@ export default function AddProductPage() {
                   </h3>
                   <div className="grid grid-cols-2 gap-2">
                     {availableSizes.map(size => (
-                      <label 
-                        key={size.id} 
+                      <label
+                        key={size.id}
                         className={`
                           flex items-center justify-center p-2 rounded-md cursor-pointer transition-all
-                          ${formData.sizes.includes(size.id) 
-                            ? 'bg-[#048B9A] text-white' 
+                          ${formData.sizes.includes(size.id)
+                            ? 'bg-[#048B9A] text-white'
                             : 'bg-white text-gray-700 hover:bg-gray-100'}
                         `}
                       >
@@ -614,8 +614,8 @@ export default function AddProductPage() {
                 </h3>
                 <div className="space-y-2 max-h-48 overflow-y-auto custom-scrollbar">
                   {availableTags.map(tag => (
-                    <label 
-                      key={tag.id} 
+                    <label
+                      key={tag.id}
                       className={`
                         flex items-center p-2 hover:bg-white rounded-md transition-colors
                         ${formData.etiquettes.includes(tag.id) ? 'bg-white' : ''}
@@ -713,4 +713,4 @@ export default function AddProductPage() {
       </div>
     </div>
   );
-} 
+}
