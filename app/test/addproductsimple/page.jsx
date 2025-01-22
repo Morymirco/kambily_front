@@ -54,12 +54,34 @@ export default function AddProductSimple() {
         return;
       }
 
+    //   const dataSended = new FormData();
+
+    //   // Ajout des données par défaut
+    //   Object.entries(defaultData).forEach(([key, value]) => {
+    //     dataSended.append(key, value);
+    //   });
+    // Créez un objet FormData
       const dataSended = new FormData();
 
-      // Ajout des données par défaut
-      Object.entries(defaultData).forEach(([key, value]) => {
-        dataSended.append(key, value);
-      });
+      dataSended.append('name', defaultData.name);
+      dataSended.append('short_description', defaultData.short_description);
+      dataSended.append('long_description', defaultData.long_description);
+      dataSended.append('regular_price', defaultData.regular_price);
+      dataSended.append('promo_price', defaultData.promo_price);
+      dataSended.append('sku', defaultData.sku);
+      dataSended.append('stock_status', defaultData.stock_status);
+      dataSended.append('weight', defaultData.weight);
+      dataSended.append('length', defaultData.length);
+      dataSended.append('width', defaultData.width);
+      dataSended.append('height', defaultData.height);
+      dataSended.append('product_type', defaultData.product_type);
+      dataSended.append('etat_stock', defaultData.etat_stock);
+      dataSended.append('quantity', defaultData.quantity);
+      dataSended.append('categories', `[${defaultData.categories}]`);
+      dataSended.append('sizes', `[${defaultData.sizes}]`);
+      dataSended.append('etiquettes', `[${defaultData.etiquettes}]`);
+      dataSended.append('colors', `[${defaultData.colors}]`)
+      
 
       // Ajout des images
       Array.from(ref.current.files).forEach(file => {

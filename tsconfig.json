@@ -22,6 +22,6 @@
       "@/*": ["./*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "app/page.jsx", "app/(main)/page.jsx", "app/(main)/layout.jsx", "app/layout.jsx"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "app/page.jsx", "app/(main)/page.jsx", "app/(main)/layout.jsx", "app/layout.jsx", "app/test/addproductsanswebsocket/components/page.jsx"],
   "exclude": ["node_modules"]
 }
