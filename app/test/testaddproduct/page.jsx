@@ -29,10 +29,10 @@
 //     images: []
 //   });
   
-//   const HOST = 'api.kambily.store'
-//   const PORT = '8000'
-//   const PROTOCOL_HTTP = 'https'
-//   const PROTOCOL_WS = 'ws'
+  const HOST = 'localhost'
+  const PORT = '8000'
+  const PROTOCOL_HTTP = 'http'
+  const PROTOCOL_WS = 'ws'
 
 //   const [loading, setLoading] = useState(false);
 //   const [error, setError] = useState(null);
@@ -44,16 +44,60 @@
 //   const [availableTags, setAvailableTags] = useState([]);
 //   const ref = useRef(null)
 
-//   const router = useRouter();
-//   const { isConnected, sendMessage } = useWebSocket();
+  const router = useRouter();
 
-//   useEffect(() => {
-//     const token = localStorage.getItem('access_token');
-//     if (!token) {
-//       router.push('/login');
-//       return;
-//     }
-//     localStorage.setItem('access_token', token);
+  function websocketManagement(){
+    // Créer une connexion WebSocket avec l'URL du serveur
+    const socket = new WebSocket(`${PROTOCOL_WS}://${HOST}:${PORT}/websocket/`);
+    
+    // Lorsque la connexion est ouverte
+    socket.onopen = function(event) {
+      console.log("Connexion WebSocket établie avec succès.");
+      
+      // Vous pouvez envoyer un message une fois la connexion établie
+      socket.send(JSON.stringify({ message: "Hello, Server!" }));
+    };
+    
+    // Écouter les messages du serveu
+    socket.onmessage = function(event) {
+      console.log("Message du serveur:", event.data);
+      // Essayer de convertir les messages qui viennent du serveur
+      try {
+        const jsonData = JSON.parse(event.data);
+        if(jsonData.code === 1){
+          // cela veux dire que un produit a été ajouté par l'administrateur
+          // mettre une logique pour que tous les clients sache
+          // ça peut etre reactualiser la variables qui contient les produits de la base de donnée en local
+          //etc
+        }
+      }catch (e) {
+        console.error("Erreur de decodage du message du serveur: " + e.message);
+      }
+    };
+    
+    // Lorsque la connexion est fermée
+    socket.onclose = function(event) {
+      console.log("Connexion WebSocket fermée.");
+    };
+    
+    // En cas d'erreur
+    socket.onerror = function(error) {
+      console.error("Erreur WebSocket:", error);
+    };
+  }
+  
+  // Vérifier l'authentification admin au chargement
+  useEffect(() => {
+    // Avant la déconnexion ou avant de rediriger l'utilisateur
+    const currentRoute = window.location.pathname;  // Cela récupère la route actuelle
+    localStorage.setItem('redirectRoute', currentRoute);  // Stocke la route dans le localStorage
+    
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      router.push('/login');
+      return;
+    }
+    localStorage.setItem('access_token', token);
     
 //     // La gestion WebSocket est maintenant gérée par le provider
     
@@ -232,30 +276,30 @@
 //       });
       
       
-//       const url = 'https://api.kambily.store/products/create/';
-//       const meta = {
-//         method: 'POST',
-//         body: dataSended,
-//         headers : {
-//           'Authorization' : `Bearer ${token}`,
-//         },
-//       };
-//       const promise = fetch(url, meta)
-//       promise.then(response => response.json() ) // pour ne pas bloquer l'interface user
-//       .then(data => {
-//         console.log(data);
-//         setLoading(false)
-//       })
-//       .catch(error => {
-//         setError(error.message);
-//         setLoading(false)
-//         console.log(error.message);
-//       });
-//     }catch (e) {
-//       setError(error.message);
-//       setLoading(false)
-//     }
-//   }
+      const url = 'http://localhost:8000/products/create/';
+      const meta = {
+        method: 'POST',
+        body: dataSended,
+        headers : {
+          'Authorization' : `Bearer ${token}`,
+        },
+      };
+      const promise = fetch(url, meta)
+      promise.then(response => response.json() ) // pour ne pas bloquer l'interface user
+      .then(data => {
+        console.log(data);
+        setLoading(false)
+      })
+      .catch(error => {
+        setError(error.message);
+        setLoading(false)
+        console.log(error.message);
+      });
+    }catch (e) {
+      setError(error.message);
+      setLoading(false)
+    }
+  }
 
 //   return (
 //     <div className="min-h-screen bg-gray-50 py-8 px-4">
@@ -481,128 +525,128 @@
 //                 </div>
 //               </div>
               
-//               {/* Couleurs - Visible uniquement si le type est "variable" */}
-//               {formData.product_type === 'variable' && (
-//                   <div className="bg-gray-50 p-4 rounded-lg">
-//                     <h3 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
-//                       <span className="w-2 h-2 bg-[#048B9A] rounded-full"></span>
-//                       Couleurs
-//                     </h3>
-//                     <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto custom-scrollbar">
-//                     {availableColors.map(color => (
-//                       <label key={color.id} className="flex items-center p-2 hover:bg-white rounded-md transition-colors">
-//                         <input
-//                           type="checkbox"
-//                           checked={formData.colors.includes(color.id)}
-//                           onChange={(e) => {
-//                             const isChecked = e.target.checked;
-//                             let updatedColors;
-//                             if (isChecked) {
-//                               setFormData({...formData, colors: [...formData.colors, color.id]});
-//                             }else {
-//                               updatedColors = formData.colors.filter(id => id !== color.id);
-//                             }
-//                             setFormData({...formData, colors: updatedColors});
-//                           }}
-//                           className="rounded border-gray-300 text-[#048B9A] focus:ring-[#048B9A]"
-//                         />
-//                         <span className="ml-2 text-sm text-gray-700 flex items-center gap-2">
-//                           {color.hex_code && (
-//                             <span 
-//                               className="w-4 h-4 rounded-full border border-gray-200" 
-//                               style={{ backgroundColor: color.hex_code }}
-//                             ></span>
-//                           )}
-//                           {color.name}
-//                         </span>
-//                       </label>
-//                     ))}
-//                   </div>
-//                 </div>
-//               )}
+              {/* Couleurs - Visible uniquement si le type est "variable" */}
+              {formData.product_type === 'variable' && (
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <h3 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
+                      <span className="w-2 h-2 bg-[#048B9A] rounded-full"></span>
+                      Couleurs
+                    </h3>
+                    <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto custom-scrollbar">
+                    {availableColors.map(color => (
+                      <label key={color.id} className="flex items-center p-2 hover:bg-white rounded-md transition-colors">
+                        <input
+                          type="checkbox"
+                          checked={formData.colors.includes(color.id)}
+                          onChange={(e) => {
+                            const isChecked = e.target.checked;
+                            let updatedColors;
+                            if (isChecked) {
+                              setFormData({...formData, colors: [...formData.colors, color.id]});
+                            }else {
+                              updatedColors = formData.colors.filter(id => id !== color.id);
+                            }
+                            setFormData({...formData, colors: updatedColors});
+                          }}
+                          className="rounded border-gray-300 text-[#048B9A] focus:ring-[#048B9A]"
+                        />
+                        <span className="ml-2 text-sm text-gray-700 flex items-center gap-2">
+                          {color.hex_code && (
+                            <span 
+                              className="w-4 h-4 rounded-full border border-gray-200" 
+                              style={{ backgroundColor: color.hex_code }}
+                            ></span>
+                          )}
+                          {color.name}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
 
-//               {/* Tailles - Visible uniquement si le type est "variable" */}
-//               {formData.product_type === 'variable' && (
-//                 <div className="bg-gray-50 p-4 rounded-lg">
-//                   <h3 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
-//                     <span className="w-2 h-2 bg-[#048B9A] rounded-full"></span>
-//                     Tailles
-//                   </h3>
-//                   <div className="grid grid-cols-2 gap-2">
-//                     {availableSizes.map(size => (
-//                       <label 
-//                         key={size.id} 
-//                         className={`
-//                           flex items-center justify-center p-2 rounded-md cursor-pointer transition-all
-//                           ${formData.sizes.includes(size.id) 
-//                             ? 'bg-[#048B9A] text-white' 
-//                             : 'bg-white text-gray-700 hover:bg-gray-100'}
-//                         `}
-//                       >
-//                         <input
-//                           type="checkbox"
-//                           checked={formData.sizes.includes (size.id)}
-//                           onChange={(e) => {
-//                             const isChecked = e.target.checked;
-//                             let updatedSizes;
-//                             if (isChecked) {
-//                               updatedSizes = [...formData.sizes, size.id];
-//                             } else {
-//                               updatedSizes = formData.sizes.filter ((id) => id !== size.id);
-//                             }
-//                             setFormData ({...formData, sizes: updatedSizes});
-//                           }}
-//                           className="sr-only"
-//                         />
-//                         <span className="text-sm font-medium">{size.name}</span>
-//                       </label>
-//                     ))}
-//                   </div>
-//                 </div>
-//               )}
+              {/* Tailles - Visible uniquement si le type est "variable" */}
+              {formData.product_type === 'variable' && (
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h3 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
+                    <span className="w-2 h-2 bg-[#048B9A] rounded-full"></span>
+                    Tailles
+                  </h3>
+                  <div className="grid grid-cols-2 gap-2">
+                    {availableSizes.map(size => (
+                      <label 
+                        key={size.id} 
+                        className={`
+                          flex items-center justify-center p-2 rounded-md cursor-pointer transition-all
+                          ${formData.sizes.includes(size.id) 
+                            ? 'bg-[#048B9A] text-white' 
+                            : 'bg-white text-gray-700 hover:bg-gray-100'}
+                        `}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={formData.sizes.includes (size.id)}
+                          onChange={(e) => {
+                            const isChecked = e.target.checked;
+                            let updatedSizes;
+                            if (isChecked) {
+                              updatedSizes = [...formData.sizes, size.id];
+                            } else {
+                              updatedSizes = formData.sizes.filter ((id) => id !== size.id);
+                            }
+                            setFormData ({...formData, sizes: updatedSizes});
+                          }}
+                          className="sr-only"
+                        />
+                        <span className="text-sm font-medium">{size.name}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
 
-//               {/* Tags */}
-//               <div className="bg-gray-50 p-4 rounded-lg">
-//                 <h3 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
-//                   <span className="w-2 h-2 bg-[#048B9A] rounded-full"></span>
-//                   Étiquettes
-//                 </h3>
-//                 <div className="space-y-2 max-h-48 overflow-y-auto custom-scrollbar">
-//                   {availableTags.map(tag => (
-//                     <label 
-//                       key={tag.id} 
-//                       className={`
-//                         flex items-center p-2 hover:bg-white rounded-md transition-colors
-//                         ${formData.etiquettes.includes(tag.id) ? 'bg-white' : ''}
-//                       `}
-//                     >
-//                       <input
-//                         type="checkbox"
-//                         checked={formData.etiquettes.includes(tag.id)}
-//                         onChange={(e) => {
-//                           const isChecked = e.target.checked;
-//                           let updateEtiquettes;
-//                           if (isChecked) {
-//                             updateEtiquettes = [...formData.etiquettes, tag.id];
-//                           } else {
-//                             updateEtiquettes = formData.etiquettes.filter ((id) => id !== tag.id);
-//                           }
-//                           setFormData ({...formData, etiquettes: updateEtiquettes});
-//                         }}
-//                         className="rounded border-gray-300 text-[#048B9A] focus:ring-[#048B9A]"
-//                       />
-//                       <div className="ml-2">
-//                         <span className="text-sm text-gray-700">{tag.name}</span>
-//                         {tag.description && (
-//                           <p className="text-xs text-gray-500 mt-0.5">{tag.description}</p>
-//                         )}
-//                       </div>
-//                     </label>
-//                   ))}
-//                 </div>
-//               </div>
-//             </div>
-//           </div>
+              {/* Tags */}
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <h3 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
+                  <span className="w-2 h-2 bg-[#048B9A] rounded-full"></span>
+                  Étiquettes
+                </h3>
+                <div className="space-y-2 max-h-48 overflow-y-auto custom-scrollbar">
+                  {availableTags.map(tag => (
+                    <label 
+                      key={tag.id} 
+                      className={`
+                        flex items-center p-2 hover:bg-white rounded-md transition-colors
+                        ${formData.etiquettes.includes(tag.id) ? 'bg-white' : ''}
+                      `}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={formData.etiquettes.includes(tag.id)}
+                        onChange={(e) => {
+                          const isChecked = e.target.checked;
+                          let updateEtiquettes;
+                          if (isChecked) {
+                            updateEtiquettes = [...formData.etiquettes, tag.id];
+                          } else {
+                            updateEtiquettes = formData.etiquettes.filter ((id) => id !== tag.id);
+                          }
+                          setFormData ({...formData, etiquettes: updateEtiquettes});
+                        }}
+                        className="rounded border-gray-300 text-[#048B9A] focus:ring-[#048B9A]"
+                      />
+                      <div className="ml-2">
+                        <span className="text-sm text-gray-700">{tag.name}</span>
+                        {tag.description && (
+                          <p className="text-xs text-gray-500 mt-0.5">{tag.description}</p>
+                        )}
+                      </div>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
 
 //           {/* Images */}
 //           <div className="bg-white p-6 rounded-lg shadow-sm">
@@ -650,22 +694,22 @@
 //             </div>
 //           )}
 
-//           <button
-//             type="submit"
-//             disabled={loading}
-//             className="w-full bg-[#048B9A] text-white py-3 rounded-lg hover:bg-[#037483] disabled:opacity-50 disabled:cursor-not-allowed"
-//           >
-//             {loading ? (
-//               <div className="flex items-center justify-center">
-//                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-//                 Création en cours...
-//               </div>
-//             ) : (
-//               'Créer le produit'
-//             )}
-//           </button>
-//         </form>
-//       </div>
-//     </div>
-//   );
-// } 
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-[#048B9A] text-white py-3 rounded-lg hover:bg-[#037483] disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {loading ? (
+              <div className="flex items-center justify-center">
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                Création en cours...
+              </div>
+            ) : (
+              'Créer le produit'
+            )}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+} 
