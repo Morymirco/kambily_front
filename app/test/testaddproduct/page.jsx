@@ -28,10 +28,10 @@ export default function AddProductPage() {
     images: []
   });
   
-  const HOST = 'localhost'
+  const HOST = 'api.kambily.store'
   const PORT = '8000'
   const PROTOCOL_HTTP = 'http'
-  const PROTOCOL_WS = 'ws'
+  const PROTOCOL_WS = 'wss'
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -47,7 +47,7 @@ export default function AddProductPage() {
 
   function websocketManagement(){
     // Créer une connexion WebSocket avec l'URL du serveur
-    const socket = new WebSocket(`${PROTOCOL_WS}://${HOST}:${PORT}/websocket/`);
+    const socket = new WebSocket('ws://54.214.37.131:8001/websocket/');
     
     // Lorsque la connexion est ouverte
     socket.onopen = function(event) {
