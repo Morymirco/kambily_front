@@ -101,7 +101,7 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-6">
       <div className="w-full max-w-md space-y-8">
         <div className="text-center">
           <Image

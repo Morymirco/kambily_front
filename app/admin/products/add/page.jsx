@@ -1,47 +1,269 @@
 'use client'
 import Spinner from '@/app/Components/ui/Spinner';
 import { motion } from 'framer-motion';
-import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import { FaCheck, FaCloudUploadAlt, FaTimes } from 'react-icons/fa';
 
+function generateRandomSlug(length) {
+  return Math.random().toString(36).substring(2, length + 2);
+}
+
+function generateRandomNumber() {
+  return Math.floor(Math.random() * 100) + 1;
+}
+
 export default function AddProduct() {
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const ref = useRef(null);
+  const [imageFiles, setImageFiles] = useState([]);
+  const [imagesPreviews, setImagesPreviews] = useState([]);
+  const [availableCategories, setAvailableCategories] = useState([]);
+  const [availableColors, setAvailableColors] = useState([]);
+  const [availableSizes, setAvailableSizes] = useState([]);
+  const [availableTags, setAvailableTags] = useState([]);
+
+  const [formData, setFormData] = useState({
+    name: generateRandomSlug(8),
+    short_description: generateRandomSlug(18),
+    long_description: generateRandomSlug(100),
+    regular_price: 12000,
+    promo_price: 15000,
+    sku: generateRandomSlug(8),
+    stock_status: true,
+    weight: generateRandomNumber(),
+    length: generateRandomNumber(),
+    width: generateRandomNumber(),
+    height: generateRandomNumber(),
+    product_type: 'variable',
+    etat_stock: 'En Stock',
+    quantity: generateRandomNumber(),
+    categories: [],
+    colors: [],
+    sizes: [],
+    etiquettes: []
+  });
+
+  // Fonctions de récupération des données
+  const fetchCategories = async () => {
+    try {
+      const token = localStorage.getItem('access_token');
+      const response = await fetch('https://api.kambily.store/categories/', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (!response.ok) throw new Error('Erreur lors du chargement des catégories');
+      const data = await response.json();
+      setAvailableCategories(data);
+    } catch (err) {
+      toast.error('Erreur lors du chargement des catégories');
+      console.error(err);
+    }
+  };
+
+  const fetchColors = async () => {
+    try {
+      const token = localStorage.getItem('access_token');
+      const response = await fetch('https://api.kambily.store/colors/', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (!response.ok) throw new Error('Erreur lors du chargement des couleurs');
+      const data = await response.json();
+      setAvailableColors(data);
+    } catch (err) {
+      toast.error('Erreur lors du chargement des couleurs');
+      console.error(err);
+    }
+  };
+
+  const fetchSizes = async () => {
+    try {
+      const token = localStorage.getItem('access_token');
+      const response = await fetch('https://api.kambily.store/sizes/', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (!response.ok) throw new Error('Erreur lors du chargement des tailles');
+      const data = await response.json();
+      setAvailableSizes(data);
+    } catch (err) {
+      toast.error('Erreur lors du chargement des tailles');
+      console.error(err);
+    }
+  };
+
+  const fetchTags = async () => {
+    try {
+      const token = localStorage.getItem('access_token');
+      const response = await fetch('https://api.kambily.store/tags/', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (!response.ok) throw new Error('Erreur lors du chargement des étiquettes');
+      const data = await response.json();
+      setAvailableTags(data);
+    } catch (err) {
+      toast.error('Erreur lors du chargement des étiquettes');
+      console.error(err);
+    }
+  };
+
+  // useEffect pour charger les données
+  useEffect(() => {
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      router.push('/login');
+      return;
+    }
+
+    // Charger toutes les données nécessaires
+    const loadAllData = async () => {
+      try {
+        await Promise.all([
+          fetchCategories(),
+          fetchColors(),
+          fetchSizes(),
+          fetchTags()
+        ]);
+      } catch (err) {
+        console.error('Erreur lors du chargement des données:', err);
+      }
+    };
+
+    loadAllData();
+  }, [router]);
+
+  // Gestionnaires de changement
+  const handleCategoryChange = (categoryId) => {
+    setFormData(prev => ({
+      ...prev,
+      categories: prev.categories.includes(categoryId)
+        ? prev.categories.filter(id => id !== categoryId)
+        : [...prev.categories, categoryId]
+    }));
+  };
+
+  const handleColorChange = (colorId) => {
+    setFormData(prev => ({
+      ...prev,
+      colors: prev.colors.includes(colorId)
+        ? prev.colors.filter(id => id !== colorId)
+        : [...prev.colors, colorId]
+    }));
+  };
+
+  const handleSizeChange = (sizeId) => {
+    setFormData(prev => ({
+      ...prev,
+      sizes: prev.sizes.includes(sizeId)
+        ? prev.sizes.filter(id => id !== sizeId)
+        : [...prev.sizes, sizeId]
+    }));
+  };
+
+  const handleTagChange = (tagId) => {
+    setFormData(prev => ({
+      ...prev,
+      etiquettes: prev.etiquettes.includes(tagId)
+        ? prev.etiquettes.filter(id => id !== tagId)
+        : [...prev.etiquettes, tagId]
+    }));
+  };
+
+  // Gestion des images
+  const handleImageChange = (e) => {
+    const files = Array.from(e.target.files);
+    
+    // Créer les previews
+    const newPreviews = files.map(file => URL.createObjectURL(file));
+    setImagesPreviews(prev => [...prev, ...newPreviews]);
+    
+    // Stocker les fichiers
+    setImageFiles(prev => [...prev, ...files]);
+  };
+
+  const handleRemoveImage = (index) => {
+    URL.revokeObjectURL(imagesPreviews[index]);
+    setImageFiles(prev => prev.filter((_, i) => i !== index));
+    setImagesPreviews(prev => prev.filter((_, i) => i !== index));
+  };
+
+  // Soumission du formulaire
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (loading) return;
+    
+    setLoading(true);
+    setError(null);
+
+    try {
+      const token = localStorage.getItem('access_token');
+      if (!token) {
+        toast.error('Session expirée, veuillez vous reconnecter');
+        router.push('/login');
+        return;
+      }
+
+      // Validation des images
+      if (imageFiles.length === 0) {
+        throw new Error('Au moins une image est requise');
+      }
+
+      const dataSended = new FormData();
+
+      // Ajout des données de base
+      Object.entries(formData).forEach(([key, value]) => {
+        if (!['categories', 'colors', 'sizes', 'etiquettes'].includes(key)) {
+          dataSended.append(key, value);
+        }
+      });
+
+      // Formatage des tableaux
+      dataSended.append('categories', JSON.stringify(formData.categories));
+      dataSended.append('etiquettes', JSON.stringify(formData.etiquettes));
+      dataSended.append('colors', JSON.stringify(formData.colors));
+      dataSended.append('sizes', JSON.stringify(formData.sizes));
+
+      // Ajout des images
+      imageFiles.forEach(file => {
+        dataSended.append('images', file);
+      });
+
+      const response = await fetch('https://api.kambily.store/products/create/', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: dataSended
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Erreur lors de la création du produit');
+      }
+
+      toast.success('Produit créé avec succès !');
+      router.push('/admin/products');
+    } catch (error) {
+      setError(error.message);
+      toast.error(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [mainImage, setMainImage] = useState(null);
   const [galleryImages, setGalleryImages] = useState([]);
-  const [productData, setProductData] = useState({
-    name: '',
-    regularPrice: '',
-    salePrice: '',
-    description: '',
-    shortDescription: '',
-    sku: '',
-    stockStatus: 'instock', // instock, outofstock, onbackorder
-    manageStock: false,
-    stockQuantity: '',
-    weight: '',
-    dimensions: {
-      length: '',
-      width: '',
-      height: ''
-    },
-    categories: [],
-    tags: [],
-    attributes: [],
-    taxStatus: 'taxable', // taxable, shipping, none
-    taxClass: 'standard', // standard, reduced, zero
-    shippingClass: '',
-    status: 'publish', // publish, draft, pending
-    featured: false,
-    soldIndividually: false,
-    reviewsAllowed: true,
-    virtualProduct: false,
-    downloadable: false,
-    externalUrl: '',
-    buttonText: '',
-    purchaseNote: '',
-    menuOrder: 0
-  });
   const [productType, setProductType] = useState('simple');
   const [variations, setVariations] = useState([]);
   const [attributes, setAttributes] = useState([]);
@@ -113,56 +335,6 @@ export default function AddProduct() {
     setGalleryImages(newImages);
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-
-    try {
-      // Simuler l'envoi
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      toast.success('Produit ajouté avec succès !');
-      // Réinitialiser le formulaire
-      setProductData({
-        name: '',
-        regularPrice: '',
-        salePrice: '',
-        description: '',
-        shortDescription: '',
-        sku: '',
-        stockStatus: 'instock',
-        manageStock: false,
-        stockQuantity: '',
-        weight: '',
-        dimensions: {
-          length: '',
-          width: '',
-          height: ''
-        },
-        categories: [],
-        tags: [],
-        attributes: [],
-        taxStatus: 'taxable',
-        taxClass: 'standard',
-        shippingClass: '',
-        status: 'publish',
-        featured: false,
-        soldIndividually: false,
-        reviewsAllowed: true,
-        virtualProduct: false,
-        downloadable: false,
-        externalUrl: '',
-        buttonText: '',
-        purchaseNote: '',
-        menuOrder: 0
-      });
-      setGalleryImages([]);
-    } catch (error) {
-      toast.error('Une erreur est survenue');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
   const handleAttributeAdd = () => {
     setAttributes([...attributes, { name: '', values: [], visible: true }]);
   };
@@ -207,8 +379,8 @@ export default function AddProduct() {
                 </label>
                 <input
                   type="text"
-                  value={productData.name}
-                  onChange={(e) => setProductData({ ...productData, name: e.target.value })}
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#048B9A] focus:border-[#048B9A] outline-none"
                   required
                 />
@@ -220,8 +392,8 @@ export default function AddProduct() {
                     Description courte
                   </label>
                   <textarea
-                    value={productData.shortDescription}
-                    onChange={(e) => setProductData({ ...productData, shortDescription: e.target.value })}
+                    value={formData.short_description}
+                    onChange={(e) => setFormData({ ...formData, short_description: e.target.value })}
                     rows={3}
                     className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#048B9A] focus:border-[#048B9A] outline-none resize-none"
                   />
@@ -231,8 +403,8 @@ export default function AddProduct() {
                     Description complète
                   </label>
                   <textarea
-                    value={productData.description}
-                    onChange={(e) => setProductData({ ...productData, description: e.target.value })}
+                    value={formData.long_description}
+                    onChange={(e) => setFormData({ ...formData, long_description: e.target.value })}
                     rows={3}
                     className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#048B9A] focus:border-[#048B9A] outline-none resize-none"
                   />
@@ -282,8 +454,8 @@ export default function AddProduct() {
                 </label>
                 <input
                   type="number"
-                  value={productData.regularPrice}
-                  onChange={(e) => setProductData({ ...productData, regularPrice: e.target.value })}
+                  value={formData.regular_price}
+                  onChange={(e) => setFormData({ ...formData, regular_price: e.target.value })}
                   className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#048B9A] focus:border-[#048B9A] outline-none"
                 />
               </div>
@@ -293,8 +465,8 @@ export default function AddProduct() {
                 </label>
                 <input
                   type="number"
-                  value={productData.salePrice}
-                  onChange={(e) => setProductData({ ...productData, salePrice: e.target.value })}
+                  value={formData.promo_price}
+                  onChange={(e) => setFormData({ ...formData, promo_price: e.target.value })}
                   className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#048B9A] focus:border-[#048B9A] outline-none"
                 />
               </div>
@@ -304,8 +476,8 @@ export default function AddProduct() {
                 </label>
                 <input
                   type="text"
-                  value={productData.sku}
-                  onChange={(e) => setProductData({ ...productData, sku: e.target.value })}
+                  value={formData.sku}
+                  onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
                   className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#048B9A] focus:border-[#048B9A] outline-none"
                 />
               </div>
@@ -314,8 +486,8 @@ export default function AddProduct() {
                   État du stock
                 </label>
                 <select
-                  value={productData.stockStatus}
-                  onChange={(e) => setProductData({ ...productData, stockStatus: e.target.value })}
+                  value={formData.etat_stock}
+                  onChange={(e) => setFormData({ ...formData, etat_stock: e.target.value })}
                   className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#048B9A] focus:border-[#048B9A] outline-none"
                 >
                   <option value="instock">En stock</option>
@@ -473,8 +645,8 @@ export default function AddProduct() {
                 </label>
                 <input
                   type="number"
-                  value={productData.weight}
-                  onChange={(e) => setProductData({ ...productData, weight: e.target.value })}
+                  value={formData.weight}
+                  onChange={(e) => setFormData({ ...formData, weight: e.target.value })}
                   className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#048B9A] focus:border-[#048B9A] outline-none"
                 />
               </div>
@@ -482,11 +654,8 @@ export default function AddProduct() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">L (cm)</label>
                 <input
                   type="number"
-                  value={productData.dimensions.length}
-                  onChange={(e) => setProductData({
-                    ...productData,
-                    dimensions: { ...productData.dimensions, length: e.target.value }
-                  })}
+                  value={formData.length}
+                  onChange={(e) => setFormData({ ...formData, length: e.target.value })}
                   className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#048B9A] focus:border-[#048B9A] outline-none"
                 />
               </div>
@@ -494,11 +663,8 @@ export default function AddProduct() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">l (cm)</label>
                 <input
                   type="number"
-                  value={productData.dimensions.width}
-                  onChange={(e) => setProductData({
-                    ...productData,
-                    dimensions: { ...productData.dimensions, width: e.target.value }
-                  })}
+                  value={formData.width}
+                  onChange={(e) => setFormData({ ...formData, width: e.target.value })}
                   className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#048B9A] focus:border-[#048B9A] outline-none"
                 />
               </div>
@@ -506,11 +672,8 @@ export default function AddProduct() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">H (cm)</label>
                 <input
                   type="number"
-                  value={productData.dimensions.height}
-                  onChange={(e) => setProductData({
-                    ...productData,
-                    dimensions: { ...productData.dimensions, height: e.target.value }
-                  })}
+                  value={formData.height}
+                  onChange={(e) => setFormData({ ...formData, height: e.target.value })}
                   className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#048B9A] focus:border-[#048B9A] outline-none"
                 />
               </div>

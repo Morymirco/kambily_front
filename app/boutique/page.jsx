@@ -3,7 +3,15 @@ import { AnimatePresence, motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { FaChevronLeft, FaChevronRight, FaEye, FaFacebookF, FaFilter, FaLink, FaSearch, FaShoppingCart, FaTimes, FaTwitter, FaWhatsapp } from 'react-icons/fa';
+import {
+  FaChevronLeft, FaChevronRight, FaEye,
+  FaFacebookF,
+  FaFilter,
+  FaLink,
+  FaSearch,
+  FaShoppingCart, FaTimes,
+  FaTwitter, FaWhatsapp
+} from 'react-icons/fa';
 
 // Composant Toast modifié
 const Toast = ({ message, image, onView, isError }) => (
@@ -155,10 +163,11 @@ const ProductCard = ({ id, image, gallery = [], title, price, inStock, category,
   const [copySuccess, setCopySuccess] = useState(false);
   const [error, setError] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isFavorite, setIsFavorite] = useState(false);
 
   // Vérifier l'authentification au chargement du composant
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('access_token');
     const checkAuth = async () => {
       if (!token) {
         setIsAuthenticated(false);
@@ -179,7 +188,7 @@ const ProductCard = ({ id, image, gallery = [], title, price, inStock, category,
           setIsAuthenticated(true);
         } else {
           // Si le token n'est pas valide, le supprimer
-          localStorage.removeItem('token');
+          localStorage.removeItem('access_token');
           setIsAuthenticated(false);
         }
       } catch (error) {
@@ -269,6 +278,10 @@ const ProductCard = ({ id, image, gallery = [], title, price, inStock, category,
 
   const handleShare = (platform) => {
     // Implementation of handleShare function
+  };
+
+  const handleToggleFavorite = () => {
+    setIsFavorite(!isFavorite);
   };
 
   if (viewMode === 'list') {
@@ -534,22 +547,22 @@ const ProductCard = ({ id, image, gallery = [], title, price, inStock, category,
         />
       )}
 
-      {/* Modal identique à celui de Produit.jsx */}
+      {/* Modal */}
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
-          <div className="bg-white rounded-lg w-full max-w-5xl relative">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4 overflow-y-auto">
+          <div className="bg-white rounded-lg w-full max-w-5xl relative my-4 max-h-[90vh] overflow-y-auto">
             <button 
               onClick={() => setShowModal(false)}
-              className="absolute top-6 right-6 w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center hover:bg-gray-200 transition-all z-10 group"
+              className="absolute top-4 right-4 w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center hover:bg-gray-200 transition-all z-10"
             >
-              <FaTimes className="w-5 h-5 text-gray-600 group-hover:text-gray-800 transition-colors" />
+              <FaTimes className="w-4 h-4 text-gray-600" />
             </button>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 md:p-6">
               {/* Section image principale et miniatures */}
               <div className="space-y-4">
-                {/* Image principale */}
-                <div className="relative h-[500px] rounded-lg overflow-hidden">
+                {/* Image principale ajustée */}
+                <div className="relative aspect-square md:h-[500px] rounded-lg overflow-hidden">
                   <Image
                     src={allImages[selectedImage]}
                     alt={title}
@@ -574,16 +587,16 @@ const ProductCard = ({ id, image, gallery = [], title, price, inStock, category,
                   )}
                 </div>
 
-                {/* Miniatures */}
+                {/* Miniatures optimisées */}
                 {hasGallery && (
-                  <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+                  <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
                     {allImages.map((img, index) => (
                       <button
                         key={index}
                         onClick={() => setSelectedImage(index)}
-                        className={`relative flex-shrink-0 w-24 h-24 rounded-lg overflow-hidden transition-all ${
+                        className={`relative flex-shrink-0 w-16 h-16 md:w-24 md:h-24 rounded-lg overflow-hidden transition-all ${
                           selectedImage === index 
-                            ? 'ring-2 ring-[#048B9A] opacity-100' 
+                            ? 'ring-2 ring-[#12B886] opacity-100' 
                             : 'opacity-60 hover:opacity-100'
                         }`}
                       >
@@ -599,8 +612,8 @@ const ProductCard = ({ id, image, gallery = [], title, price, inStock, category,
                 )}
               </div>
 
-              {/* Section détails */}
-              <div className="space-y-6">
+              {/* Section détails avec scroll indépendant sur mobile */}
+              <div className="space-y-4 md:space-y-6 overflow-y-auto max-h-[50vh] md:max-h-none md:overflow-visible px-1">
                 {/* Titre */}
                 <h2 className="text-2xl font-bold text-gray-900">{title}</h2>
                 
@@ -608,7 +621,7 @@ const ProductCard = ({ id, image, gallery = [], title, price, inStock, category,
                 {inStock && (
                   <div className="flex items-center text-green-600">
                     <svg 
-                      className="w-4 h-4 mr-1" 
+                      className="w-4 h-4 mr-2" 
                       viewBox="0 0 24 24" 
                       fill="none" 
                       stroke="currentColor"
@@ -627,18 +640,15 @@ const ProductCard = ({ id, image, gallery = [], title, price, inStock, category,
                 )}
 
                 {/* Prix */}
-                <div className="flex items-center gap-3 mb-6">
-                  <span className="text-3xl font-extrabold text-[#048B9A]">
-                    {parseInt(price).toLocaleString('fr-FR')} GNF
-                  </span>
-                </div>
+                <p className="text-3xl font-bold">{price}GNF</p>
 
                 {/* Groupe Quantité + Ajouter au panier */}
                 <div className="flex items-center gap-4">
+                  {/* Sélecteur de quantité */}
                   <div className="flex items-center border rounded-lg h-12">
                     <button
                       onClick={() => handleQuantityChange('decrement')}
-                      className="px-3 h-full text-gray-600 hover:text-[#048B9A] disabled:opacity-50 disabled:cursor-not-allowed border-r"
+                      className="px-3 h-full text-gray-600 hover:text-[#12B886] disabled:opacity-50 disabled:cursor-not-allowed border-r"
                       disabled={quantity <= 1}
                     >
                       -
@@ -648,26 +658,27 @@ const ProductCard = ({ id, image, gallery = [], title, price, inStock, category,
                     </span>
                     <button
                       onClick={() => handleQuantityChange('increment')}
-                      className="px-3 h-full text-gray-600 hover:text-[#048B9A] border-l"
+                      className="px-3 h-full text-gray-600 hover:text-[#12B886] border-l"
                     >
                       +
                     </button>
                   </div>
 
+                  {/* Bouton d'action avec largeur réduite */}
                   <button 
                     onClick={handleAddToCart}
                     disabled={isAddingToCart}
-                    className="w-[200px] bg-[#048B9A] text-white h-12 rounded-lg flex items-center justify-center gap-2 hover:bg-[#037383] transition-colors"
+                    className="w-[200px] bg-[#12B886] text-white h-12 rounded-lg flex items-center justify-center gap-2 hover:bg-[#0CA678] transition-colors"
                   >
                     {isAddingToCart ? (
                       <>
-                        <span className="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full" />
-                        <span className="ml-2">Ajout...</span>
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        <span>Ajout en cours...</span>
                       </>
                     ) : (
                       <>
-                        <FaShoppingCart className="w-4 h-4" />
-                        Ajouter au panier
+                        <FaShoppingCart />
+                        <span>Ajouter au panier</span>
                       </>
                     )}
                   </button>
@@ -680,7 +691,7 @@ const ProductCard = ({ id, image, gallery = [], title, price, inStock, category,
                     {['S', 'M', 'L', 'XL'].map((size) => (
                       <button 
                         key={size}
-                        className="w-10 h-10 border rounded-md flex items-center justify-center hover:border-[#048B9A] hover:text-[#048B9A]"
+                        className="w-10 h-10 border rounded-md flex items-center justify-center hover:border-[#12B886] hover:text-[#12B886]"
                       >
                         {size}
                       </button>
