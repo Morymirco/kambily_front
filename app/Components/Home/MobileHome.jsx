@@ -5,9 +5,9 @@ import ElectronicsSection from '@/app/Components/Home/ElectronicsSection';
 import FreeDeliveryBanner from '@/app/Components/Home/FreeDeliveryBanner';
 import JewelrySection from '@/app/Components/Home/JewelrySection';
 import QualityHeader from '@/app/Components/Home/QualityHeader';
+import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
-import Image from 'next/image';
 
 const ProductSkeleton = () => (
   <div className="border rounded-xl overflow-hidden bg-white animate-pulse">
