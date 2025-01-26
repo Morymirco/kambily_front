@@ -5,21 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="4b768bd8-3767-4912-be3d-c0d581cc3426" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/admin/login/page.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/admin/login/page.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/admin/marketing/page.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/admin/marketing/page.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/admin/page.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/admin/page.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/admin/products/[id]/edit/page.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/admin/products/[id]/edit/page.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/admin/products/[id]/page.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/admin/products/[id]/page.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/admin/products/add/page.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/admin/products/add/page.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/admin/products/categories/page.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/admin/products/categories/page.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/admin/products/page.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/admin/products/page.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/admin/products/reviews/page.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/admin/products/reviews/page.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/admin/products/tags/page.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/admin/products/tags/page.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/login/page.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/login/page.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/page.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/page.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/test/login/page.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/test/login/page.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/test/testaddproduct/page.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/test/testaddproduct/page.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/constants.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/constants.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -88,7 +74,7 @@
       <workItem from="1737650499904" duration="22182000" />
       <workItem from="1737708201262" duration="1808000" />
       <workItem from="1737754148317" duration="62000" />
-      <workItem from="1737833201704" duration="18015000" />
+      <workItem from="1737833201704" duration="18242000" />
     </task>
     <servers />
   </component>
