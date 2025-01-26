@@ -622,7 +622,7 @@ const CategoriesPage = () => {
                       {category.description || 'Description par défaut'}
                     </td>
                     <td className="px-4 py-4 text-sm text-gray-500">
-                      {category.parent_category?.name || '-'}
+                      {category.parent_category}
                     </td>
                     <td className="px-4 py-4 text-sm text-gray-500">
                       {category.x || 0} produits

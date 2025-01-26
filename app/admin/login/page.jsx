@@ -3,10 +3,12 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { FaLock } from 'react-icons/fa';
+import {HOST_IP, PORT, PROTOCOL_HTTP} from "../../constants";
+
 
 const AdminLogin = () => {
   const router = useRouter();
-  const [formData, setFormData] = useState({
+  const [data, setData] = useState({
     email: '',
     password: ''
   });
@@ -15,7 +17,7 @@ const AdminLogin = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setData(prev => ({
       ...prev,
       [name]: value
     }));
@@ -23,15 +25,35 @@ const AdminLogin = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
-    setIsLoading(true);
+    // setError('');
+    // setIsLoading(true);
 
     try {
+      console.log(data)
+      const formData = new FormData()
+      formData.append('email', data.email)
+      formData.append('password', data.password)
+
+      const url = `${PROTOCOL_HTTP}://${HOST_IP}${PORT}/accounts/login/`
+      const meta = {
+        method : 'POST',
+        body: formData,
+      }
+
+      fetch(url, meta)
+      .then(response => response.json())
+      .then(data => {
+        console.log('Réponse du serveur:', data);
+        localStorage.setItem('refresh', )
+      })
+      .catch(error => {
+        console.error('Erreur lors de la requête:', error);
+      });
       // Simuler une connexion
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // await new Promise(resolve => setTimeout(resolve, 1500));
       
       // Rediriger vers le dashboard
-      router.push('/admin');
+      // router.push('/admin');
     } catch (err) {
       setError('Identifiants incorrects');
     } finally {
@@ -81,7 +103,7 @@ const AdminLogin = () => {
                 type="email"
                 autoComplete="email"
                 required
-                value={formData.email}
+                value={data.email}
                 onChange={handleChange}
                 className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-[#048B9A]"
                 placeholder="admin@kambily.com"
@@ -101,7 +123,7 @@ const AdminLogin = () => {
                 type="password"
                 autoComplete="current-password"
                 required
-                value={formData.password}
+                value={data.password}
                 onChange={handleChange}
                 className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-[#048B9A]"
                 placeholder="••••••••"

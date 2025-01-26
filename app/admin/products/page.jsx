@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { FaComments, FaEdit, FaLayerGroup, FaList, FaPlus, FaSearch, FaSort, FaSortDown, FaSortUp, FaTags, FaTrash } from 'react-icons/fa';
+import {HOST_IP, PORT, PROTOCOL_HTTP} from "../../constants";
 
 const ProductsPage = () => {
   const router = useRouter();
@@ -237,11 +238,11 @@ const ProductsPage = () => {
       try {
         const token = localStorage.getItem('access_token');
         if (!token) {
-          router.push('/test/login');
+          router.push('/login');
           return;
         }
 
-        const response = await fetch('https://api.kambily.store/products/', {
+        const response = await fetch(`${PROTOCOL_HTTP}://${HOST_IP}${PORT}/products/`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -258,7 +259,7 @@ const ProductsPage = () => {
         const data = await response.json();
         console.log('Données reçues:', data);
         
-        const transformedProducts = data.map(product => ({
+        const transformedProducts = data.products.map(product => ({
           id: product.id,
           image: product.images?.[0]?.image || '/placeholder.png',
           name: product.name,
@@ -305,25 +306,30 @@ const ProductsPage = () => {
     fetchProducts();
   }, [router]);
 
-  const handleDelete = async (productId) => {
+  const handleDelete = (productId) => {
     if (window.confirm('Êtes-vous sûr de vouloir supprimer ce produit ?')) {
       try {
-        const response = await fetch(`https://api.kambily.store/products/${productId}`, {
+        fetch(`${PROTOCOL_HTTP}://${HOST_IP}${PORT}/products/delete/${productId}/`, {
           method: 'DELETE',
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('access_token')}`
           }
-        });
-
-        if (!response.ok) {
-          throw new Error('Erreur lors de la suppression');
-        }
-
-        toast.success('Produit supprimé avec succès');
-        // Rafraîchir la liste des produits
-        setProducts(products.filter(p => p.id !== productId));
+        })
+            .then((response)=>{
+              return response.json();
+            })
+            .then((response)=>{
+              console.log(response);
+              toast.success('Produit supprimé avec succès');
+              setProducts(products.filter(p => p.id !== productId));
+            })
+            .catch(error => {
+              toast.error('Erreur lors de la suppression du produit ' + error);
+              console.log(error);
+            })
       } catch (err) {
-        toast.error(err.message);
+        toast.error("Erreur survenue lors de la suppression du produit " + err);
+        console.log(err);
       }
     }
   };
@@ -618,11 +624,11 @@ const ProductsPage = () => {
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                    product.status === 'active' 
+                    product.stock_status
                       ? 'bg-green-100 text-green-800' 
                       : 'bg-red-100 text-red-800'
                   }`}>
-                    {product.status === 'active' ? 'Actif' : 'Inactif'}
+                    {product.stock_status ? 'Actif' : 'Inactif'}
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">

@@ -1,7 +1,8 @@
 'use client'
 import { useEffect, useState } from 'react';
-import toast from 'react-hot-toast';
 import { FaEdit, FaSearch, FaTrash } from 'react-icons/fa';
+import {HOST_IP, PORT, PROTOCOL_HTTP, generateSlug, formatNumber} from "../../../constants";
+import toast, { Toaster } from 'react-hot-toast';
 
 // Composant pour le bouton de suppression en masse
 const BulkDeleteButton = ({ selectedCount, onDelete }) => (
@@ -85,12 +86,10 @@ const TagRow = ({ tag, isSelected, onSelect, onEdit, onDelete }) => (
       {tag.description}
     </td>
     <td className="px-4 py-4 text-sm text-gray-500">
-      {tag.productsCount}
+      {tag.x}
     </td>
     <td className="px-4 py-4 text-sm font-medium text-gray-900">
-      {
-        100000
-      } GNF
+      {formatNumber(tag.total)} GNF
     </td>
     <td className="px-4 py-4 text-right space-x-2">
       <button onClick={onEdit} className="text-[#048B9A] hover:text-[#037483]">
@@ -120,18 +119,14 @@ const TagsPage = () => {
   useEffect(() => {
     const fetchTags = async () => {
       try {
-        const response = await fetch('https://api.kambily.store/products/tags', {
+        const response = await fetch(`${PROTOCOL_HTTP}://${HOST_IP}${PORT}/tags/`, {
           headers: {
             'Accept': 'application/json',
             'Authorization': `Bearer ${localStorage.getItem('access_token')}`
           }
         });
-
-        if (!response.ok) {
-          throw new Error('Erreur lors de la récupération des tags');
-        }
-
         const data = await response.json();
+        console.log(data)
         setTags(data);
       } catch (err) {
         console.error('Erreur:', err);
@@ -144,16 +139,6 @@ const TagsPage = () => {
 
     fetchTags();
   }, []);
-
-  // Fonction pour générer un slug à partir du nom
-  const generateSlug = (name) => {
-    return name
-      .toLowerCase()
-      .trim()
-      .replace(/[^\w\s-]/g, '') // Enlever les caractères spéciaux
-      .replace(/\s+/g, '-') // Remplacer les espaces par des tirets
-      .replace(/-+/g, '-'); // Éviter les tirets multiples
-  };
 
   // Mise à jour du nom et génération automatique du slug
   const handleNameChange = (name) => {
@@ -168,41 +153,32 @@ const TagsPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
+    
+    const formData = new FormData();
+    formData.append('name', newTag.name);
+    formData.append('slug', newTag.slug);
+    formData.append('description', newTag.description);
 
     try {
-      const response = await fetch('https://api.kambily.store/products/tags/create', { 
+      const response = await fetch(`${PROTOCOL_HTTP}://${HOST_IP}${PORT}/tags/create/`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('access_token')}`
         },
-        body: JSON.stringify(newTag)
+        body: formData
       });
 
       const data = await response.json();
-
-      if (!response.ok) {
-        // Gestion spécifique des erreurs de validation
-        if (response.status === 400) {
-          if (data.slug) {
-            throw new Error(`Un tag avec le slug "${newTag.slug}" existe déjà`);
-          }
-          if (data.name) {
-            throw new Error(`Un tag avec le nom "${newTag.name}" existe déjà`);
-          }
-          // Autres erreurs de validation
-          const errors = Object.entries(data)
-            .map(([field, messages]) => `${field}: ${messages.join(', ')}`)
-            .join('\n');
-          throw new Error(errors);
-        }
-        throw new Error(data.detail || 'Erreur lors de l\'ajout du tag');
-      }
-
       setTags(prevTags => [...prevTags, data]);
-      toast.success('Tag ajouté avec succès');
-    setNewTag({ name: '', slug: '', description: '' });
+      toast.success('Tag ajouté avec succès', {
+        duration: 3000,  // Durée en millisecondes
+        position: 'top-right', // Position du toast
+        style: {
+          background: 'green',
+          color: 'white',
+        },
+      });
+      setNewTag({ name: '', slug: '', description: '' });
     } catch (err) {
       console.error('Erreur:', err);
       toast.error(err.message);
@@ -216,17 +192,14 @@ const TagsPage = () => {
     if (!window.confirm('Êtes-vous sûr de vouloir supprimer ce tag ?')) return;
 
     try {
-      const response = await fetch(`https://api.kambily.store/products/tags/${tagId}/`, {
+      const response = await fetch(`${PROTOCOL_HTTP}://${HOST_IP}${PORT}/tags/${tagId}/`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('access_token')}`
         }
       });
 
-      if (!response.ok) {
-        throw new Error('Erreur lors de la suppression du tag');
-      }
-
+      const responseData = await response.json();
       setTags(prevTags => prevTags.filter(tag => tag.id !== tagId));
       toast.success('Tag supprimé avec succès');
     } catch (err) {
@@ -426,6 +399,8 @@ const TagsPage = () => {
           </div>
         </div>
       </div>
+      
+      <Toaster />
     </div>
   );
 };

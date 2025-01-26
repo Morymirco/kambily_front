@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import DesktopHome from './Components/Home/DesktopHome';
 import MobileHome from './Components/Home/MobileHome';
 
+
 export default function Home() {
   const [isMobile, setIsMobile] = useState(true);
 

@@ -1,619 +1,683 @@
-'use client'
-import Spinner from '@/app/Components/ui/Spinner';
-import { motion } from 'framer-motion';
-import { useState } from 'react';
-import toast from 'react-hot-toast';
-import { FaCheck, FaCloudUploadAlt, FaTimes } from 'react-icons/fa';
+"use client";
+import Image from "next/image";
+import toast from "react-hot-toast";
+import { useRouter } from "next/navigation";
+import {useEffect, useRef, useState} from "react";
+import { FaPlus, FaTrash } from "react-icons/fa";
+import {generateSKU, generateSlug, HOST_DNS, HOST_IP, PORT, PROTOCOL_HTTP} from './../../../constants'
 
 export default function AddProduct() {
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [mainImage, setMainImage] = useState(null);
-  const [galleryImages, setGalleryImages] = useState([]);
-  const [productData, setProductData] = useState({
+  const [formData, setFormData] = useState({
     name: '',
-    regularPrice: '',
-    salePrice: '',
-    description: '',
-    shortDescription: '',
+    short_description: '',
+    long_description: '',
+    regular_price: 0,
+    promo_price: 0,
     sku: '',
-    stockStatus: 'instock', // instock, outofstock, onbackorder
-    manageStock: false,
-    stockQuantity: '',
-    weight: '',
-    dimensions: {
-      length: '',
-      width: '',
-      height: ''
-    },
+    stock_status: true,
+    weight: 0,
+    length: 0,
+    width: 0,
+    height: 0,
+    product_type: 'variable',
+    etat_stock: 'En Stock',
+    quantity: 0,
     categories: [],
-    tags: [],
-    attributes: [],
-    taxStatus: 'taxable', // taxable, shipping, none
-    taxClass: 'standard', // standard, reduced, zero
-    shippingClass: '',
-    status: 'publish', // publish, draft, pending
-    featured: false,
-    soldIndividually: false,
-    reviewsAllowed: true,
-    virtualProduct: false,
-    downloadable: false,
-    externalUrl: '',
-    buttonText: '',
-    purchaseNote: '',
-    menuOrder: 0
+    colors: [],
+    sizes: [],
+    etiquettes: [],
+    images: []
   });
-  const [productType, setProductType] = useState('simple');
-  const [variations, setVariations] = useState([]);
-  const [attributes, setAttributes] = useState([]);
-
-  const productTypes = [
-    { id: 'simple', name: 'Produit simple' },
-    { id: 'variable', name: 'Produit variable' }
-  ];
-
-  const predefinedAttributes = {
-    colors: [
-      { name: 'Noir', value: '#000000' },
-      { name: 'Blanc', value: '#FFFFFF' },
-      { name: 'Rouge', value: '#FF0000' },
-      { name: 'Bleu', value: '#0000FF' },
-      { name: 'Vert', value: '#008000' },
-      { name: 'Jaune', value: '#FFFF00' },
-      { name: 'Rose', value: '#FFC0CB' },
-      { name: 'Gris', value: '#808080' },
-      { name: 'Marron', value: '#964B00' },
-      { name: 'Orange', value: '#FFA500' },
-    ],
-    sizes: ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL']
-  };
-
-  const handleAddPredefinedAttribute = (type) => {
-    const newAttribute = {
-      name: type === 'colors' ? 'Couleur' : 'Taille',
-      values: type === 'colors' ? [] : [...predefinedAttributes.sizes],
-      visible: true,
-      type: type // pour identifier le type d'attribut
+  
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [availableCategories, setAvailableCategories] = useState([]);
+  const [availableColors, setAvailableColors] = useState([]);
+  const [availableSizes, setAvailableSizes] = useState([]);
+  const [imageFiles, setImageFiles] = useState([]);
+  const [imagesPreviews, setImagesPreviews] = useState([]);
+  const [availableTags, setAvailableTags] = useState([]);
+  const ref = useRef(null)
+  
+  const router = useRouter();
+  
+  function websocketManagement(){
+    // Créer une connexion WebSocket avec l'URL du serveur
+    const socket = new WebSocket('ws://54.214.37.131:8001/websocket/');
+    
+    // Lorsque la connexion est ouverte
+    socket.onopen = function(event) {
+      console.log("Connexion WebSocket établie avec succès.");
+      
+      // Vous pouvez envoyer un message une fois la connexion établie
+      socket.send(JSON.stringify({ message: "Hello, Server!" }));
     };
-    setAttributes([...attributes, newAttribute]);
-  };
-
-  const handleMainImageUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      if (mainImage) {
-        URL.revokeObjectURL(mainImage.url);
+    
+    // Écouter les messages du serveu
+    socket.onmessage = function(event) {
+      console.log("Message du serveur:", event.data);
+      // Essayer de convertir les messages qui viennent du serveur
+      try {
+        const jsonData = JSON.parse(event.data);
+        if(jsonData.code === 1){
+          // cela veux dire que un produit a été ajouté par l'administrateur
+          // mettre une logique pour que tous les clients sache
+          // ça peut etre reactualiser la variables qui contient les produits de la base de donnée en local
+          //etc
+        }
+      }catch (e) {
+        console.error("Erreur de decodage du message du serveur: " + e.message);
       }
-      setMainImage({
-        url: URL.createObjectURL(file),
-        file
-      });
+    };
+    
+    // Lorsque la connexion est fermée
+    socket.onclose = function(event) {
+      console.log("Connexion WebSocket fermée.");
+    };
+    
+    // En cas d'erreur
+    socket.onerror = function(error) {
+      console.error("Erreur WebSocket:", error);
+    };
+  }
+  
+  // Vérifier l'authentification admin au chargement
+  useEffect(() => {
+    // Avant la déconnexion ou avant de rediriger l'utilisateur
+    const currentRoute = window.location.pathname;  // Cela récupère la route actuelle
+    localStorage.setItem('redirectRoute', currentRoute);  // Stocke la route dans le localStorage
+    
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      router.push('/login');
+      return;
     }
-  };
-
-  const handleGalleryUpload = (e) => {
-    const files = Array.from(e.target.files);
-    const newImages = files.map(file => ({
-      url: URL.createObjectURL(file),
-      file
-    }));
-    setGalleryImages([...galleryImages, ...newImages]);
-  };
-
-  const removeMainImage = () => {
-    if (mainImage) {
-      URL.revokeObjectURL(mainImage.url);
-      setMainImage(null);
-    }
-  };
-
-  const removeGalleryImage = (index) => {
-    const newImages = [...galleryImages];
-    URL.revokeObjectURL(newImages[index].url);
-    newImages.splice(index, 1);
-    setGalleryImages(newImages);
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-
+    localStorage.setItem('access_token', token);
+    
+    // gestion des websocket
+    websocketManagement()
+    
+    // Charger les données nécessaires
+    fetchCategories();
+    fetchColors();
+    fetchSizes();
+    fetchTags();
+  }, [router]);
+  
+  // Récupérer les catégories principales
+  const fetchCategories = async () => {
     try {
-      // Simuler l'envoi
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      toast.success('Produit ajouté avec succès !');
-      // Réinitialiser le formulaire
-      setProductData({
-        name: '',
-        regularPrice: '',
-        salePrice: '',
-        description: '',
-        shortDescription: '',
-        sku: '',
-        stockStatus: 'instock',
-        manageStock: false,
-        stockQuantity: '',
-        weight: '',
-        dimensions: {
-          length: '',
-          width: '',
-          height: ''
-        },
-        categories: [],
-        tags: [],
-        attributes: [],
-        taxStatus: 'taxable',
-        taxClass: 'standard',
-        shippingClass: '',
-        status: 'publish',
-        featured: false,
-        soldIndividually: false,
-        reviewsAllowed: true,
-        virtualProduct: false,
-        downloadable: false,
-        externalUrl: '',
-        buttonText: '',
-        purchaseNote: '',
-        menuOrder: 0
+      const response = await fetch('https://api.kambily.store/categories/', {
+        method: 'GET',
+        mode: 'cors',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+          'Accept': 'application/json'
+        }
       });
-      setGalleryImages([]);
-    } catch (error) {
-      toast.error('Une erreur est survenue');
-    } finally {
-      setIsSubmitting(false);
+      const data = await response.json();
+      
+      // Filtrer pour n'avoir que les catégories principales (is_main = true)
+      // const mainCategories = data.filter(category => category.is_main === true);
+      setAvailableCategories(data);
+    } catch (err) {
+      console.error('Erreur lors du chargement des catégories:', err);
+      toast.error('Erreur lors du chargement des catégories');
     }
   };
-
-  const handleAttributeAdd = () => {
-    setAttributes([...attributes, { name: '', values: [], visible: true }]);
+  
+  // Récupérer les couleurs
+  const fetchColors = async () => {
+    try {
+      const response = await fetch('https://api.kambily.store/colors/', {
+        method: 'GET',
+        mode: 'cors',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+          'Accept': 'application/json'
+        }
+      });
+      const data = await response.json();
+      setAvailableColors(data);
+    } catch (err) {
+      console.error('Erreur lors du chargement des colors:', err);
+      toast.error('Erreur lors du chargement des colors');
+    }
   };
-
-  const handleAttributeRemove = (index) => {
-    const newAttributes = [...attributes];
-    newAttributes.splice(index, 1);
-    setAttributes(newAttributes);
+  
+  // Récupérer les tailles
+  const fetchSizes = async () => {
+    try {
+      const response = await fetch('https://api.kambily.store/sizes/', {
+        method: 'GET',
+        mode: 'cors',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+          'Accept': 'application/json'
+        }
+      });
+      const data = await response.json();
+      setAvailableSizes(data);
+    } catch (err) {
+      console.error('Erreur lors du chargement des tailles:', err);
+      toast.error('Erreur lors du chargement des tailles');
+    }
   };
-
-  const handleAttributeChange = (index, field, value) => {
-    const newAttributes = [...attributes];
-    newAttributes[index][field] = value;
-    setAttributes(newAttributes);
+  
+  // Récupérer les tags
+  const fetchTags = async () => {
+    try {
+      const response = await fetch('https://api.kambily.store/tags/', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+        }
+      });
+      const data = await response.json();
+      setAvailableTags(data);
+    } catch (err) {
+      console.error('Erreur lors du chargement des étiquettes:', err);
+      toast.error('Erreur lors du chargement des étiquettes');
+    }
   };
-
+  
+  // Gérer l'ajout d'images
+  const handleImageChange = (e) => {
+    const files = Array.from(e.target.files);
+    
+    // Créer les previews
+    const newPreviews = files.map(file => URL.createObjectURL(file));
+    setImagesPreviews(prev => [...prev, ...newPreviews]);
+    
+    // Stocker les fichiers
+    setImageFiles(prev => [...prev, ...files]);
+  };
+  
+  // Supprimer une image
+  const handleRemoveImage = (index) => {
+    setImageFiles(prev => prev.filter((_, i) => i !== index));
+    setImagesPreviews(prev => prev.filter((_, i) => i !== index));
+  };
+  
+  // Soumettre le formulaire
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+    
+    try {     
+      // Vérifier si des images ont été sélectionnées
+      if (imageFiles.length === 0) {
+        setError ('Au moins une image est requise');
+        setLoading (false);
+        return;
+      }
+      
+      const data = new FormData();
+      data.append('name', formData.name);
+      data.append('short_description', formData.short_description);
+      data.append('long_description', formData.long_description);
+      data.append('regular_price', formData.regular_price);
+      data.append('promo_price', formData.promo_price);
+      data.append('sku', formData.sku);
+      data.append('stock_status', formData.stock_status);
+      data.append('weight', formData.weight);
+      data.append('length', formData.length);
+      data.append('width', formData.width);
+      data.append('height', formData.height);
+      data.append('product_type', formData.product_type);
+      data.append('etat_stock', formData.etat_stock);
+      data.append('quantity', formData.quantity);
+      data.append('categories', `[${formData.categories}]`);
+      data.append('sizes', `[${formData.sizes}]`);
+      data.append('etiquettes', `[${formData.etiquettes}]`);
+      data.append('colors', `[${formData.colors}]`)
+      
+      // Si vous avez plusieurs fichiers, parcourez-les et ajoutez-les
+      Array.from(ref.current.files).forEach((file, index) => {
+        data.append(`images`, file);
+      });
+      
+      console.log(data)
+      
+      const url = `${PROTOCOL_HTTP}://${HOST_IP}${PORT}/products/create/`;
+      const meta = {
+        method: 'POST',
+        body: data,
+        headers : {
+          'Authorization' : `Bearer ${localStorage.getItem('access_token')}`,
+        },
+      };
+      console.log(data)
+      setLoading(false)
+      fetch(url, meta)
+          .then(response => {
+              console.log(response)
+          })
+          .then(data => {
+              console.log(data)
+          })
+          .catch(error => {
+              console.log(error)
+          });
+    }catch (e) {
+      setError(error.message);
+      setLoading(false)
+    }
+  }
+  
   return (
-    <div className="max-w-7xl mx-auto p-6">
-      <motion.h1 
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="text-2xl font-bold mb-6"
-      >
-        Ajouter un nouveau produit
-      </motion.h1>
-
-      <motion.form 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        onSubmit={handleSubmit}
-        className="grid grid-cols-1 lg:grid-cols-3 gap-6"
-      >
-        {/* Colonne gauche */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Informations générales */}
-          <div className="bg-white p-4 rounded-lg shadow-sm">
-            <h2 className="text-lg font-semibold mb-3">Informations générales</h2>
-            <div className="space-y-3">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Nom du produit *
-                </label>
-                <input
-                  type="text"
-                  value={productData.name}
-                  onChange={(e) => setProductData({ ...productData, name: e.target.value })}
-                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#048B9A] focus:border-[#048B9A] outline-none"
-                  required
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Description courte
-                  </label>
-                  <textarea
-                    value={productData.shortDescription}
-                    onChange={(e) => setProductData({ ...productData, shortDescription: e.target.value })}
-                    rows={3}
-                    className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#048B9A] focus:border-[#048B9A] outline-none resize-none"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Description complète
-                  </label>
-                  <textarea
-                    value={productData.description}
-                    onChange={(e) => setProductData({ ...productData, description: e.target.value })}
-                    rows={3}
-                    className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#048B9A] focus:border-[#048B9A] outline-none resize-none"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Type de produit */}
-          <div className="bg-white p-4 rounded-lg shadow-sm">
-            <h2 className="text-lg font-semibold mb-3">Type de produit</h2>
-            <div className="grid grid-cols-2 gap-4">
-              {productTypes.map((type) => (
-                <label
-                  key={type.id}
-                  className={`
-                    flex items-center justify-center p-3 rounded-lg border-2 cursor-pointer
-                    ${productType === type.id 
-                      ? 'border-[#048B9A] bg-[#048B9A]/5' 
-                      : 'border-gray-200 hover:border-gray-300'
-                    }
-                  `}
-                >
-                  <input
-                    type="radio"
-                    name="productType"
-                    value={type.id}
-                    checked={productType === type.id}
-                    onChange={(e) => setProductType(e.target.value)}
-                    className="hidden"
-                  />
-                  <span className={productType === type.id ? 'text-[#048B9A]' : 'text-gray-600'}>
-                    {type.name}
-                  </span>
-                </label>
-              ))}
-            </div>
-          </div>
-
-          {/* Prix et stock */}
-          <div className="bg-white p-4 rounded-lg shadow-sm">
-            <h2 className="text-lg font-semibold mb-3">Prix et stock</h2>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Prix régulier (GNF)
-                </label>
-                <input
-                  type="number"
-                  value={productData.regularPrice}
-                  onChange={(e) => setProductData({ ...productData, regularPrice: e.target.value })}
-                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#048B9A] focus:border-[#048B9A] outline-none"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Prix promo (GNF)
-                </label>
-                <input
-                  type="number"
-                  value={productData.salePrice}
-                  onChange={(e) => setProductData({ ...productData, salePrice: e.target.value })}
-                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#048B9A] focus:border-[#048B9A] outline-none"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  SKU
-                </label>
-                <input
-                  type="text"
-                  value={productData.sku}
-                  onChange={(e) => setProductData({ ...productData, sku: e.target.value })}
-                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#048B9A] focus:border-[#048B9A] outline-none"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  État du stock
-                </label>
-                <select
-                  value={productData.stockStatus}
-                  onChange={(e) => setProductData({ ...productData, stockStatus: e.target.value })}
-                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#048B9A] focus:border-[#048B9A] outline-none"
-                >
-                  <option value="instock">En stock</option>
-                  <option value="outofstock">Rupture de stock</option>
-                  <option value="onbackorder">Sur commande</option>
-                </select>
-              </div>
-            </div>
-          </div>
-
-          {/* Attributs (si produit variable) */}
-          {productType === 'variable' && (
-            <div className="bg-white p-4 rounded-lg shadow-sm">
-              <div className="flex justify-between items-center mb-3">
-                <h2 className="text-lg font-semibold">Attributs</h2>
-                <div className="flex gap-2">
-                  <button
-                    type="button"
-                    onClick={() => handleAddPredefinedAttribute('sizes')}
-                    className="text-sm px-3 py-1.5 rounded-lg border border-[#048B9A] text-[#048B9A] hover:bg-[#048B9A] hover:text-white transition-colors"
-                  >
-                    + Tailles
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleAddPredefinedAttribute('colors')}
-                    className="text-sm px-3 py-1.5 rounded-lg border border-[#048B9A] text-[#048B9A] hover:bg-[#048B9A] hover:text-white transition-colors"
-                  >
-                    + Couleurs
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleAttributeAdd}
-                    className="text-sm px-3 py-1.5 rounded-lg border border-[#048B9A] text-[#048B9A] hover:bg-[#048B9A] hover:text-white transition-colors"
-                  >
-                    + Autre attribut
-                  </button>
-                </div>
-              </div>
-              
+      <div className="min-h-screen bg-gray-50 py-8 px-4">
+        <div className="max-w-4xl mx-auto">
+          <h1 className="text-2xl font-bold mb-8">Ajouter un nouveau produit</h1>
+          <form onSubmit={handleSubmit} className="space-y-6" encType="multipart/form-data">
+            {/* Informations de base */}
+            <div className="bg-white p-6 rounded-lg shadow-sm">
+              <h2 className="text-lg font-semibold mb-4">Informations de base</h2>
               <div className="space-y-4">
-                {attributes.map((attribute, index) => (
-                  <div key={index} className="border rounded-lg p-4">
-                    <div className="flex justify-between items-center mb-3">
-                      <span className="font-medium">{attribute.name}</span>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Nom du produit</label>
+                  <input
+                      type="text"
+                      value={formData.name}
+                      onChange={(e) => setFormData ({...formData, name: e.target.value})}
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#048B9A] focus:ring-[#048B9A]"
+                      required
+                  />
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Prix régulier</label>
+                    <input
+                        type="number"
+                        step={0.01}
+                        min={0}
+                        value={formData.regular_price}
+                        onChange={(e) => setFormData ({...formData, regular_price: parseFloat (e.target.value)})}
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#048B9A] focus:ring-[#048B9A]"
+                        required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Prix promotionnel</label>
+                    <input
+                        type="number"
+                        step={0.01}
+                        min={0}
+                        value={formData.promo_price}
+                        onChange={(e) => setFormData ({...formData, promo_price: parseFloat (e.target.value)})}
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#048B9A] focus:ring-[#048B9A]"
+                    />
+                  </div>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Description courte</label>
+                  <textarea
+                      value={formData.short_description}
+                      onChange={(e) => setFormData ({...formData, short_description: e.target.value})}
+                      rows={2}
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#048B9A] focus:ring-[#048B9A]"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Description longue</label>
+                  <textarea
+                      value={formData.long_description}
+                      onChange={(e) => setFormData ({...formData, long_description: e.target.value})}
+                      rows={4}
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#048B9A] focus:ring-[#048B9A]"
+                  />
+                </div>
+                
+                <div>
+                  <label className="flex items-center">
+                    <input
+                        type="checkbox"
+                        checked={formData.stock_status}
+                        onChange={(e) => setFormData ({...formData, stock_status: e.target.checked})}
+                        className="rounded border-gray-300 text-[#048B9A] focus:ring-[#048B9A]"
+                    />
+                    <span className="ml-2 text-sm text-gray-700">En stock</span>
+                  </label>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Type de produit</label>
+                  <select
+                      value={formData.product_type}
+                      onChange={(e) => setFormData ({...formData, product_type: e.target.value})}
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#048B9A] focus:ring-[#048B9A]"
+                  >
+                    <option value="simple">simple</option>
+                    <option value="variable">variable</option>
+                  </select>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">État du stock</label>
+                  <select
+                      value={formData.etat_stock}
+                      onChange={(e) => setFormData ({...formData, etat_stock: e.target.value})}
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#048B9A] focus:ring-[#048B9A]"
+                  >
+                    <option value="En Stock">En stock</option>
+                    <option value="Rupture de stock">Rupture de stock</option>
+                    <option value="Sur commande">Sur commande</option>
+                  </select>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">SKU (Code produit unique)</label>
+                  <input
+                      type="text"
+                      value={generateSKU(formData)}
+                      onChange={(e) => setFormData ({...formData, sku: generateSKU(formData)})}
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#048B9A] focus:ring-[#048B9A]"
+                      required
+                      placeholder="Ex: PROD-001"
+                  />
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Poids (kg)</label>
+                    <input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        value={formData.weight}
+                        onChange={(e) => setFormData ({...formData, weight: parseFloat (e.target.value)})}
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#048B9A] focus:ring-[#048B9A]"
+                        required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Longueur (cm)</label>
+                    <input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        value={formData.length}
+                        onChange={(e) => setFormData ({...formData, length: parseFloat (e.target.value)})}
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#048B9A] focus:ring-[#048B9A]"
+                        required
+                    />
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Largeur (cm)</label>
+                    <input
+                        type="number"
+                        step="0.01"
+                        min={0}
+                        value={formData.width}
+                        onChange={(e) => setFormData ({...formData, width: parseFloat (e.target.value)})}
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#048B9A] focus:ring-[#048B9A]"
+                        required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Hauteur (cm)</label>
+                    <input
+                        type="number"
+                        step="0.01"
+                        min={0}
+                        value={formData.height}
+                        onChange={(e) => setFormData ({...formData, height: parseFloat (e.target.value)})}
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#048B9A] focus:ring-[#048B9A]"
+                        required
+                    />
+                  </div>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Quantité en stock</label>
+                  <input
+                      type="number"
+                      min="0"
+                      value={formData.quantity}
+                      onChange={(e) => setFormData ({...formData, quantity: parseInt (e.target.value, 10)})}
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#048B9A] focus:ring-[#048B9A]"
+                      required
+                  />
+                </div>
+              </div>
+            </div>
+            
+            {/* Catégories, Couleurs, Tailles et Tags */}
+            <div className="bg-white p-6 rounded-lg shadow-sm">
+              <h2 className="text-lg font-semibold mb-6">Attributs du produit</h2>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {/* Catégories */}
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h3 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
+                    <span className="w-2 h-2 bg-[#048B9A] rounded-full"></span>
+                    Catégories principales
+                  </h3>
+                  
+                  <div className="space-y-2 max-h-48 overflow-y-auto custom-scrollbar">
+                    {availableCategories.length === 0 ? (
+                        <p className="text-sm text-gray-500 italic">Aucune catégorie principale disponible</p>
+                    ) : (
+                        availableCategories.map (category => (
+                            <label key={category.id}
+                                   className="flex items-center p-2 hover:bg-white rounded-md transition-colors">
+                              <input
+                                  type="checkbox"
+                                  checked={formData.categories.includes (category.id)}
+                                  onChange={(e) => {
+                                    const isChecked = e.target.checked;
+                                    let updatedCategories;
+                                    if (isChecked) {
+                                      updatedCategories = [...formData.categories, category.id];
+                                    } else {
+                                      updatedCategories = formData.categories.filter ((id) => id !== category.id);
+                                    }
+                                    setFormData ({...formData, categories: updatedCategories});
+                                  }}
+                                  className="rounded border-gray-300 text-[#048B9A] focus:ring-[#048B9A]"
+                              />
+                              <span className="ml-2 text-sm text-gray-700">{category.name}</span>
+                            </label>
+                        ))
+                    )}
+                  </div>
+                </div>
+                
+                {/* Couleurs - Visible uniquement si le type est "variable" */}
+                {formData.product_type === 'variable' && (
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                      <h3 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
+                        <span className="w-2 h-2 bg-[#048B9A] rounded-full"></span>
+                        Couleurs
+                      </h3>
+                      <div className="space-y-2 max-h-48 overflow-y-auto custom-scrollbar">
+                        {availableColors.map(color => (
+                            <label key={color.id} className="flex items-center p-2 hover:bg-white rounded-md transition-colors">
+                              <input
+                                  type="checkbox"
+                                  checked={formData.colors.includes(color.id)}
+                                  onChange={(e) => {
+                                    const isChecked = e.target.checked
+                                    let updatedColors = [];
+                                    if (isChecked) {
+                                      updatedColors = [...formData.colors, color.id];
+                                    } else {
+                                      updatedColors = formData.colors.filter ((id) => id !== color.id);
+                                    }
+                                    setFormData ({...formData, colors: updatedColors});
+                                  }}
+                                  className="rounded border-gray-300 text-[#048B9A] focus:ring-[#048B9A]"
+                              />
+                              <span className="ml-2 text-sm text-gray-700 flex items-center gap-2">
+                          {color.hex_code && (
+                              <span
+                                  className="w-4 h-4 rounded-full border border-gray-200"
+                                  style={{ backgroundColor: color.hex_code }}
+                              ></span>
+                          )}
+                                {color.name}
+                        </span>
+                            </label>
+                        ))}
+                      </div>
+                    </div>
+                )}
+                
+                {/* Tailles - Visible uniquement si le type est "variable" */}
+                {formData.product_type === 'variable' && (
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                      <h3 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
+                        <span className="w-2 h-2 bg-[#048B9A] rounded-full"></span>
+                        Tailles
+                      </h3>
+                      <div className="space-y-2 max-h-48 overflow-y-auto custom-scrollbar">
+                        {availableSizes.map(size => (
+                            <label
+                                key={size.id}
+                                className={`
+                          flex items-center justify-center p-2 rounded-md cursor-pointer transition-all
+                          ${formData.sizes.includes(size.id)
+                                    ? 'bg-[#048B9A] text-white'
+                                    : 'bg-white text-gray-700 hover:bg-gray-100'}
+                        `}
+                            >
+                              <input
+                                  type="checkbox"
+                                  checked={formData.sizes.includes (size.id)}
+                                  onChange={(e) => {
+                                    const isChecked = e.target.checked;
+                                    let updatedSizes;
+                                    if (isChecked) {
+                                      updatedSizes = [...formData.sizes, size.id];
+                                    } else {
+                                      updatedSizes = formData.sizes.filter ((id) => id !== size.id);
+                                    }
+                                    setFormData ({...formData, sizes: updatedSizes});
+                                  }}
+                                  className="sr-only"
+                              />
+                              <span className="text-sm font-medium">{size.name}</span>
+                            </label>
+                        ))}
+                      </div>
+                    </div>
+                )}
+                
+                {/* Tags */}
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h3 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
+                    <span className="w-2 h-2 bg-[#048B9A] rounded-full"></span>
+                    Étiquettes
+                  </h3>
+                  <div className="space-y-2 max-h-48 overflow-y-auto custom-scrollbar">
+                    {availableTags.map(tag => (
+                        <label
+                            key={tag.id}
+                            className={`
+                        flex items-center p-2 hover:bg-white rounded-md transition-colors
+                        ${formData.etiquettes.includes(tag.id) ? 'bg-white' : ''}
+                      `}
+                        >
+                          <input
+                              type="checkbox"
+                              checked={formData.etiquettes.includes(tag.id)}
+                              onChange={(e) => {
+                                const isChecked = e.target.checked;
+                                let updateEtiquettes;
+                                if (isChecked) {
+                                  updateEtiquettes = [...formData.etiquettes, tag.id];
+                                } else {
+                                  updateEtiquettes = formData.etiquettes.filter ((id) => id !== tag.id);
+                                }
+                                setFormData ({...formData, etiquettes: updateEtiquettes});
+                              }}
+                              className="rounded border-gray-300 text-[#048B9A] focus:ring-[#048B9A]"
+                          />
+                          <div className="ml-2">
+                            <span className="text-sm text-gray-700">{tag.name}</span>
+                            {tag.description && (
+                                <p className="text-xs text-gray-500 mt-0.5">{tag.description}</p>
+                            )}
+                          </div>
+                        </label>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {/* Images */}
+            <div className="bg-white p-6 rounded-lg shadow-sm">
+              <h2 className="text-lg font-semibold mb-4">Images du produit</h2>
+              
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mb-4">
+                {imagesPreviews.map((preview, index) => (
+                    <div key={index} className="relative aspect-square">
+                      <Image
+                          src={preview}
+                          alt={`Preview ${index + 1}`}
+                          fill
+                          className="object-cover rounded-lg"
+                      />
                       <button
-                        type="button"
-                        onClick={() => handleAttributeRemove(index)}
-                        className="text-red-500 hover:text-red-600"
+                          type="button"
+                          onClick={() => handleRemoveImage(index)}
+                          className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
                       >
-                        <FaTimes />
+                        <FaTrash size={12} />
                       </button>
                     </div>
-
-                    {attribute.type === 'colors' ? (
-                      // Sélecteur de couleurs
-                      <div className="grid grid-cols-5 gap-2">
-                        {predefinedAttributes.colors.map((color) => (
-                          <label
-                            key={color.value}
-                            className="flex items-center gap-2 cursor-pointer"
-                          >
-                            <input
-                              type="checkbox"
-                              checked={attribute.values.includes(color.name)}
-                              onChange={(e) => {
-                                const newValues = e.target.checked
-                                  ? [...attribute.values, color.name]
-                                  : attribute.values.filter(v => v !== color.name);
-                                handleAttributeChange(index, 'values', newValues);
-                              }}
-                              className="hidden"
-                            />
-                            <div className="relative w-8 h-8 rounded-full border overflow-hidden group">
-                              <div
-                                style={{ backgroundColor: color.value }}
-                                className="w-full h-full"
-                              />
-                              {attribute.values.includes(color.name) && (
-                                <div className="absolute inset-0 flex items-center justify-center bg-black/20">
-                                  <FaCheck className="w-3 h-3 text-white" />
-                                </div>
-                              )}
-                            </div>
-                            <span className="text-sm">{color.name}</span>
-                          </label>
-                        ))}
-                      </div>
-                    ) : attribute.type === 'sizes' ? (
-                      // Sélecteur de tailles
-                      <div className="flex flex-wrap gap-2">
-                        {predefinedAttributes.sizes.map((size) => (
-                          <label
-                            key={size}
-                            className={`
-                              px-3 py-1.5 rounded-lg border cursor-pointer text-sm
-                              ${attribute.values.includes(size)
-                                ? 'bg-[#048B9A] text-white border-[#048B9A]'
-                                : 'border-gray-300 hover:border-[#048B9A]'
-                              }
-                            `}
-                          >
-                            <input
-                              type="checkbox"
-                              checked={attribute.values.includes(size)}
-                              onChange={(e) => {
-                                const newValues = e.target.checked
-                                  ? [...attribute.values, size]
-                                  : attribute.values.filter(v => v !== size);
-                                handleAttributeChange(index, 'values', newValues);
-                              }}
-                              className="hidden"
-                            />
-                            {size}
-                          </label>
-                        ))}
-                      </div>
-                    ) : (
-                      // Champ de texte pour les autres attributs
-                      <input
-                        type="text"
-                        placeholder="Valeurs (séparées par des virgules)"
-                        value={attribute.values.join(', ')}
-                        onChange={(e) => handleAttributeChange(
-                          index,
-                          'values',
-                          e.target.value.split(',').map(v => v.trim())
-                        )}
-                        className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#048B9A] focus:border-[#048B9A] outline-none"
-                      />
-                    )}
-
-                    <label className="flex items-center mt-2">
-                      <input
-                        type="checkbox"
-                        checked={attribute.visible}
-                        onChange={(e) => handleAttributeChange(index, 'visible', e.target.checked)}
-                        className="w-4 h-4 text-[#048B9A] focus:ring-[#048B9A] rounded"
-                      />
-                      <span className="ml-2 text-sm">Visible sur la page du produit</span>
-                    </label>
-                  </div>
                 ))}
-              </div>
-            </div>
-          )}
-
-          {/* Expédition */}
-          <div className="bg-white p-4 rounded-lg shadow-sm">
-            <h2 className="text-lg font-semibold mb-3">Expédition</h2>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Poids (kg)
+                
+                <label className="relative aspect-square border-2 border-dashed border-gray-300 rounded-lg hover:border-[#048B9A] transition-colors cursor-pointer">
+                  <input
+                      type="file"
+                      multiple
+                      accept="image/png, image/jpeg"
+                      onChange={handleImageChange}
+                      className="hidden"
+                      ref={ref}
+                  />
+                  <div className="absolute inset-0 flex flex-col items-center justify-center">
+                    <FaPlus className="w-8 h-8 text-gray-400" />
+                    <span className="mt-2 text-sm text-gray-500">Ajouter des images</span>
+                  </div>
                 </label>
-                <input
-                  type="number"
-                  value={productData.weight}
-                  onChange={(e) => setProductData({ ...productData, weight: e.target.value })}
-                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#048B9A] focus:border-[#048B9A] outline-none"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">L (cm)</label>
-                <input
-                  type="number"
-                  value={productData.dimensions.length}
-                  onChange={(e) => setProductData({
-                    ...productData,
-                    dimensions: { ...productData.dimensions, length: e.target.value }
-                  })}
-                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#048B9A] focus:border-[#048B9A] outline-none"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">l (cm)</label>
-                <input
-                  type="number"
-                  value={productData.dimensions.width}
-                  onChange={(e) => setProductData({
-                    ...productData,
-                    dimensions: { ...productData.dimensions, width: e.target.value }
-                  })}
-                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#048B9A] focus:border-[#048B9A] outline-none"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">H (cm)</label>
-                <input
-                  type="number"
-                  value={productData.dimensions.height}
-                  onChange={(e) => setProductData({
-                    ...productData,
-                    dimensions: { ...productData.dimensions, height: e.target.value }
-                  })}
-                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#048B9A] focus:border-[#048B9A] outline-none"
-                />
               </div>
             </div>
-          </div>
-        </div>
-
-        {/* Colonne droite */}
-        <div className="space-y-6">
-          {/* Images */}
-          <div className="bg-white p-4 rounded-lg shadow-sm">
-            <h2 className="text-lg font-semibold mb-3">Images du produit</h2>
             
-            {/* Image principale */}
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Image principale
-              </label>
-              {mainImage ? (
-                <div className="relative aspect-square rounded-lg overflow-hidden">
-                  <img
-                    src={mainImage.url}
-                    alt="Image principale"
-                    className="w-full h-full object-cover"
-                  />
-                  <button
-                    type="button"
-                    onClick={removeMainImage}
-                    className="absolute top-2 right-2 p-1 bg-white rounded-full shadow-md hover:bg-gray-100"
-                  >
-                    <FaTimes className="w-4 h-4 text-gray-600" />
-                  </button>
+            {error && (
+                <div className="bg-red-50 text-red-500 p-4 rounded-lg">
+                  {error}
                 </div>
-              ) : (
-                <label className="aspect-square flex flex-col items-center justify-center border-2 border-dashed border-gray-300 hover:border-[#048B9A] transition-colors cursor-pointer rounded-lg">
-                  <FaCloudUploadAlt className="w-8 h-8 text-gray-400" />
-                  <span className="text-sm text-gray-500 mt-2">Image principale</span>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleMainImageUpload}
-                    className="hidden"
-                  />
-                </label>
-              )}
-            </div>
-
-            {/* Galerie d'images */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Galerie d'images
-              </label>
-              <div className="grid grid-cols-2 gap-2">
-                {galleryImages.map((image, index) => (
-                  <div key={index} className="relative aspect-square rounded-lg overflow-hidden">
-                    <img
-                      src={image.url}
-                      alt={`Image ${index + 1}`}
-                      className="w-full h-full object-cover"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => removeGalleryImage(index)}
-                      className="absolute top-2 right-2 p-1 bg-white rounded-full shadow-md hover:bg-gray-100"
-                    >
-                      <FaTimes className="w-4 h-4 text-gray-600" />
-                    </button>
+            )}
+            
+            <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-[#048B9A] text-white py-3 rounded-lg hover:bg-[#037483] disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? (
+                  <div className="flex items-center justify-center">
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                    Création en cours...
                   </div>
-                ))}
-                <label className="relative aspect-square rounded-lg border-2 border-dashed border-gray-300 hover:border-[#048B9A] transition-colors cursor-pointer flex flex-col items-center justify-center">
-                  <FaCloudUploadAlt className="w-8 h-8 text-gray-400" />
-                  <span className="text-sm text-gray-500 mt-2">Ajouter</span>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    onChange={handleGalleryUpload}
-                    className="hidden"
-                  />
-                </label>
-              </div>
-            </div>
-          </div>
-
-          {/* Boutons d'action */}
-          <div className="flex gap-3">
-            <button
-              type="button"
-              onClick={() => window.history.back()}
-              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-sm"
-            >
-              Annuler
+              ) : (
+                  'Créer le produit'
+              )}
             </button>
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="flex-1 px-4 py-2 bg-[#048B9A] text-white rounded-lg hover:bg-[#037483] disabled:opacity-50 flex items-center justify-center text-sm"
-            >
-              {isSubmitting ? <Spinner /> : 'Publier'}
-            </button>
-          </div>
+          </form>
         </div>
-      </motion.form>
-    </div>
+      </div>
   );
-} 
+}
+

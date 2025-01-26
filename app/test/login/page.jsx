@@ -27,7 +27,7 @@ export default function LoginPage() {
     setError(null);
 
     try {
-      const response = await fetch('https://api.kambily.store/accounts/login', {
+      const response = await fetch('https://api.kambily.store/accounts/login/', {
         method: 'POST',
         mode: 'cors',
         headers: {

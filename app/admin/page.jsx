@@ -9,6 +9,7 @@ const Dashboard = () => {
     { title: 'Commandes', value: '48', icon: FaShoppingCart, change: '+18%', color: 'bg-purple-500' },
     { title: 'Revenus', value: '12.4M GNF', icon: FaChartLine, change: '+24%', color: 'bg-yellow-500' },
   ];
+  
 
   return (
     <div>

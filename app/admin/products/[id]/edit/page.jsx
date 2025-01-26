@@ -3,6 +3,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { FaArrowLeft, FaSave } from 'react-icons/fa';
+import {HOST_IP, PORT, PRODUCT_TYPE, PROTOCOL_HTTP, STOCK_STATUS} from "../../../../constants";
 
 export default function EditProduct() {
   const params = useParams();
@@ -10,75 +11,64 @@ export default function EditProduct() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
-
-  const [formData, setFormData] = useState({
-    name: '',
-    short_description: '',
-    long_description: '',
-    regular_price: '',
-    promo_price: '',
-    sku: '',
-    stock_status: true,
-    quantity: '0',
-    weight: '',
-    length: '',
-    width: '',
-    height: '',
-    product_type: 'simple',
-    etat_stock: '',
+  const [product, setProduct] = useState({
+    name: 'N/A',
+    short_description: 'N/A',
+    long_description: 'N/A',
+    regular_price: 0,
+    promo_price: 0,
+    sku: 'N/A',
+    stock_status: false,
+    weight: 0,
+    length: 0,
+    width: 0,
+    height: 0,
+    product_type: 'N/A',
+    etat_stock: 'N/A',
+    quantity: 0,
     categories: [],
-    etiquettes: [],
     colors: [],
-    sizes: []
+    sizes: [],
+    etiquettes: [],
+    images: [],
+    reviews : []
   });
-
+  const [formData, setFormData] = useState(product)
+  
   // États pour les listes de sélection
   const [availableCategories, setAvailableCategories] = useState([]);
-  const [availableEtiquettes, setAvailableEtiquettes] = useState([]);
   const [availableColors, setAvailableColors] = useState([]);
   const [availableSizes, setAvailableSizes] = useState([]);
+  const [availableTags, setAvailableTags] = useState([]);
 
+  // Charger les données du produit à modifier au chargement
   useEffect(() => {
-    const fetchProduct = async () => {
+    const fetchProduct = () => {
       try {
         const token = localStorage.getItem('access_token');
         if (!token) {
-          router.push('/test/login');
+          router.push('/login');
           return;
         }
 
-        const response = await fetch(`https://api.kambily.store/products/${params.id}`, {
+        fetch(`${PROTOCOL_HTTP}://${HOST_IP}${PORT}/products/${params.id}/`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
           }
-        });
-
-        if (!response.ok) {
-          throw new Error('Erreur lors du chargement du produit');
-        }
-
-        const data = await response.json();
-        setFormData({
-          name: data.name || '',
-          short_description: data.short_description || '',
-          long_description: data.long_description || '',
-          regular_price: data.regular_price?.toString() || '',
-          promo_price: data.promo_price?.toString() || '',
-          sku: data.sku || '',
-          stock_status: data.stock_status || false,
-          quantity: data.quantity?.toString() || '0',
-          weight: data.weight?.toString() || '',
-          length: data.length?.toString() || '',
-          width: data.width?.toString() || '',
-          height: data.height?.toString() || '',
-          product_type: data.product_type || 'simple',
-          etat_stock: data.etat_stock || '',
-          categories: data.categories?.map(c => c.id) || [],
-          etiquettes: data.etiquettes?.map(e => e.id) || [],
-          colors: data.colors?.map(c => c.id) || [],
-          sizes: data.sizes?.map(s => s.id) || []
-        });
+        })
+            .then(response => response.json())
+            .then(data => {
+              setProduct(data);
+              setFormData(data);
+            })
+            .catch(err => {
+              console.error('Erreur lors du chargement du produit:', err);
+              toast.error('Erreur lors du chargement du produit');
+            })
+            .finally(() => {
+              setLoading(false);
+            })
       } catch (err) {
         setError(err.message);
         toast.error(err.message);
@@ -92,46 +82,29 @@ export default function EditProduct() {
 
   // Charger les données de référence au chargement
   useEffect(() => {
-    const fetchReferenceData = async () => {
+    const fetchReferenceData = () => {
       try {
         const token = localStorage.getItem('access_token');
         
         // Charger les catégories
-        const categoriesResponse = await fetch('https://api.kambily.store/categories', {
+        const categoriesResponse = fetch(`${PROTOCOL_HTTP}://${HOST_IP}${PORT}/products/attributes/`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
-        });
-        const categoriesData = await categoriesResponse.json();
-        setAvailableCategories(categoriesData);
-
-        // Charger les étiquettes
-        const etiquettesResponse = await fetch('https://api.kambily.store/etiquettes', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-        const etiquettesData = await etiquettesResponse.json();
-        setAvailableEtiquettes(etiquettesData);
-
-        // Charger les couleurs
-        const colorsResponse = await fetch('https://api.kambily.store/colors', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-        const colorsData = await colorsResponse.json();
-        setAvailableColors(colorsData);
-
-        // Charger les tailles
-        const sizesResponse = await fetch('https://api.kambily.store/sizes', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-        const sizesData = await sizesResponse.json();
-        setAvailableSizes(sizesData);
-
+        })
+            .then(response => response.json())
+            .then(data => {
+              setAvailableCategories(data.categories);
+              setAvailableSizes(data.sizes);
+              setAvailableColors(data.colors);
+              setAvailableTags(data.tags);
+            }).catch(err => {
+              setError(err.message);
+              console.log(err)
+            })
+            .finally(() => {
+              setLoading(false);
+            })
       } catch (err) {
         console.error('Erreur lors du chargement des données de référence:', err);
         toast.error('Erreur lors du chargement des attributs');
@@ -144,15 +117,41 @@ export default function EditProduct() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSaving(true);
+    
+    const data = new FormData();
+    data.append('name', formData.name);
+    data.append('short_description', formData.short_description);
+    data.append('long_description', formData.long_description);
+    data.append('regular_price', formData.regular_price);
+    data.append('promo_price', formData.promo_price);
+    data.append('sku', formData.sku);
+    data.append('stock_status', formData.stock_status);
+    data.append('weight', formData.weight);
+    data.append('length', formData.length);
+    data.append('width', formData.width);
+    data.append('height', formData.height);
+    data.append('product_type', formData.product_type);
+    data.append('etat_stock', formData.etat_stock);
+    data.append('quantity', formData.quantity);
+    data.append('categories', `[${formData.categories}]`);
+    data.append('sizes', `[${formData.sizes}]`);
+    data.append('etiquettes', `[${formData.etiquettes}]`);
+    data.append('colors', `[${formData.colors}]`)
+    
+    // Si vous avez plusieurs fichiers, parcourez-les et ajoutez-les
+    Array.from(ref.current.files).forEach((file, index) => {
+      data.append(`images`, file);
+    });
+    
+    console.log(data)
 
     try {
-        const response = await fetch(`https://api.kambily.store/products/${params.id}`, {
+        const response = await fetch(`${PROTOCOL_HTTP}://${HOST_IP}${PORT}/products/update/${params.id}/`, {
         method: 'PUT',
         headers: {
-          'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('access_token')}`
         },
-        body: JSON.stringify(formData)
+        body: data
       });
 
       if (!response.ok) {
@@ -200,52 +199,73 @@ export default function EditProduct() {
                 Nom du produit
               </label>
               <input
-                type="text"
-                value={formData.name}
-                onChange={(e) => setFormData({...formData, name: e.target.value})}
-                className="w-full px-3 py-2 border rounded-lg"
-                required
+                  type="text"
+                  value={product.name}
+                  onChange={(e) => setFormData ({...formData, name: e.target.value})}
+                  className="w-full px-3 py-2 border rounded-lg"
+                  required
               />
             </div>
-
+            
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 SKU
               </label>
               <input
-                type="text"
-                value={formData.sku}
-                onChange={(e) => setFormData({...formData, sku: e.target.value})}
-                className="w-full px-3 py-2 border rounded-lg"
+                  type="text"
+                  value={formData.sku}
+                  onChange={(e) => setFormData ({...formData, sku: e.target.value})}
+                  className="w-full px-3 py-2 border rounded-lg"
               />
             </div>
-
+            
             <div className="col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Description courte
               </label>
               <textarea
-                value={formData.short_description}
-                onChange={(e) => setFormData({...formData, short_description: e.target.value})}
-                className="w-full px-3 py-2 border rounded-lg"
-                rows={3}
+                  value={formData.short_description}
+                  onChange={(e) => setFormData ({...formData, short_description: e.target.value})}
+                  className="w-full px-3 py-2 border rounded-lg"
+                  rows={3}
               />
             </div>
-
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Type de produit</label>
+              <select
+                  value={formData.product_type}
+                  onChange={(e) => setFormData ({...formData, product_type: e.target.value})}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#048B9A] focus:ring-[#048B9A]"
+              >
+                {
+                  PRODUCT_TYPE.map(type => (
+                      <option
+                          key={type} // Ajoute un key pour chaque option
+                          value={type}
+                      >
+                        {type}
+                      </option>
+                  ))
+                  
+                }
+              </select>
+            </div>
+            
             <div className="col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
                 Description longue
               </label>
               <textarea
-                value={formData.long_description}
-                onChange={(e) => setFormData({...formData, long_description: e.target.value})}
-                className="w-full px-3 py-2 border rounded-lg"
-                rows={5}
+                  value={formData.long_description}
+                  onChange={(e) => setFormData ({...formData, long_description: e.target.value})}
+                  className="w-full px-3 py-2 border rounded-lg"
+                  rows={5}
               />
             </div>
           </div>
         </div>
-
+        
         {/* Prix et stock */}
         <div className="bg-white p-6 rounded-lg shadow-sm">
           <h2 className="text-lg font-semibold mb-4">Prix et stock</h2>
@@ -255,10 +275,10 @@ export default function EditProduct() {
                 Prix régulier
               </label>
               <input
-                type="number"
-                value={formData.regular_price}
-                onChange={(e) => setFormData({...formData, regular_price: e.target.value})}
-                className="w-full px-3 py-2 border rounded-lg"
+                  type="number"
+                  value={formData.regular_price}
+                  onChange={(e) => setFormData ({...formData, regular_price: e.target.value})}
+                  className="w-full px-3 py-2 border rounded-lg"
                 required
               />
             </div>
@@ -297,10 +317,11 @@ export default function EditProduct() {
                 onChange={(e) => setFormData({...formData, etat_stock: e.target.value})}
                 className="w-full px-3 py-2 border rounded-lg"
               >
-                <option value="">Sélectionner un état</option>
-                <option value="En Stock">En Stock</option>
-                <option value="Rupture">Rupture</option>
-                <option value="Nouveau">Nouveau</option>
+                {
+                  STOCK_STATUS.map(status => (
+                      <option value={status}>{status}</option>
+                  ))
+                }
               </select>
             </div>
           </div>
@@ -361,124 +382,167 @@ export default function EditProduct() {
         </div>
 
         {/* Attributs */}
+        {/* Catégories, Couleurs, Tailles et Tags */}
         <div className="bg-white p-6 rounded-lg shadow-sm">
-          <h2 className="text-lg font-semibold mb-4">Attributs</h2>
-          <div className="grid grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Type de produit
-              </label>
-              <select
-                value={formData.product_type}
-                onChange={(e) => setFormData({...formData, product_type: e.target.value})}
-                className="w-full px-3 py-2 border rounded-lg"
-              >
-                <option value="simple">Simple</option>
-                <option value="variable">Variable</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+          <h2 className="text-lg font-semibold mb-6">Attributs du produit</h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {/* Catégories */}
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <h3 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
+                <span className="w-2 h-2 bg-[#048B9A] rounded-full"></span>
                 Catégories
-              </label>
-              <select
-                multiple
-                value={formData.categories}
-                onChange={(e) => {
-                  const values = Array.from(e.target.selectedOptions, option => option.value);
-                  setFormData({...formData, categories: values});
-                }}
-                className="w-full px-3 py-2 border rounded-lg"
-                size={4}
-              >
-                {availableCategories.map(category => (
-                  <option key={category.id} value={category.id}>
-                    {category.name}
-                  </option>
-                ))}
-              </select>
+              </h3>
+              
+              <div className="space-y-2 max-h-48 overflow-y-auto custom-scrollbar">
+                {availableCategories.length === 0 ? (
+                    <p className="text-sm text-gray-500 italic">Aucune catégorie principale disponible</p>
+                ) : (
+                    availableCategories.map (category => (
+                        <label key={category.id}
+                               className="flex items-center p-2 hover:bg-white rounded-md transition-colors">
+                          <input
+                              type="checkbox"
+                              checked={formData.categories.includes (category.id)}
+                              onChange={(e) => {
+                                const isChecked = e.target.checked;
+                                let updatedCategories;
+                                if (isChecked) {
+                                  updatedCategories = [...formData.categories, category.id];
+                                } else {
+                                  updatedCategories = formData.categories.filter ((id) => id !== category.id);
+                                }
+                                setFormData ({...formData, categories: updatedCategories});
+                              }}
+                              className="rounded border-gray-300 text-[#048B9A] focus:ring-[#048B9A]"
+                          />
+                          <span className="ml-2 text-sm text-gray-700">{category.name}</span>
+                        </label>
+                    ))
+                )}
+              </div>
             </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+            
+            {/* Couleurs - Visible uniquement si le type est "variable" */}
+            {formData.product_type === PRODUCT_TYPE[1] && (
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h3 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
+                    <span className="w-2 h-2 bg-[#048B9A] rounded-full"></span>
+                    Couleurs
+                  </h3>
+                  <div className="space-y-2 max-h-48 overflow-y-auto custom-scrollbar">
+                    {availableColors.map(color => (
+                        <label key={color.id} className="flex items-center p-2 hover:bg-white rounded-md transition-colors">
+                          <input
+                              type="checkbox"
+                              checked={formData.colors.includes(color.id)}
+                              onChange={(e) => {
+                                const isChecked = e.target.checked
+                                let updatedColors = [];
+                                if (isChecked) {
+                                  updatedColors = [...formData.colors, color.id];
+                                } else {
+                                  updatedColors = formData.colors.filter ((id) => id !== color.id);
+                                }
+                                setFormData ({...formData, colors: updatedColors});
+                              }}
+                              className="rounded border-gray-300 text-[#048B9A] focus:ring-[#048B9A]"
+                          />
+                          <span className="ml-2 text-sm text-gray-700 flex items-center gap-2">
+                          {color.hex_code && (
+                              <span
+                                  className="w-4 h-4 rounded-full border border-gray-200"
+                                  style={{ backgroundColor: color.hex_code }}
+                              ></span>
+                          )}
+                            {color.name}
+                        </span>
+                        </label>
+                    ))}
+                  </div>
+                </div>
+            )}
+            
+            {/* Tailles - Visible uniquement si le type est "variable" */}
+            {formData.product_type === PRODUCT_TYPE[0] && (
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h3 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
+                    <span className="w-2 h-2 bg-[#048B9A] rounded-full"></span>
+                    Tailles
+                  </h3>
+                  <div className="space-y-2 max-h-48 overflow-y-auto custom-scrollbar">
+                    {availableSizes.map(size => (
+                        <label
+                            key={size.id}
+                            className={`
+                          flex items-center justify-center p-2 rounded-md cursor-pointer transition-all
+                          ${formData.sizes.includes(size.id)
+                                ? 'bg-[#048B9A] text-white'
+                                : 'bg-white text-gray-700 hover:bg-gray-100'}
+                        `}
+                        >
+                          <input
+                              type="checkbox"
+                              checked={formData.sizes.includes (size.id)}
+                              onChange={(e) => {
+                                const isChecked = e.target.checked;
+                                let updatedSizes;
+                                if (isChecked) {
+                                  updatedSizes = [...formData.sizes, size.id];
+                                } else {
+                                  updatedSizes = formData.sizes.filter ((id) => id !== size.id);
+                                }
+                                setFormData ({...formData, sizes: updatedSizes});
+                              }}
+                              className="sr-only"
+                          />
+                          <span className="text-sm font-medium">{size.name}</span>
+                        </label>
+                    ))}
+                  </div>
+                </div>
+            )}
+            
+            {/* Tags */}
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <h3 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
+                <span className="w-2 h-2 bg-[#048B9A] rounded-full"></span>
                 Étiquettes
-              </label>
-              <div className="space-y-2 max-h-40 overflow-y-auto border rounded-lg p-3">
-                {availableEtiquettes.map(etiquette => (
-                  <label key={etiquette.id} className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      checked={formData.etiquettes.includes(etiquette.id)}
-                      onChange={(e) => {
-                        const newEtiquettes = e.target.checked
-                          ? [...formData.etiquettes, etiquette.id]
-                          : formData.etiquettes.filter(id => id !== etiquette.id);
-                        setFormData({...formData, etiquettes: newEtiquettes});
-                      }}
-                      className="rounded text-[#048B9A] focus:ring-[#048B9A]"
-                    />
-                    {etiquette.name}
-                  </label>
+              </h3>
+              <div className="space-y-2 max-h-48 overflow-y-auto custom-scrollbar">
+                {availableTags.map(tag => (
+                    <label
+                        key={tag.id}
+                        className={`
+                        flex items-center p-2 hover:bg-white rounded-md transition-colors
+                        ${formData.etiquettes.includes(tag.id) ? 'bg-white' : ''}
+                      `}
+                    >
+                      <input
+                          type="checkbox"
+                          checked={formData.etiquettes.includes(tag.id)}
+                          onChange={(e) => {
+                            const isChecked = e.target.checked;
+                            let updateEtiquettes;
+                            if (isChecked) {
+                              updateEtiquettes = [...formData.etiquettes, tag.id];
+                            } else {
+                              updateEtiquettes = formData.etiquettes.filter ((id) => id !== tag.id);
+                            }
+                            setFormData ({...formData, etiquettes: updateEtiquettes});
+                          }}
+                          className="rounded border-gray-300 text-[#048B9A] focus:ring-[#048B9A]"
+                      />
+                      <div className="ml-2">
+                        <span className="text-sm text-gray-700">{tag.name}</span>
+                        {tag.description && (
+                            <p className="text-xs text-gray-500 mt-0.5">{tag.description}</p>
+                        )}
+                      </div>
+                    </label>
                 ))}
               </div>
             </div>
-
-            {formData.product_type === 'variable' && (
-              <>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Couleurs disponibles
-                  </label>
-                  <div className="space-y-2 max-h-40 overflow-y-auto border rounded-lg p-3">
-                    {availableColors.map(color => (
-                      <label key={color.id} className="flex items-center gap-2">
-                        <input
-                          type="checkbox"
-                          checked={formData.colors.includes(color.id)}
-                          onChange={(e) => {
-                            const newColors = e.target.checked
-                              ? [...formData.colors, color.id]
-                              : formData.colors.filter(id => id !== color.id);
-                            setFormData({...formData, colors: newColors});
-                          }}
-                          className="rounded text-[#048B9A] focus:ring-[#048B9A]"
-                        />
-                        <span 
-                          className="w-4 h-4 rounded-full inline-block mr-2"
-                          style={{ backgroundColor: color.code }}
-                        />
-                        {color.name}
-                      </label>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Tailles disponibles
-                  </label>
-                  <div className="space-y-2 max-h-40 overflow-y-auto border rounded-lg p-3">
-                    {availableSizes.map(size => (
-                      <label key={size.id} className="flex items-center gap-2">
-                        <input
-                          type="checkbox"
-                          checked={formData.sizes.includes(size.id)}
-                          onChange={(e) => {
-                            const newSizes = e.target.checked
-                              ? [...formData.sizes, size.id]
-                              : formData.sizes.filter(id => id !== size.id);
-                            setFormData({...formData, sizes: newSizes});
-                          }}
-                          className="rounded text-[#048B9A] focus:ring-[#048B9A]"
-                        />
-                        {size.name}
-                      </label>
-                    ))}
-                  </div>
-                </div>
-              </>
-            )}
           </div>
         </div>
 

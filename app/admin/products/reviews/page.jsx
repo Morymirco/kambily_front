@@ -2,8 +2,12 @@
 import { useEffect, useState } from 'react';
 import toast, { Toaster } from 'react-hot-toast';
 import { FaCheck, FaSearch, FaStar, FaTrash } from 'react-icons/fa';
+import {HOST_IP, isTokenValid, PORT, PROTOCOL_HTTP} from "../../../constants";
+import {useRouter} from "next/navigation";
 
 const ReviewsPage = () => {
+  const router = useRouter();
+  
   const [selectedReviews, setSelectedReviews] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [reviews, setReviews] = useState([]);
@@ -17,17 +21,17 @@ const ReviewsPage = () => {
   });
 
   // Charger les avis
-  useEffect(() => {
+  useEffect( () => {
+    
     const fetchReviews = async () => {
       try {
         const token = localStorage.getItem('access_token');
         if (!token) {
-          router.push('/test/login');
+          router.push ('/login');
           return;
         }
-
-
-        const response = await fetch('https://api.kambily.store/products/reviews', {
+        
+        const response = await fetch(`${PROTOCOL_HTTP}://${HOST_IP}${PORT}/reviews/`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Accept': 'application/json'
@@ -35,7 +39,8 @@ const ReviewsPage = () => {
         });
 
         if (!response.ok) {
-          throw new Error('Erreur lors du chargement des avis');
+          toast.error('Erreur lors du chargement des avis');
+          return;
         }
 
         const data = await response.json();

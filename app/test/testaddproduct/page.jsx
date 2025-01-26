@@ -306,7 +306,6 @@ export default function AddProductPage() {
     <div className="min-h-screen bg-gray-50 py-8 px-4">
       <div className="max-w-4xl mx-auto">
         <h1 className="text-2xl font-bold mb-8">Ajouter un nouveau produit</h1>
-
         <form onSubmit={handleSubmit} className="space-y-6" encType="multipart/form-data">
           {/* Informations de base */}
           <div className="bg-white p-6 rounded-lg shadow-sm">
