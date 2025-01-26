@@ -245,11 +245,9 @@ export default function AddProduct() {
       const url = `${PROTOCOL_HTTP}://${HOST_IP}${PORT}/products/create/`;
       const meta = {
         method: 'POST',
-        mode: 'cors',
         body: data,
         headers : {
           'Authorization' : `Bearer ${localStorage.getItem('access_token')}`,
-          'access-control-allow-methods': 'POST'
         },
       };
       console.log(data)
