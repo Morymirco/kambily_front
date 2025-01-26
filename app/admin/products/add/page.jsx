@@ -241,26 +241,27 @@ export default function AddProduct() {
       });
       
       console.log(data)
+      const token = localStorage.getItem ('access_token');
       
-      const url = `${PROTOCOL_HTTP}://${HOST_IP}${PORT}/products/create/`;
+      
+      const url = 'https://api.kambily.store/products/create/';
       const meta = {
         method: 'POST',
         body: data,
         headers : {
-          'Authorization' : `Bearer ${localStorage.getItem('access_token')}`,
+          'Authorization' : `Bearer ${token}`,
         },
       };
-      console.log(data)
-      setLoading(false)
-      fetch(url, meta)
-          .then(response => {
-              console.log(response)
-          })
+      const promise = fetch(url, meta)
+      promise.then(response => response.json() ) // pour ne pas bloquer l'interface user
           .then(data => {
-              console.log(data)
+            console.log(data);
+            setLoading(false)
           })
           .catch(error => {
-              console.log(error)
+            setError(error.message);
+            setLoading(false)
+            console.log(error.message);
           });
     }catch (e) {
       setError(error.message);
