@@ -343,7 +343,7 @@ const ProductCard = ({ id, image, gallery = [], title, price, inStock, category,
                 <svg 
                   className="w-4 h-4 mr-1" 
                   viewBox="0 0 24 24" 
-                  fill="none" 
+                  fill="#FF0000" 
                   stroke="currentColor"
                   strokeWidth="2"
                   strokeLinecap="round"
@@ -353,7 +353,11 @@ const ProductCard = ({ id, image, gallery = [], title, price, inStock, category,
                   <path d="M3 8v10a2 2 0 002 2h14a2 2 0 002-2V8" opacity="0.5" />
                   <path d="M4 4l16 16" strokeWidth="1.5" />
                 </svg>
-                <span className="text-sm">Rupture de stock</span>
+                <span className="text-sm">
+                  {
+                    inStock ? 'En stock' : 'Rupture de stock'
+                  }
+                </span>
               </div>
             )}
           </div>
@@ -783,7 +787,7 @@ const Boutique = () => {
         const data = await response.json();
         console.log('Données brutes:', data);
         
-        const productsArray = Array.isArray(data) ? data : data.results || [];
+        const productsArray = Array.isArray(data.products) ? data.products : data.results || [];
         
         const transformedProducts = productsArray.map(product => ({
           id: product.id,
@@ -792,7 +796,7 @@ const Boutique = () => {
           gallery: product.images?.slice(1)?.map(img => img.image) || [],
           price: product.regular_price,
           oldPrice: product.promo_price !== product.regular_price ? product.regular_price : null,
-          inStock: product.stock_status === 'in_stock',
+          inStock: product.etat_stock === 'En stock',
           category: product.categories?.[0]?.name || 'Non catégorisé'
         }));
 

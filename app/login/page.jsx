@@ -118,17 +118,17 @@ export default function Login() {
   }
 
   return (
-      <div className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8">
-        <div className="w-full max-w-md space-y-8">
+      <div className="min-h-screen flex items-center justify-center px-4 sm:px-3 lg:px-2">
+        <div className="w-full max-w-md space-y-4">
           <div className="text-center">
             <Image
-                src="/logo.webp"
+                src="/logo6.svg"
                 alt="Logo"
                 width={150}
-                height={50}
+                height={150}
                 className="mx-auto"
             />
-            <h2 className="mt-6 text-3xl font-bold tracking-tight text-gray-900">
+            <h2 className="mt-3 text-3xl font-bold tracking-tight text-gray-900">
               Connectez-vous à votre compte
             </h2>
             <p className="mt-2 text-sm text-gray-600">
