@@ -483,24 +483,6 @@ const Panier = () => {
       const checkData = await checkResponse.json();
       console.log(checkData);
       
-      // Si le code est valide, l'appliquer à la commande
-      const applyResponse = await authFetch(
-        `https://api.kambily.store/orders/apply-promo/${promoCode}/`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        }
-      );
-
-      if (!applyResponse.ok) {
-        throw new Error('Erreur lors de l\'application du code promo');
-      }
-
-      const applyData = await applyResponse.json();
-      setPromoApplied(true);
-      toast.success('Code promo appliqué avec succès');
 
     } catch (error) {
       console.error('Erreur:', error);

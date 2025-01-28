@@ -123,10 +123,11 @@ export default function ProductDetailAdmin() {
   const handleDelete = async () => {
     setIsDeleting(true);
     try {
-      const response = await fetch(`https://api.kambily.store/products/${params.id}/`, {
+      const token = localStorage.getItem('access_token');
+      const response = await fetch(`${PROTOCOL_HTTP}://${HOST_IP}${PORT}/products/${params.id}/delete/`, {
         method: 'DELETE',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+          'Authorization': `Bearer ${token}`
         }
       });
 

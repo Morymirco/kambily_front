@@ -1,25 +1,29 @@
 'use client'
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useState } from 'react';
+import { toast } from 'react-hot-toast';
 import {
-    FaEnvelope,
-    FaFacebookF,
-    FaInstagram,
-    FaLinkedinIn,
-    FaPhone,
-    FaPinterestP,
-    FaTwitter
+  FaCheckCircle,
+  FaEnvelope,
+  FaFacebookF,
+  FaInstagram,
+  FaLinkedinIn,
+  FaPhone,
+  FaPinterestP,
+  FaTwitter
 } from 'react-icons/fa';
+
+
+
 
 const Contact = () => {
   const [formData, setFormData] = useState({
-    nom: '',
     email: '',
-    sujet: '',
+    subject: '',
     message: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitStatus, setSubmitStatus] = useState(null);
+
 
   // Variants pour les animations
   const containerVariants = {
@@ -56,34 +60,101 @@ const Contact = () => {
     }
   };
 
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const showSuccessToast = () => {
+    toast.custom((t) => (
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: 20 }}
+        className={`${
+          t.visible ? 'animate-enter' : 'animate-leave'
+        } max-w-md w-full bg-white shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-black ring-opacity-5`}
+      >
+        <div className="flex-1 w-0 p-4">
+          <div className="flex items-start">
+            <div className="flex-shrink-0 pt-0.5">
+              <FaCheckCircle className="h-10 w-10 text-green-500" />
+            </div>
+            <div className="ml-3 flex-1">
+              <p className="text-sm font-medium text-gray-900">
+                Message envoyé !
+              </p>
+              <p className="mt-1 text-sm text-gray-500">
+                Nous vous répondrons dans les plus brefs délais.
+              </p>
+            </div>
+          </div>
+        </div>
+        <div className="flex border-l border-gray-200">
+          <button
+            onClick={() => toast.dismiss(t.id)}
+            className="w-full border border-transparent rounded-none rounded-r-lg p-4 flex items-center justify-center text-sm font-medium text-[#048B9A] hover:text-[#037483] focus:outline-none"
+          >
+            Fermer
+          </button>
+        </div>
+      </motion.div>
+    ), {
+      duration: 4000,
+      position: 'top-right',
+    });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
-    setSubmitStatus(null);
+    const token = localStorage.getItem('access_token');
 
     try {
-      // Simuler un appel API
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
+      const response = await fetch('https://api.kambily.store/accounts/contact/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          subject: formData.subject,
+          message: formData.message
+        })
+      });
+      showSuccessToast(); 
+      if (!response.ok) {
+        throw new Error('Erreur lors de l\'envoi du message');
+      }
+
       // Réinitialiser le formulaire
       setFormData({
-        nom: '',
         email: '',
-        sujet: '',
+        subject: '',
         message: ''
       });
       
-      setSubmitStatus({
-        type: 'success',
-        message: 'Message envoyé avec succès !'
-      });
+      // Nouveau toast personnalisé
     } catch (error) {
-      setSubmitStatus({
-        type: 'error',
-        message: 'Une erreur est survenue. Veuillez réessayer.'
+      console.error('Erreur:', error);
+      toast.error('Une erreur est survenue. Veuillez réessayer.', {
+        style: {
+          border: '1px solid #FF0000',
+          padding: '16px',
+          color: '#FF0000',
+        },
+        iconTheme: {
+          primary: '#FF0000',
+          secondary: '#FFFFFF',
+        },
       });
     } finally {
       setIsSubmitting(false);
+     
     }
   };
 
@@ -216,22 +287,9 @@ const Contact = () => {
             variants={containerVariants}
           >
             <motion.div 
-              className="grid grid-cols-1 md:grid-cols-2 gap-6"
+              className="grid grid-cols-1 gap-6"
               variants={itemVariants}
             >
-              <div>
-                <label htmlFor="nom" className="block text-sm font-medium text-gray-700 mb-1">
-                  Votre nom <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  id="nom"
-                  name="nom"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-[#048B9A] focus:border-[#048B9A]"
-                  required
-                />
-              </div>
-
               <div>
                 <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
                   Votre adresse mail <span className="text-red-500">*</span>
@@ -240,36 +298,43 @@ const Contact = () => {
                   type="email"
                   id="email"
                   name="email"
+                  value={formData.email}
+                  onChange={handleChange}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-[#048B9A] focus:border-[#048B9A]"
                   required
                 />
               </div>
+
+              <div>
+                <label htmlFor="subject" className="block text-sm font-medium text-gray-700 mb-1">
+                  Sujet <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  id="subject"
+                  name="subject"
+                  value={formData.subject}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-[#048B9A] focus:border-[#048B9A]"
+                  required
+                />
+              </div>
+
+              <div>
+                <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-1">
+                  Votre message <span className="text-red-500">*</span>
+                </label>
+                <textarea
+                  id="message"
+                  name="message"
+                  value={formData.message}
+                  onChange={handleChange}
+                  rows="8"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-[#048B9A] focus:border-[#048B9A]"
+                  required
+                ></textarea>
+              </div>
             </motion.div>
-
-            <div>
-              <label htmlFor="sujet" className="block text-sm font-medium text-gray-700 mb-1">
-                Sujet <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                id="sujet"
-                name="sujet"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-[#048B9A] focus:border-[#048B9A]"
-                required
-              />
-            </div>
-
-            <div>
-              <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-1">
-                Votre message
-              </label>
-              <textarea
-                id="message"
-                name="message"
-                rows="8"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-[#048B9A] focus:border-[#048B9A]"
-              ></textarea>
-            </div>
 
             <motion.button
               type="submit"
@@ -294,35 +359,6 @@ const Contact = () => {
               )}
             </motion.button>
           </motion.form>
-
-          {/* Notification de statut */}
-          <AnimatePresence>
-            {submitStatus && (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                className={`mt-4 p-4 rounded-lg ${
-                  submitStatus.type === 'success' 
-                    ? 'bg-green-50 text-green-800' 
-                    : 'bg-red-50 text-red-800'
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  {submitStatus.type === 'success' ? (
-                    <svg className="w-5 h-5" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                    </svg>
-                  ) : (
-                    <svg className="w-5 h-5" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                    </svg>
-                  )}
-                  {submitStatus.message}
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
         </motion.div>
       </div>
     </motion.div>

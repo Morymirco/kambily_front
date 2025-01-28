@@ -1,9 +1,10 @@
 'use client'
+import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import { FaArrowLeft, FaSave } from 'react-icons/fa';
-import {HOST_IP, PORT, PRODUCT_TYPE, PROTOCOL_HTTP, STOCK_STATUS} from "../../../../constants";
+import { HOST_IP, PORT, PRODUCT_TYPE, PROTOCOL_HTTP, STOCK_STATUS } from "../../../../constants";
 
 export default function EditProduct() {
   const params = useParams();
@@ -40,6 +41,10 @@ export default function EditProduct() {
   const [availableColors, setAvailableColors] = useState([]);
   const [availableSizes, setAvailableSizes] = useState([]);
   const [availableTags, setAvailableTags] = useState([]);
+
+  const fileInputRef = useRef(null);
+  const [selectedImages, setSelectedImages] = useState([]);
+  const [previewImages, setPreviewImages] = useState([]);
 
   // Charger les données du produit à modifier au chargement
   useEffect(() => {
@@ -114,6 +119,27 @@ export default function EditProduct() {
     fetchReferenceData();
   }, []);
 
+  // Fonction pour gérer le changement d'images
+  const handleImageChange = (e) => {
+    const files = Array.from(e.target.files);
+    setSelectedImages(files);
+
+    // Créer les URLs de prévisualisation
+    const previews = files.map(file => URL.createObjectURL(file));
+    setPreviewImages(prev => {
+      // Nettoyer les anciennes URLs
+      prev.forEach(url => URL.revokeObjectURL(url));
+      return previews;
+    });
+  };
+
+  // Nettoyer les URLs à la destruction du composant
+  useEffect(() => {
+    return () => {
+      previewImages.forEach(url => URL.revokeObjectURL(url));
+    };
+  }, []);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSaving(true);
@@ -138,9 +164,9 @@ export default function EditProduct() {
     data.append('etiquettes', `[${formData.etiquettes}]`);
     data.append('colors', `[${formData.colors}]`)
     
-    // Si vous avez plusieurs fichiers, parcourez-les et ajoutez-les
-    Array.from(ref.current.files).forEach((file, index) => {
-      data.append(`images`, file);
+    // Ajout des images sélectionnées
+    selectedImages.forEach((file) => {
+      data.append('images', file);
     });
     
     console.log(data)
@@ -544,6 +570,56 @@ export default function EditProduct() {
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Section images */}
+        <div className="space-y-4">
+          <label className="block text-sm font-medium text-gray-700">
+            Images du produit
+          </label>
+          
+          {/* Input file */}
+          <input
+            type="file"
+            ref={fileInputRef}
+            multiple
+            accept="image/*"
+            onChange={handleImageChange}
+            className="mt-1 block w-full text-sm text-gray-500
+              file:mr-4 file:py-2 file:px-4
+              file:rounded-full file:border-0
+              file:text-sm file:font-semibold
+              file:bg-[#048B9A] file:text-white
+              hover:file:bg-[#037483]"
+          />
+
+          {/* Prévisualisation des images */}
+          {previewImages.length > 0 && (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4">
+              {previewImages.map((url, index) => (
+                <div key={index} className="relative aspect-square rounded-lg overflow-hidden">
+                  <Image
+                    src={url}
+                    alt={`Preview ${index + 1}`}
+                    fill
+                    className="object-cover"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPreviewImages(prev => prev.filter((_, i) => i !== index));
+                      setSelectedImages(prev => prev.filter((_, i) => i !== index));
+                    }}
+                    className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full hover:bg-red-600"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Boutons d'action */}
