@@ -9,11 +9,14 @@ import {HOST_IP, PORT, PROTOCOL_HTTP} from "../constants";
 
 export default function Login() {
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(true);
   
   useEffect(() => {
     const token = localStorage.getItem('access_token');
     if (token) {
       router.push('/profile');
+    } else {
+      setIsLoading(false);
     }
   }, [router]);
   
@@ -106,6 +109,14 @@ export default function Login() {
     window.location.href = redirectUrl || '/';
   };
   
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="w-12 h-12 border-4 border-[#048B9A] border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
   return (
       <div className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8">
         <div className="w-full max-w-md space-y-8">
