@@ -57,6 +57,11 @@ export function AuthProvider({ children }) {
 
   const refreshAccessToken = async (refreshToken) => {
     try {
+      // Vérifier si on a un refresh token
+      if (!refreshToken) {
+        throw new Error('Pas de refresh token disponible');
+      }
+
       const response = await fetch('https://api.kambily.store/accounts/token/refresh/', {
         method: 'POST',
         headers: {
@@ -65,14 +70,27 @@ export function AuthProvider({ children }) {
         body: JSON.stringify({ refresh: refreshToken }),
       });
 
-      if (!response.ok) throw new Error('Échec du rafraîchissement du token');
-
       const data = await response.json();
+
+      if (!response.ok) {
+        // Gérer les différents cas d'erreur
+        switch (response.status) {
+          case 401:
+            throw new Error('Refresh token invalide');
+          case 400:
+            throw new Error(data.detail || 'Requête invalide');
+          default:
+            throw new Error('Erreur lors du rafraîchissement du token');
+        }
+      }
+
+      // Mettre à jour les tokens
       localStorage.setItem('access_token', data.access);
       setAccessToken(data.access);
       return data.access;
     } catch (error) {
       console.error('Erreur de rafraîchissement du token:', error);
+      // Déconnexion en cas d'échec
       logout();
       throw error;
     }
@@ -124,26 +142,41 @@ export function AuthProvider({ children }) {
   // Fonction utilitaire pour les requêtes authentifiées
   const authFetch = async (url, options = {}) => {
     try {
+      let token = localStorage.getItem('access_token');
+      
+      if (!token) {
+        const refresh = localStorage.getItem('refresh_token');
+        if (refresh) {
+          token = await refreshAccessToken(refresh);
+        } else {
+          throw new Error('Non authentifié');
+        }
+      }
+
       // Ajouter le token aux headers
       const headers = {
         ...options.headers,
-        'Authorization': `Bearer ${accessToken}`,
+        'Authorization': `Bearer ${token}`,
       };
 
       const response = await fetch(url, { ...options, headers });
 
       // Si le token est expiré
       if (response.status === 401) {
-        const newToken = await refreshAccessToken(refreshToken);
-        
-        // Réessayer la requête avec le nouveau token
-        headers.Authorization = `Bearer ${newToken}`;
-        return fetch(url, { ...options, headers });
+        const refresh = localStorage.getItem('refresh_token');
+        if (refresh) {
+          const newToken = await refreshAccessToken(refresh);
+          headers.Authorization = `Bearer ${newToken}`;
+          return fetch(url, { ...options, headers });
+        } else {
+          throw new Error('Session expirée');
+        }
       }
 
       return response;
     } catch (error) {
       console.error('Erreur de requête:', error);
+      logout();
       throw error;
     }
   };

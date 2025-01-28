@@ -31,6 +31,45 @@ const WishlistSkeleton = () => (
   </div>
 );
 
+const AddressSkeleton = () => (
+  <div className="grid gap-4 sm:grid-cols-2">
+    {[1, 2, 3, 4].map((item) => (
+      <div 
+        key={item} 
+        className="p-4 border rounded-lg animate-pulse"
+      >
+        <div className="flex items-start gap-3">
+          {/* Icône */}
+          <div className="w-5 h-5 bg-gray-200 rounded-full flex-shrink-0 mt-1" />
+          
+          <div className="flex-1 min-w-0 space-y-3">
+            {/* Adresse */}
+            <div className="h-4 bg-gray-200 rounded w-3/4" />
+            {/* Ville */}
+            <div className="h-4 bg-gray-200 rounded w-1/2" />
+            {/* Pays */}
+            <div className="h-4 bg-gray-200 rounded w-1/3" />
+            {/* Téléphone */}
+            <div className="h-4 bg-gray-200 rounded w-2/3" />
+          </div>
+        </div>
+
+        {/* Boutons */}
+        <div className="mt-4 flex justify-end gap-2">
+          <div className="w-8 h-8 bg-gray-200 rounded" />
+          <div className="w-8 h-8 bg-gray-200 rounded" />
+        </div>
+      </div>
+    ))}
+
+    {/* Bouton d'ajout skeleton */}
+    <div className="h-[160px] border-2 border-dashed border-gray-200 rounded-lg flex flex-col items-center justify-center gap-3 animate-pulse">
+      <div className="w-6 h-6 bg-gray-200 rounded-full" />
+      <div className="h-4 bg-gray-200 rounded w-32" />
+    </div>
+  </div>
+);
+
 const Profile = () => {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState('profile');
@@ -298,12 +337,12 @@ const Profile = () => {
                   >
                     {profileData.firstName} {profileData.lastName}
                   </motion.h2>
-                  <motion.p 
-                    className="text-gray-600"
-                    variants={inputVariants}
-                  >
-                    {profileData.bio}
-                  </motion.p>
+                  <div className="space-y-4">
+                    <h3 className="font-medium">Bio</h3>
+                    <p className="text-gray-600 line-clamp-2">
+                      {profileData.bio || "Aucune bio renseignée"}
+                    </p>
+                  </div>
                 </div>
                 <motion.button
                   onClick={() => setIsEditing(true)}
@@ -742,18 +781,133 @@ const Profile = () => {
     lng: -13.5784
   };
 
+  const AddAddressModal = ({ 
+    onSubmit, 
+    onClose, 
+    formData, 
+    setFormData, 
+    isSubmitting 
+  }) => (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.9 }}
+        className="bg-white rounded-lg shadow-xl p-6 max-w-md w-full"
+      >
+        <h3 className="text-lg font-semibold mb-4">Ajouter une adresse</h3>
+        
+        <form onSubmit={onSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Adresse
+            </label>
+            <input
+              type="text"
+              value={formData.addresse}
+              onChange={(e) => setFormData({ ...formData, addresse: e.target.value })}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-[#048B9A] focus:border-[#048B9A]"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Ville
+            </label>
+            <input
+              type="text"
+              value={formData.ville}
+              onChange={(e) => setFormData({ ...formData, ville: e.target.value })}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-[#048B9A] focus:border-[#048B9A]"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Pays
+            </label>
+            <input
+              type="text"
+              value={formData.pays}
+              onChange={(e) => setFormData({ ...formData, pays: e.target.value })}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-[#048B9A] focus:border-[#048B9A]"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Téléphone
+            </label>
+            <input
+              type="tel"
+              value={formData.telephone}
+              onChange={(e) => setFormData({ ...formData, telephone: e.target.value })}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-[#048B9A] focus:border-[#048B9A]"
+              required
+            />
+          </div>
+
+          <label className="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              checked={formData.is_default}
+              onChange={(e) => setFormData({ ...formData, is_default: e.target.checked })}
+              className="rounded text-[#048B9A] focus:ring-[#048B9A]"
+            />
+            <span className="text-sm text-gray-700">Définir comme adresse par défaut</span>
+          </label>
+
+          <div className="flex gap-3 pt-4">
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="flex-1 bg-[#048B9A] text-white px-4 py-2 rounded-lg hover:bg-[#037483] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            >
+              {isSubmitting ? (
+                <>
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <span>Ajout en cours...</span>
+                </>
+              ) : (
+                <span>Ajouter</span>
+              )}
+            </button>
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={isSubmitting}
+              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Annuler
+            </button>
+          </div>
+        </form>
+      </motion.div>
+    </div>
+  );
+
   const AddressesContent = () => {
     const [addresses, setAddresses] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [showAddressForm, setShowAddressForm] = useState(false);
-    const [position, setPosition] = useState(defaultCenter);
-    const [showMap, setShowMap] = useState(false);
-    const [address, setAddress] = useState('');
-    const [selectedLocation, setSelectedLocation] = useState(null);
-    const [searchAddress, setSearchAddress] = useState('');
-    const [isLoading, setIsLoading] = useState(false);
+    const [showAddModal, setShowAddModal] = useState(false);
     const { authFetch } = useAuth();
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    
+    // Mise à jour du state formData pour correspondre au format de l'API
+    const [formData, setFormData] = useState({
+      addresse: '',
+      ville: '',
+      pays: '',
+      telephone: '',
+      latitude: defaultCenter.lat,
+      longitude: defaultCenter.lng,
+      is_default: false
+    });
 
+    // Récupération des adresses
     useEffect(() => {
       fetchAddresses();
     }, []);
@@ -761,99 +915,52 @@ const Profile = () => {
     const fetchAddresses = async () => {
       try {
         const response = await authFetch('https://api.kambily.store/addresses/');
-        if (!response.ok) throw new Error('Erreur lors du chargement des adresses');
+        if (!response.ok) throw new Error('Erreur lors de la récupération des adresses');
         const data = await response.json();
         setAddresses(data);
       } catch (error) {
-        console.error('Erreur:', error);
-        toast.error('Impossible de charger vos adresses');
+        toast.error(error.message);
       } finally {
         setLoading(false);
       }
     };
 
+    // Mise à jour de handleAddAddress
     const handleAddAddress = async (e) => {
       e.preventDefault();
-      setIsLoading(true);
-
+      setIsSubmitting(true);
       try {
         const response = await authFetch('https://api.kambily.store/addresses/create/', {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json',
+            'Content-Type': 'application/json'
           },
-          body: JSON.stringify({
-            addresse: address,
-            ville: selectedLocation?.address || '',
-            pays: 'Guinée',
-            telephone: formData.telephone,
-            latitude: position.lat,
-            longitude: position.lng,
-            is_default: formData.is_default
-          })
+          body: JSON.stringify(formData)
         });
 
-        if (!response.ok) {
-          throw new Error('Erreur lors de l\'ajout de l\'adresse');
-        }
+        if (!response.ok) throw new Error('Erreur lors de l\'ajout de l\'adresse');
 
-        await fetchAddresses();
-        setShowAddressForm(false);
         toast.success('Adresse ajoutée avec succès');
+        setShowAddModal(false);
+        setFormData({
+          addresse: '',
+          ville: '',
+          pays: '',
+          telephone: '',
+          latitude: defaultCenter.lat,
+          longitude: defaultCenter.lng,
+          is_default: false
+        });
+        fetchAddresses();
       } catch (error) {
-        console.error('Erreur:', error);
         toast.error(error.message);
       } finally {
-        setIsLoading(false);
-      }
-    };
-
-    // Fonction pour rechercher une adresse
-    const searchByAddress = async () => {
-      try {
-        const response = await fetch(
-          `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(searchAddress)}&key=VOTRE_CLE_API`
-        );
-        const data = await response.json();
-        if (data.results[0]) {
-          const { lat, lng } = data.results[0].geometry.location;
-          setPosition({ lat, lng });
-          setSelectedLocation({
-            coordinates: `${lat}, ${lng}`,
-            address: data.results[0].formatted_address
-          });
-        }
-      } catch (error) {
-        console.error('Erreur de recherche:', error);
-      }
-    };
-
-    // Gestionnaire de clic sur la carte
-    const handleMapClick = async (e) => {
-      const lat = e.latLng.lat();
-      const lng = e.latLng.lng();
-      setPosition({ lat, lng });
-
-      try {
-        const response = await fetch(
-          `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=VOTRE_CLE_API`
-        );
-        const data = await response.json();
-        setSelectedLocation({
-          coordinates: `${lat}, ${lng}`,
-          address: data.results[0]?.formatted_address || 'Adresse non trouvée'
-        });
-      } catch (error) {
-        console.error('Erreur de géocodage:', error);
+        setIsSubmitting(false);
       }
     };
 
     if (loading) {
-      return (
-        <div className="flex justify-center items-center h-64">
-          <div className="w-8 h-8 border-4 border-[#048B9A] border-t-transparent rounded-full animate-spin" />
-        </div>
-      );
+      return <AddressSkeleton />;
     }
 
     return (
@@ -864,104 +971,14 @@ const Profile = () => {
       >
         <h2 className="text-xl font-semibold">Mes Adresses</h2>
 
-        {showAddressForm && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-lg p-6 space-y-6"
-          >
-            <div className="flex justify-between items-center mb-3">
-              <h3 className="text-lg font-medium">Ajouter une nouvelle adresse</h3>
-              <button
-                onClick={() => setShowAddressForm(false)}
-                className="text-gray-400 hover:text-gray-500"
-              >
-                <FaTimes className="w-5 h-5" />
-              </button>
-            </div>
-
-            <form onSubmit={handleAddAddress} className="space-y-4">
-              {/* Adresse complète */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Adresse complète
-                </label>
-                <textarea
-                  value={address}
-                  onChange={(e) => setAddress(e.target.value)}
-                  rows={3}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-[#048B9A] focus:border-[#048B9A]"
-                  required
-                />
-              </div>
-
-              {/* Téléphone */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Téléphone
-                </label>
-                <input
-                  type="tel"
-                  value={formData.telephone}
-                  onChange={(e) => setFormData({ ...formData, telephone: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-[#048B9A] focus:border-[#048B9A]"
-                  required
-                />
-              </div>
-
-              {/* Ville */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Ville
-                </label>
-                <input
-                  type="text"
-                  value={selectedLocation?.address || ''}
-                  readOnly
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50"
-                />
-              </div>
-
-              {/* Adresse par défaut */}
-              <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  id="is_default"
-                  checked={formData.is_default}
-                  onChange={(e) => setFormData({ ...formData, is_default: e.target.checked })}
-                  className="h-4 w-4 text-[#048B9A] focus:ring-[#048B9A] border-gray-300 rounded"
-                />
-                <label htmlFor="is_default" className="ml-2 text-sm text-gray-700">
-                  Définir comme adresse par défaut
-                </label>
-              </div>
-
-              {/* Boutons */}
-              <div className="flex justify-end gap-4">
-                <button
-                  type="button"
-                  onClick={() => setShowAddressForm(false)}
-                  className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
-                >
-                  Annuler
-                </button>
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="px-4 py-2 bg-[#048B9A] text-white rounded-lg hover:bg-[#037483] transition-colors flex items-center gap-2"
-                >
-                  {isLoading ? (
-                    <>
-                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      <span>Enregistrement...</span>
-                    </>
-                  ) : (
-                    'Enregistrer'
-                  )}
-                </button>
-              </div>
-            </form>
-          </motion.div>
+        {showAddModal && (
+          <AddAddressModal
+            onSubmit={handleAddAddress}
+            onClose={() => setShowAddModal(false)}
+            formData={formData}
+            setFormData={setFormData}
+            isSubmitting={isSubmitting}
+          />
         )}
 
         <div className="grid gap-4 sm:grid-cols-2">
@@ -1008,7 +1025,7 @@ const Profile = () => {
           ))}
           
           <motion.button
-            onClick={() => setShowAddressForm(true)}
+            onClick={() => setShowAddModal(true)}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             className="h-[160px] border-2 border-dashed border-[#048B9A] rounded-lg flex flex-col items-center justify-center gap-3 text-[#048B9A] hover:bg-[#048B9A]/5 transition-colors p-4"
