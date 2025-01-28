@@ -9,6 +9,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import toast, { Toaster } from 'react-hot-toast';
 import { FaCheckCircle, FaEdit, FaMapPin, FaSearchLocation, FaTag, FaTrash } from 'react-icons/fa';
+import DeliveryTimeSelector from '../Components/DeliveryTimeSelector';
 
 const containerStyle = {
   width: '100%',
@@ -941,51 +942,12 @@ const Panier = () => {
           </div>
 
           {/* Expédition */}
-          <div className="space-y-3">
-            <h3 className="font-medium">Mode d'expédition</h3>
-            <div className="space-y-2">
-              <motion.div 
-                className={`p-3 border rounded-lg cursor-pointer ${
-                  shippingMethod === 'standard' ? 'border-[#048B9A]' : 'border-gray-200'
-                }`}
-                whileHover={{ scale: 1.01 }}
-                onClick={() => setShippingMethod('standard')}
-              >
-                <div className="flex items-center gap-3">
-                  <div className={`w-4 h-4 rounded-full border-2 ${
-                    shippingMethod === 'standard' 
-                      ? 'border-[#048B9A] bg-[#048B9A]' 
-                      : 'border-gray-300'
-                  }`} />
-                  <div className="flex-1">
-                    <p className="font-medium">Livraison standard</p>
-                    <p className="text-sm text-gray-500">3-5 jours ouvrables</p>
-                  </div>
-                  <span className="font-medium text-green-600">Gratuit</span>
-                </div>
-              </motion.div>
-
-              <motion.div 
-                className={`p-3 border rounded-lg cursor-pointer ${
-                  shippingMethod === 'express' ? 'border-[#048B9A]' : 'border-gray-200'
-                }`}
-                whileHover={{ scale: 1.01 }}
-                onClick={() => setShippingMethod('express')}
-              >
-                <div className="flex items-center gap-3">
-                  <div className={`w-4 h-4 rounded-full border-2 ${
-                    shippingMethod === 'express' 
-                      ? 'border-[#048B9A] bg-[#048B9A]' 
-                      : 'border-gray-300'
-                  }`} />
-                  <div className="flex-1">
-                    <p className="font-medium">Livraison express</p>
-                    <p className="text-sm text-gray-500">1-2 jours ouvrables</p>
-                  </div>
-                  <span className="font-medium">25,000 GNF</span>
-                </div>
-              </motion.div>
-            </div>
+          <div className="mt-8">
+            <DeliveryTimeSelector 
+              onSelect={(deliveryInfo) => {
+                console.log('Informations de livraison:', deliveryInfo);
+              }} 
+            />
           </div>
 
           {/* Résumé */}
