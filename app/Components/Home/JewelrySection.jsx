@@ -2,6 +2,7 @@
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import CategoryBanner from './CategoryBanner';
+import Product from '../Common/Product';
 
 export default function JewelrySection() {
   const [products, setProducts] = useState([]);
@@ -54,12 +55,12 @@ export default function JewelrySection() {
             ))
           ) : (
             products.map((product) => (
-              <JewelryItem
+              <Product
                 key={product.id}
                 image={product.images[0].image || "/bijoux/default.jpg"}
                 title={product.name}
                 price={`${product.regular_price.toLocaleString()} GNF`}
-                inStock={product.stock_status === 'instock'}
+                inStock={product.etat_stock === 'En stock'}
               />
             ))
           )}
