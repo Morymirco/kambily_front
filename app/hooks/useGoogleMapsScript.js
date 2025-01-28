@@ -16,7 +16,7 @@ export const useGoogleMapsScript = () => {
     }
 
     const googleMapScript = document.createElement('script');
-    googleMapScript.src = `https://maps.googleapis.com/maps/api/js?key=VOTRE_CLE_API_GOOGLE_MAPS&libraries=places`;
+    googleMapScript.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyAlAKK7ldE7CcZMmGADZPb3GYOPI8C4bXs&libraries=places`;
     googleMapScript.async = true;
     googleMapScript.defer = true;
     googleMapScript.addEventListener('load', () => setIsLoaded(true));
