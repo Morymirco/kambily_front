@@ -67,7 +67,7 @@ export default function MobileHome() {
         const data = await response.json();
         console.log('Données brutes:', data);
         
-        const productsArray = Array.isArray(data) ? data : data.results || [];
+        const productsArray = Array.isArray(data.products) ? data.products : data.results || [];
         
         const transformedProducts = productsArray
           .map(product => ({
@@ -77,7 +77,7 @@ export default function MobileHome() {
             gallery: product.images?.slice(1)?.map(img => img.image) || [],
             price: product.regular_price,
             oldPrice: product.promo_price !== product.regular_price ? product.regular_price : null,
-            inStock: product.stock_status === 'in_stock',
+            inStock: product.etat_stock === 'En stock',
             category: product.categories?.[0]?.name || 'Non catégorisé'
           }))
           .slice(0, 4);

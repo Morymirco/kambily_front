@@ -928,6 +928,9 @@ const Profile = () => {
     const [addresses, setAddresses] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showAddModal, setShowAddModal] = useState(false);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [addressToDelete, setAddressToDelete] = useState(null);
+    const [isDeleting, setIsDeleting] = useState(false);
     const { authFetch } = useAuth();
     const [isSubmitting, setIsSubmitting] = useState(false);
     
@@ -994,6 +997,32 @@ const Profile = () => {
       }
     };
 
+    // Fonction pour gérer la suppression
+    const handleDeleteAddress = async (addressId) => {
+      try {
+        setIsDeleting(true);
+        const response = await authFetch(`https://api.kambily.store/addresses/delete/${addressId}/`, {
+          method: 'DELETE',
+        });
+
+        if (!response.ok) throw new Error('Erreur lors de la suppression de l\'adresse');
+
+        // Mettre à jour la liste des adresses
+        setAddresses(prevAddresses => 
+          prevAddresses.filter(address => address.id !== addressId)
+        );
+        
+        setShowDeleteModal(false);
+        toast.success('Adresse supprimée avec succès');
+      } catch (error) {
+        console.error('Erreur:', error);
+        toast.error('Erreur lors de la suppression de l\'adresse');
+      } finally {
+        setIsDeleting(false);
+        setAddressToDelete(null);
+      }
+    };
+
     if (loading) {
       return <AddressSkeleton />;
     }
@@ -1015,6 +1044,52 @@ const Profile = () => {
             isSubmitting={isSubmitting}
           />
         )}
+
+        {/* Modal de confirmation de suppression */}
+        <AnimatePresence>
+          {showDeleteModal && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="bg-white rounded-lg shadow-xl p-6 max-w-md w-full"
+              >
+                <h3 className="text-lg font-semibold mb-4">Confirmer la suppression</h3>
+                <p className="text-gray-600 mb-6">
+                  Êtes-vous sûr de vouloir supprimer cette adresse ? Cette action est irréversible.
+                </p>
+                
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => handleDeleteAddress(addressToDelete)}
+                    disabled={isDeleting}
+                    className="flex-1 bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  >
+                    {isDeleting ? (
+                      <>
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        <span>Suppression...</span>
+                      </>
+                    ) : (
+                      <span>Supprimer</span>
+                    )}
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowDeleteModal(false);
+                      setAddressToDelete(null);
+                    }}
+                    disabled={isDeleting}
+                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    Annuler
+                  </button>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
 
         <div className="grid gap-4 sm:grid-cols-2">
           {addresses.map((address) => (
@@ -1044,16 +1119,15 @@ const Profile = () => {
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className="p-2 text-gray-500 hover:text-[#048B9A] transition-colors"
-                >
-                  <FaEdit className="w-4 h-4" />
-                </motion.button>
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
+                  onClick={() => {
+                    setAddressToDelete(address.id);
+                    setShowDeleteModal(true);
+                  }}
                   className="p-2 text-gray-500 hover:text-red-500 transition-colors"
+                  disabled={address.is_default || isDeleting}
+                  title={address.is_default ? "Impossible de supprimer l'adresse par défaut" : ""}
                 >
-                  <FaTrash className="w-4 h-4" />
+                  <FaTrash className={`w-4 h-4 ${address.is_default ? 'opacity-50 cursor-not-allowed' : ''}`} />
                 </motion.button>
               </div>
             </motion.div>

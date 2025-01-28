@@ -10,9 +10,11 @@ export default function JewelrySection() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await fetch('https://api.kambily.store/products');
+        const response = await fetch('https://api.kambily.store/products/');
         const data = await response.json();
-        setProducts(data.slice(0, 2)); // On prend seulement les 2 premiers produits
+        console.log("data", data);
+        console.log("data_product", data.products.slice(0, 2));
+        setProducts(data.products.slice(0, 2)); // On prend seulement les 2 premiers produits
       } catch (error) {
         console.error('Erreur lors du chargement des produits:', error);
       } finally {
@@ -54,9 +56,9 @@ export default function JewelrySection() {
             products.map((product) => (
               <JewelryItem
                 key={product.id}
-                image={product.image || "/bijoux/default.jpg"}
+                image={product.images[0].image || "/bijoux/default.jpg"}
                 title={product.name}
-                price={`${product.price.toLocaleString()} GNF`}
+                price={`${product.regular_price.toLocaleString()} GNF`}
                 inStock={product.stock_status === 'instock'}
               />
             ))

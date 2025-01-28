@@ -288,8 +288,8 @@ const Produit = ({ image, gallery = [], title, price, oldPrice, inStock, categor
                 </>
               ) : (
                 <>
-                  <FaShoppingCart className="text-sm" />
-                  <span className="text-sm">Ajouter au panier</span>
+                  <FaShoppingCart className="text-[14px]" />
+                  <span className="text-[14px]">Ajouter au panier</span>
                 </>
               )}
             </button>
