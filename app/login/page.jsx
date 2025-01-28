@@ -3,13 +3,19 @@ import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { FaEnvelope, FaFacebook, FaGoogle, FaLock } from 'react-icons/fa';
 import {HOST_IP, PORT, PROTOCOL_HTTP} from "../constants";
 
 export default function Login() {
   const router = useRouter();
   
+  useEffect(() => {
+    const token = localStorage.getItem('access_token');
+    if (token) {
+      router.push('/profile');
+    }
+  }, [router]);
   
   const [formData, setFormData] = useState({
     email: '',
