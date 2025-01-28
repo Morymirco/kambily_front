@@ -1,4 +1,5 @@
 'use client'
+import { AddressSelector } from '@/app/Components/AddressSelector';
 import { useAuth } from '@/app/providers/AuthProvider';
 import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -7,7 +8,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import toast, { Toaster } from 'react-hot-toast';
-import { FaCheckCircle, FaEdit, FaMapMarkerAlt, FaMapPin, FaPlus, FaSearchLocation, FaTag, FaTrash } from 'react-icons/fa';
+import { FaCheckCircle, FaEdit, FaMapPin, FaSearchLocation, FaTag, FaTrash } from 'react-icons/fa';
 
 const containerStyle = {
   width: '100%',
@@ -169,6 +170,7 @@ const Panier = () => {
   const [isCreatingOrder, setIsCreatingOrder] = useState(false);
   const [isApplyingPromo, setIsApplyingPromo] = useState(false);
   const [promoApplied, setPromoApplied] = useState(false);
+  const [selectedAddress, setSelectedAddress] = useState(null);
 
   // Effet pour charger le panier
   useEffect(() => {
@@ -778,56 +780,10 @@ const Panier = () => {
                   className="space-y-3"
                 >
                   {/* Liste des adresses sauvegardées */}
-                  {savedAddresses.map((addr) => (
-                    <div
-                      key={addr.id}
-                      onClick={() => setSelectedAddressId(addr.id)}
-                      className={`relative p-4 rounded-lg cursor-pointer transition-all ${
-                        selectedAddressId === addr.id
-                          ? 'border-2 border-[#048B9A] bg-[#048B9A]/5'
-                          : 'border border-gray-200 hover:border-[#048B9A] bg-gray-50'
-                      }`}
-                    >
-                      <div className="flex gap-3">
-                        <div className="text-[#048B9A]">
-                          <FaMapMarkerAlt />
-                        </div>
-                        <div className="flex-1 space-y-1">
-                          <div className="flex items-center justify-between">
-                            <p className="font-medium">{addr.title}</p>
-                            {addr.isDefault && (
-                              <span className="text-xs bg-[#048B9A]/10 text-[#048B9A] px-2 py-1 rounded-full">
-                                Par défaut
-                              </span>
-                            )}
-                          </div>
-                          <p className="text-sm text-gray-600">{addr.street}</p>
-                          <p className="text-sm text-gray-600">{addr.city}</p>
-                          <p className="text-sm text-gray-600">{addr.phone}</p>
-                        </div>
-                      </div>
-                      
-                      {/* Radio button */}
-                      <div className="absolute top-4 right-4">
-                        <div className={`w-4 h-4 rounded-full border-2 ${
-                          selectedAddressId === addr.id
-                            ? 'border-[#048B9A] bg-[#048B9A]'
-                            : 'border-gray-300'
-                        }`} />
-                      </div>
-                    </div>
-                  ))}
-
-                  {/* Bouton pour ajouter une nouvelle adresse */}
-                  <motion.button
-                    onClick={() => setShowAddressForm(true)}
-                    className="w-full p-4 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center gap-2 text-gray-500 hover:border-[#048B9A] hover:text-[#048B9A] transition-colors"
-                    whileHover={{ scale: 1.01 }}
-                    whileTap={{ scale: 0.99 }}
-                  >
-                    <FaPlus className="w-4 h-4" />
-                    Ajouter une nouvelle adresse
-                  </motion.button>
+                  <AddressSelector
+                    selectedAddress={selectedAddress}
+                    onAddressSelect={setSelectedAddress}
+                  />
                 </motion.div>
               ) : (
                 // Le formulaire d'ajout/modification d'adresse existant
