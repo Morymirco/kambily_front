@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { FaChevronLeft, FaChevronRight, FaEye, FaFacebookF, FaHeart, FaLink, FaShoppingCart, FaTimes, FaTwitter, FaWhatsapp } from 'react-icons/fa';
 
-const ProductCard = ({ image, gallery = [], title, price, oldPrice, inStock, description, isFavorite: initialFavorite = false }) => {
+const ProductCard = ({ image, gallery = [], title, price, oldPrice, inStock, description, isFavorite: initialFavorite = false, onRemoveFavorite, isRemoving }) => {
   const [showToast, setShowToast] = useState(false);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [showModal, setShowModal] = useState(false);
@@ -171,17 +171,33 @@ const ProductCard = ({ image, gallery = [], title, price, oldPrice, inStock, des
           <div className="flex gap-2">
             {/* Bouton Favoris - Modifié pour apparaître au survol */}
             <button
-              onClick={handleFavorite}
+              onClick={async (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (isFavorite && onRemoveFavorite) {
+                  try {
+                    await onRemoveFavorite();
+                    setIsFavorite(false);
+                    setShowFavToast(true);
+                    setTimeout(() => setShowFavToast(false), 2000);
+                  } catch (error) {
+                    console.error('Erreur lors de la suppression:', error);
+                  }
+                } else {
+                  handleFavorite(e);
+                }
+              }}
+              disabled={isRemoving}
               className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all duration-300 md:opacity-0 md:group-hover:opacity-100 ${
                 isFavorite 
                   ? 'bg-red-50 hover:bg-red-100' 
                   : 'bg-gray-100 hover:bg-gray-200'
-              }`}
+              } ${isRemoving ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
             >
               <FaHeart 
                 className={`w-4 h-4 transition-colors duration-300 ${
                   isFavorite ? 'text-red-500' : 'text-gray-600'
-                }`}
+                } ${isRemoving ? 'animate-pulse' : ''}`}
               />
             </button>
 

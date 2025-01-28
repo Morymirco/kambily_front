@@ -541,7 +541,7 @@ export default function Navbar() {
                             <div key={item.id} className="flex items-center gap-4 mb-4 relative">
                               <div className="relative w-16 h-16 rounded-lg overflow-hidden flex-shrink-0">
                                 <Image
-                                  src={item.product.images?.[0]?.image || '/placeholder.png'}
+                                  src={item.product.image?.image || '/placeholder.png'}
                                   alt={item.product.name}
                                   fill
                                   className="object-cover"

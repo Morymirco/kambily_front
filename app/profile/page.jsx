@@ -697,6 +697,7 @@ const Profile = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const { authFetch } = useAuth();
+    const [isRemoving, setIsRemoving] = useState(false);
 
     useEffect(() => {
       fetchFavorites();
@@ -705,19 +706,39 @@ const Profile = () => {
     const fetchFavorites = async () => {
       try {
         const response = await authFetch('https://api.kambily.store/favorites/');
-        
-        if (!response.ok) {
-          throw new Error('Erreur lors de la récupération des favoris');
-        }
-
+        if (!response.ok) throw new Error('Erreur lors de la récupération des favoris');
         const data = await response.json();
-        console.log(data);
         setFavorites(data);
       } catch (err) {
         setError(err.message);
         toast.error(err.message);
       } finally {
         setLoading(false);
+      }
+    };
+
+    const handleRemoveFavorite = async (productId) => {
+      if (isRemoving) return; // Évite les doubles clics
+
+      try {
+        setIsRemoving(true);
+        const response = await authFetch(`https://api.kambily.store/favorites/delete/${productId}/`, {
+          method: 'DELETE',
+        });
+
+        if (!response.ok) throw new Error('Erreur lors de la suppression du favori');
+
+        // Animation de suppression
+        setFavorites(prevFavorites => 
+          prevFavorites.filter(fav => fav.product.id !== productId)
+        );
+        
+        toast.success('Produit retiré des favoris');
+      } catch (error) {
+        console.error('Erreur:', error);
+        toast.error('Erreur lors de la suppression du favori');
+      } finally {
+        setIsRemoving(false);
       }
     };
 
@@ -748,25 +769,39 @@ const Profile = () => {
     }
 
     return (
-      <div>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+      >
         <h2 className="text-xl font-semibold mb-6">Ma Liste de Souhaits</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {favorites.map((favorite) => (
-            <ProductCard
+            <motion.div
               key={favorite.id}
-              id={favorite.product.id}
-              image={favorite.product.images?.[0]?.image || '/3.png'}
-              gallery={favorite.product.images?.slice(1).map(img => img.image) || []}
-              title={favorite.product.name}
-              price={favorite.product.regular_price}
-              oldPrice={favorite.product.promo_price}
-              inStock={favorite.product.stock_status === 'in_stock'}
-              description={favorite.product.short_description}
-              isFavorite={true}
-            />
+              layout
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              transition={{ duration: 0.2 }}
+            >
+              <ProductCard
+                id={favorite.product.id}
+                image={favorite.product.image?.image || '/3.png'}
+                gallery={favorite.product.images?.slice(1).map(img => img.image) || []}
+                title={favorite.product.name}
+                price={favorite.product.regular_price}
+                oldPrice={favorite.product.promo_price}
+                inStock={favorite.product.stock_status === 'in_stock'}
+                description={favorite.product.short_description}
+                isFavorite={true}
+                onRemoveFavorite={() => handleRemoveFavorite(favorite.product.id)}
+                isRemoving={isRemoving}
+              />
+            </motion.div>
           ))}
         </div>
-      </div>
+      </motion.div>
     );
   };
 

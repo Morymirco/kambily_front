@@ -273,7 +273,7 @@ const Panier = () => {
             <div className="bg-white border border-gray-200 rounded-lg shadow-lg p-4 w-[300px] flex items-center gap-4">
               <div className="relative w-16 h-16 flex-shrink-0 rounded-md overflow-hidden">
                 <Image
-                  src={removedItem.product.images?.[0]?.image || '/placeholder.png'}
+                  src={removedItem.product.image?.image || '/placeholder.png'}
                   alt={removedItem.product.name}
                   fill
                   className="object-cover"
@@ -544,7 +544,7 @@ const Panier = () => {
                 {/* Image du produit */}
                 <div className="relative w-16 h-16 sm:w-24 sm:h-24 flex-shrink-0">
                   <Image
-                    src={item.product.images?.[0]?.image || '/placeholder.png'}
+                    src={item.product.image?.image || '/placeholder.png'}
                     alt={item.product.name}
                     fill
                     className="object-cover rounded-lg"
