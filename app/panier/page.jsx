@@ -172,6 +172,7 @@ const Panier = () => {
   const [isApplyingPromo, setIsApplyingPromo] = useState(false);
   const [promoApplied, setPromoApplied] = useState(false);
   const [selectedAddress, setSelectedAddress] = useState(null);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   // Effet pour charger le panier
   useEffect(() => {
@@ -314,7 +315,7 @@ const Panier = () => {
       return sum + (item.product.regular_price * item.quantity);
     }, 0);
     
-    const shipping = shippingMethod === 'express' ? 25000 : 0;
+    const shipping = 3000;
     return subtotal + shipping;
   };
 
@@ -419,46 +420,42 @@ const Panier = () => {
     }));
   };
 
-  const createOrder = async () => {
-    if (!selectedAddressId) {
-      toast.error('Veuillez sélectionner une adresse de livraison');
+  const handleCheckout = async () => {
+    if (!selectedAddress?.id) {
+      toast.error("Veuillez sélectionner une adresse de livraison");
       return;
+      
     }
 
-    setIsCreatingOrder(true);
+    setIsProcessing(true);
+    console.log(selectedAddress);
     try {
       const response = await authFetch('https://api.kambily.store/orders/create/', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify({
-          shipping_address_id: selectedAddressId,
-          shipping_method: shippingMethod,
-          promo_code: promoCode,
-          items: cartItems.map(item => ({
-            product_id: item.product.id,
-            quantity: item.quantity,
-            price: item.product.regular_price
-          }))
+          delivery_address_id: selectedAddress.id,
         })
       });
 
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Erreur lors de la création de la commande');
+        throw new Error('Erreur lors de la création de la commande', response.statusText);
       }
 
       const orderData = await response.json();
       
-      // Rediriger vers la page de paiement avec l'ID de la commande
-      router.push(`/paiement?order_id=${orderData.id}`);
+      // Vider le panier après une commande réussie
+      clearCart();
+      
+      // Rediriger vers la page de confirmation
+      router.push(`/commandes/${orderData.id}`);
+      
+      toast.success('Votre commande a été créée avec succès');
 
     } catch (error) {
       console.error('Erreur:', error);
-      toast.error(error.message || 'Erreur lors de la création de la commande');
+      toast.error("Impossible de créer la commande. Veuillez réessayer.");
     } finally {
-      setIsCreatingOrder(false);
+      setIsProcessing(false);
     }
   };
 
@@ -960,7 +957,7 @@ const Panier = () => {
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Expédition</span>
-                <span>{shippingMethod === 'express' ? '25,000' : 'Gratuit'}</span>
+                <span> 3000 GNF</span>
               </div>
               <div className="flex justify-between font-medium text-lg pt-4 border-t">
                 <span>Total</span>
@@ -971,19 +968,19 @@ const Panier = () => {
 
           {/* Bouton paiement */}
           <motion.button
-            onClick={createOrder}
-            disabled={isCreatingOrder || cartItems.length === 0}
+            onClick={handleCheckout}
+            disabled={isProcessing || cartItems.length === 0}
             className="w-full bg-[#048B9A] text-white py-3 rounded-lg hover:bg-[#037483] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
           >
-            {isCreatingOrder ? (
+            {isProcessing ? (
               <>
                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                 <span>Création de la commande...</span>
               </>
             ) : (
-              'Procéder au paiement'
+              'Passer la commande'
             )}
           </motion.button>
         </motion.div>

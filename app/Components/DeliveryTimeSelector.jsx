@@ -1,14 +1,16 @@
 'use client'
 import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
-import { FaCalendarAlt, FaInfoCircle, FaTruck } from 'react-icons/fa';
+import { FaCalendarAlt, FaInfoCircle, FaMoneyBillWave, FaTruck } from 'react-icons/fa';
 
 const DeliveryTimeSelector = ({ onSelect }) => {
+  const DELIVERY_FEE = 3000;
   const [deliveryInfo, setDeliveryInfo] = useState({
     estimatedDate: null,
     message: '',
     delay: '',
-    type: ''
+    type: '',
+    deliveryFee: DELIVERY_FEE
   });
 
   useEffect(() => {
@@ -68,7 +70,7 @@ const DeliveryTimeSelector = ({ onSelect }) => {
       type = "standard_48_fri";
     }
 
-    const newDeliveryInfo = { estimatedDate, message, delay, type };
+    const newDeliveryInfo = { estimatedDate, message, delay, type, deliveryFee: DELIVERY_FEE };
     setDeliveryInfo(newDeliveryInfo);
     onSelect && onSelect(newDeliveryInfo);
   };
@@ -112,6 +114,13 @@ const DeliveryTimeSelector = ({ onSelect }) => {
               <p>Délai de livraison : {deliveryInfo.delay}</p>
             </div>
 
+            <div className="flex items-center gap-2 py-2 px-3 bg-[#048B9A]/5 rounded-lg">
+              <FaMoneyBillWave className="text-[#048B9A]" />
+              <span className="text-sm font-medium">
+                Frais de livraison : {DELIVERY_FEE.toLocaleString('fr-FR')} GNF
+              </span>
+            </div>
+
             <div className="mt-4 p-3 bg-yellow-50 border border-yellow-100 rounded-lg flex items-start gap-2">
               <FaInfoCircle className="text-yellow-600 mt-0.5 flex-shrink-0" />
               <div className="text-sm text-yellow-800">
@@ -120,6 +129,7 @@ const DeliveryTimeSelector = ({ onSelect }) => {
                   <li>Les livraisons sont effectuées du lundi au vendredi</li>
                   <li>Horaires de livraison : 8h - 18h</li>
                   <li>Pas de livraison les weekends et jours fériés</li>
+                  <li>Frais de livraison fixes : 3 000 GNF</li>
                 </ul>
               </div>
             </div>

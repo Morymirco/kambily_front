@@ -4,6 +4,7 @@ import { Krub } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from './providers/AuthProvider';
 import { FavoritesProvider } from './providers/FavoritesProvider';
+import { LoadingProvider } from './providers/LoadingProvider';
 
 
 const krub = Krub({
@@ -83,13 +84,15 @@ export default function RootLayout({ children }) {
         <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
       </head>
       <body className={krub.className}>
-        <AuthProvider>
-          <FavoritesProvider>
-            <MainLayout>
-              {children}
-            </MainLayout>
-          </FavoritesProvider>
-        </AuthProvider>
+        <LoadingProvider>
+          <AuthProvider>
+            <FavoritesProvider>
+              <MainLayout>
+                {children}
+              </MainLayout>
+            </FavoritesProvider>
+          </AuthProvider>
+        </LoadingProvider>
         <ScrollToTop />
         <script
           dangerouslySetInnerHTML={{
