@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'react-hot-toast';
-import { FaAddressCard, FaCog, FaCreditCard, FaExclamationTriangle, FaGlobe, FaHeart, FaMapMarkerAlt, FaMoon, FaPlus, FaShoppingBag, FaSignOutAlt, FaTimes, FaTrash, FaUser } from 'react-icons/fa';
+import { FaAddressCard, FaCamera, FaCog, FaCreditCard, FaExclamationTriangle, FaGlobe, FaHeart, FaMapMarkerAlt, FaMoon, FaPlus, FaShoppingBag, FaSignOutAlt, FaTimes, FaTrash, FaUser } from 'react-icons/fa';
 
 import ProductCard from '@/app/Components/Common/ProductCard';
 import { useAuth } from '@/app/providers/AuthProvider';
@@ -338,6 +338,7 @@ const Profile = () => {
       bio: userData?.bio || '',
       avatar: userData?.avatar || '/team/mory.jpg'
     });
+    const [selectedImage, setSelectedImage] = useState(null);
 
     // Mettre à jour profileData quand userData change
     useEffect(() => {
@@ -352,6 +353,63 @@ const Profile = () => {
         });
       }
     }, [userData]);
+
+    const handleImageChange = (e) => {
+      if (e.target.files && e.target.files[0]) {
+        setSelectedImage(e.target.files[0]);
+        setProfileData({
+          ...profileData,
+          avatar: URL.createObjectURL(e.target.files[0])
+        });
+      }
+    };
+
+    const handleProfileUpdate = async (e) => {
+      e.preventDefault();
+      
+      // Vérifiez que les champs sont remplis
+      if (!profileData.firstName || !profileData.lastName || !profileData.email) {
+        toast.error('Veuillez remplir tous les champs requis');
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('updated_data', JSON.stringify({
+        first_name: profileData.firstName,
+        last_name: profileData.lastName,
+        email: profileData.email,
+        phone: profileData.phone,
+        bio: profileData.bio,
+      }));
+
+      if (selectedImage) {
+        formData.append('image', selectedImage);
+      }
+     
+
+      try {
+        console.log(formData);
+        const response = await fetch('https://api.kambily.store/accounts/modify/', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+          },
+          body: formData
+        });
+
+        if (!response.ok) {
+          throw new Error('Erreur lors de la mise à jour du profil');
+        }
+
+        const data = await response.json();
+        console.log('Profil mis à jour:', data);
+        toast.success('Profil mis à jour avec succès');
+        setIsEditing(false);
+      } catch (error) {
+        console.error('Erreur:', error);
+        toast.error('Erreur lors de la mise à jour du profil');
+      }
+    };
 
     // Variants pour les animations
     const formVariants = {
@@ -447,13 +505,10 @@ const Profile = () => {
               </motion.div>
 
               {/* Informations du profil */}
-              <motion.div className="grid gap-6 px-4" variants={formVariants}>
-                <motion.div 
-                  className="border rounded-lg p-6 space-y-6"
-                  variants={inputVariants}
-                >
+              <motion.div className="-mx-6 sm:mx-0 px-4 sm:px-4 grid gap-6" variants={formVariants}>
+                <motion.div className="border rounded-lg p-6" variants={inputVariants}>
                   <h3 className="text-lg font-semibold">Informations personnelles</h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-6">
                     <div className="space-y-2">
                       <p className="text-sm text-gray-500">Prénom</p>
                       <p className="font-medium">{profileData.firstName}</p>
@@ -474,10 +529,7 @@ const Profile = () => {
                 </motion.div>
 
                 {/* Statistiques */}
-                <motion.div 
-                  className="grid grid-cols-1 sm:grid-cols-3 gap-4"
-                  variants={formVariants}
-                >
+                <motion.div className="grid grid-cols-1 sm:grid-cols-3 gap-4" variants={formVariants}>
                   {[
                     { value: 12, label: "Commandes" },
                     { value: 5, label: "En favoris" },
@@ -506,25 +558,16 @@ const Profile = () => {
           ) : (
             // Mode édition
             <motion.form
-              onSubmit={(e) => {
-                e.preventDefault();
-                setIsEditing(false);
-              }}
+              onSubmit={handleProfileUpdate}
               className="space-y-8 p-4"
               variants={formVariants}
               initial="hidden"
               animate="visible"
               exit={{ opacity: 0, x: 20 }}
             >
-              <motion.div 
-                className="flex items-center gap-6 mb-8"
-                variants={inputVariants}
-              >
+              <motion.div className="flex items-center gap-6 mb-8" variants={inputVariants}>
                 <div className="relative">
-                  <motion.div 
-                    className="w-24 h-24 rounded-full overflow-hidden"
-                    whileHover={{ scale: 1.05 }}
-                  >
+                  <motion.div className="w-24 h-24 rounded-full overflow-hidden" whileHover={{ scale: 1.05 }}>
                     <Image
                       src={profileData.avatar}
                       alt="Photo de profil"
@@ -540,6 +583,12 @@ const Profile = () => {
                     whileTap={{ scale: 0.9 }}
                   >
                     <FaCamera className="w-4 h-4" />
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="absolute inset-0 opacity-0 cursor-pointer"
+                      onChange={handleImageChange}
+                    />
                   </motion.button>
                 </div>
                 <div className="flex-1">
@@ -604,10 +653,7 @@ const Profile = () => {
                 </div>
               </div>
 
-              <motion.div 
-                className="flex gap-4"
-                variants={inputVariants}
-              >
+              <motion.div className="flex gap-4" variants={inputVariants}>
                 <motion.button
                   type="submit"
                   className="bg-[#048B9A] text-white px-6 py-2 rounded-lg hover:bg-[#037483] transition-colors"
@@ -713,7 +759,7 @@ const Profile = () => {
         {orders.map((order) => (
           <div 
             key={order.id} 
-            className="border rounded-lg p-6 hover:border-[#048B9A] transition-colors"
+            className="border rounded-lg p-6 hover:border-[#048B9A] transition-colors relative group"
           >
             <div className="flex justify-between items-start mb-6">
               <div>
@@ -733,12 +779,6 @@ const Profile = () => {
                   Passée le {new Date(order.created_at).toLocaleDateString()}
                 </p>
               </div>
-              <Link 
-                href={`/commandes/${order.id}`}
-                className="text-[#048B9A] hover:underline"
-              >
-                Voir les détails
-              </Link>
             </div>
 
             <div className="flex gap-4 mb-4">
@@ -766,17 +806,12 @@ const Profile = () => {
                   {order.total_price?.toLocaleString() || 0} GNF
                 </span>
               </div>
-              {order.status !== 'completed' && (
-                <button 
-                  onClick={() => {
-                    setSelectedOrderId(order.id);
-                    setShowTrackingModal(true);
-                  }}
-                  className="px-4 py-2 border border-[#048B9A] text-[#048B9A] rounded-lg hover:bg-[#048B9A] hover:text-white transition-colors"
-                >
-                  Suivre la livraison
-                </button>
-              )}
+              <Link 
+                href={`/commandes/${order.number}`}
+                className="px-4 py-2 border border-[#048B9A] text-[#048B9A] rounded-lg hover:bg-[#048B9A] hover:text-white transition-colors"
+              >
+                Voir détails
+              </Link>
             </div>
           </div>
         ))}

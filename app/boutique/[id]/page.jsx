@@ -387,7 +387,7 @@ const ProductDetail = () => {
 
   // Fonction pour afficher les étiquettes
   const renderTags = () => {
-    if (!product?.tags || !Array.isArray(product.tags) || product.tags.length === 0) {
+    if (!product?.etiquettes || !Array.isArray(product.etiquettes) || product.etiquettes.length === 0) {
       return (
         <div className="text-gray-500 italic">
           Aucune étiquette
@@ -397,7 +397,7 @@ const ProductDetail = () => {
     
     return (
       <div className="flex flex-wrap gap-2">
-        {product.tags.map((tag, index) => (
+        {product.etiquettes.map((tag, index) => (
           <Link
             key={index}
             href={`/boutique?tag=${tag.name.toLowerCase()}`}

@@ -1,10 +1,9 @@
 'use client'
-import { useState } from 'react';
-import Image from 'next/image';
-import { motion, AnimatePresence } from 'framer-motion';
-import { FaCreditCard, FaMobileAlt, FaMoneyBill, FaLock, FaTag, FaCheckCircle } from 'react-icons/fa';
+import { AnimatePresence, motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import { toast } from 'react-hot-toast';
+import { FaCheckCircle, FaCreditCard, FaLock, FaMobileAlt, FaMoneyBill, FaTag } from 'react-icons/fa';
 
 const Payment = () => {
   const router = useRouter();
@@ -139,11 +138,11 @@ const Payment = () => {
       <div className="flex flex-col lg:flex-row gap-8">
         {/* Formulaire de paiement */}
         <motion.div 
-          className="flex-1"
+          className="flex-1 w-full lg:w-auto"
           variants={itemVariants}
         >
           <motion.div 
-            className="bg-white rounded-lg shadow-sm p-6 mb-6"
+            className="bg-white rounded-lg shadow-sm p-6 mb-6 w-full"
             variants={itemVariants}
           >
             <h2 className="text-xl font-semibold mb-6">Méthode de paiement</h2>
@@ -250,7 +249,7 @@ const Payment = () => {
 
           {/* Adresse de facturation */}
           <motion.div 
-            className="bg-white rounded-lg shadow-sm p-6"
+            className="bg-white rounded-lg shadow-sm p-6 w-full"
             variants={itemVariants}
           >
             <h2 className="text-xl font-semibold mb-6">Adresse de facturation</h2>
@@ -332,7 +331,7 @@ const Payment = () => {
           className="w-full lg:w-96"
           variants={itemVariants}
         >
-          <div className="bg-white rounded-lg shadow-sm p-6 sticky top-6">
+          <div className="bg-white rounded-lg shadow-sm p-6 sticky top-6 w-full">
             <h2 className="text-xl font-semibold mb-6">Résumé de la commande</h2>
             
             {/* Code Promo */}

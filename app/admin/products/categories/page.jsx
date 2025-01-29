@@ -208,7 +208,7 @@ const CategoriesPage = () => {
     if (!window.confirm('Êtes-vous sûr de vouloir supprimer cette catégorie ?')) return;
 
     try {
-      const response = await fetch(`https://api.kambily.store/categories/${id}`, {
+      const response = await fetch(`https://api.kambily.store/categories/delete/${id}/`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
@@ -234,7 +234,7 @@ const CategoriesPage = () => {
 
     try {
       const deletePromises = selectedCategories.map(id =>
-        fetch(`https://api.kambily.store/categories/${id}`, {
+        fetch(`https://api.kambily.store/categories/delete/${id}/`, {
           method: 'DELETE',
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
