@@ -149,8 +149,8 @@ export default function Wishlist() {
               >
                 <Produit
                   id={favorite.product.id}
-                  image={favorite.product.image.image}
-                  gallery={favorite.product.gallery || []}
+                  image={favorite.product.images[0].image}
+                  gallery={favorite.product.images?.slice(1)?.map(img => img.image) || []}
                   title={favorite.product.name}
                   price={favorite.product.promo_price}
                   oldPrice={favorite.product.regular_price}

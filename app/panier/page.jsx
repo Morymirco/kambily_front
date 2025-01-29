@@ -523,10 +523,11 @@ const Panier = () => {
                 whileHover={{ scale: 1.01 }}
                 layout
               >
+              
                 {/* Image du produit */}
                 <div className="relative w-16 h-16 sm:w-24 sm:h-24 flex-shrink-0">
                   <Image
-                    src={item.product.image?.image || '/placeholder.png'}
+                    src={item.product.images[0].image || '/placeholder.png'}
                     alt={item.product.name}
                     fill
                     className="object-cover rounded-lg"
