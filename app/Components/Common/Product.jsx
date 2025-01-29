@@ -207,7 +207,7 @@ const Produit = ({
   return (
     <>
       <div className="border rounded-xl overflow-hidden bg-white group">
-        <div className="relative h-[220px] w-full overflow-hidden rounded-2xl">
+        <div className="relative h-[190px] w-full overflow-hidden rounded-2xl">
           {hasGallery ? (
             <ImageCarousel images={allImages} title={title} />
           ) : (
@@ -318,7 +318,7 @@ const Produit = ({
             ) : (
               <>
                 <FaShoppingCart className="text-[14px]" />
-                <span className="text-[14px]">Ajouter au panier</span>
+                <span className="text-[14px]">Ajouter</span>
               </>
             )}
           </motion.button>

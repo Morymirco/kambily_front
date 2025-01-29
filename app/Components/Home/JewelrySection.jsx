@@ -28,8 +28,8 @@ export default function JewelrySection() {
 
   return (
     <>
-      <div className="px-4 py-3">
-        <div className="flex items-center gap-3 mb-4">
+      <div className=" py-3">
+        <div className="flex items-center gap-3 mb-8">
           <div className="text-[#048B9A]">
             <Image src="/icons/price.png" alt="Quality" width={100} height={100} />
           </div>
@@ -41,7 +41,7 @@ export default function JewelrySection() {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-4 mt-4">
           {loading ? (
             // Skeleton loading
             [...Array(2)].map((_, index) => (
@@ -59,7 +59,7 @@ export default function JewelrySection() {
                 key={product.id}
                 image={product.images[0].image || "/bijoux/default.jpg"}
                 title={product.name}
-                price={`${product.regular_price.toLocaleString()} GNF`}
+                price={`${product.regular_price.toLocaleString()}`}
                 inStock={product.etat_stock === 'En stock'}
               />
             ))
