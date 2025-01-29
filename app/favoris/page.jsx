@@ -1,4 +1,5 @@
 'use client'
+import { useCart } from '@/app/providers/CartProvider';
 import { useFavorites } from '@/app/providers/FavoritesProvider';
 import { AnimatePresence, motion } from 'framer-motion';
 import Link from 'next/link';
@@ -9,12 +10,15 @@ import Produit from '../Components/Common/Product';
 
 export default function Wishlist() {
   const { favorites, loading, refreshFavorites, toggleFavorite } = useFavorites();
+  const { addToCart } = useCart();
   const [isTogglingFavorite, setIsTogglingFavorite] = useState(false);
   const [removedProductId, setRemovedProductId] = useState(null);
+  const [addingToCartId, setAddingToCartId] = useState(null);
 
   useEffect(() => {
     refreshFavorites();
   }, []);
+  console.log(favorites);
 
   const handleToggleFavorite = async (productId) => {
     if (isTogglingFavorite) return;
@@ -25,13 +29,34 @@ export default function Wishlist() {
     try {
       await toggleFavorite(productId);
       toast.success('Produit retiré des favoris');
-      await refreshFavorites(); // Rafraîchir la liste après le retrait
+      await refreshFavorites();
     } catch (error) {
       console.error('Erreur lors du retrait des favoris:', error);
       toast.error('Une erreur est survenue');
     } finally {
       setIsTogglingFavorite(false);
       setRemovedProductId(null);
+    }
+  };
+
+  const handleAddToCart = async (product) => {
+    if (addingToCartId) return;
+    
+    setAddingToCartId(product.id);
+    try {
+      await addToCart({
+        id: product.id,
+        name: product.name,
+        price: product.promo_price || product.regular_price,
+        image: product.image.image,
+        quantity: 1
+      });
+      toast.success('Produit ajouté au panier');
+    } catch (error) {
+      console.error('Erreur lors de l\'ajout au panier:', error);
+      toast.error('Erreur lors de l\'ajout au panier');
+    } finally {
+      setAddingToCartId(null);
     }
   };
 
@@ -84,11 +109,13 @@ export default function Wishlist() {
                   price={favorite.product.promo_price}
                   oldPrice={favorite.product.regular_price}
                   inStock={favorite.product.etat_stock}
-                  description={favorite.product.description}
+                  description={favorite.product.short_description}
                   category={favorite.product.category?.name}
                   isFavorite={true}
                   onToggleFavorite={() => handleToggleFavorite(favorite.product.id)}
                   isTogglingFavorite={isTogglingFavorite && removedProductId === favorite.product.id}
+                  onAddToCart={() => handleAddToCart(favorite.product)}
+                  isAddingToCart={addingToCartId === favorite.product.id}
                 />
               </motion.div>
             ))}

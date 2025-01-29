@@ -11,24 +11,23 @@ const LoadingSpinner = () => {
         transition={{ duration: 0.3 }}
         className="text-center p-8 rounded-2xl relative"
       >
-        <div className="relative">
+        <div className="relative w-24 h-24">
           {/* Cercle rotatif */}
           <motion.div
             animate={{ rotate: 360 }}
             transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-            className="w-24 h-24 border-4 border-[#048B9A]/20 border-t-[#048B9A] rounded-full"
+            className="absolute inset-0 border-4 border-[#048B9A]/20 border-t-[#048B9A] rounded-full"
           />
           
           {/* Logo au centre */}
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-12 h-12 relative rounded-full">
-              <Image
-                src="/logospinner.svg"
-                alt="Logo"
-                fill
-                className="object-contain rounded-full"
-              />
-            </div>
+          <div className="absolute inset-0 m-auto w-10 h-10">
+            <Image
+              src="/logospinner.svg"
+              alt="Logo"
+              fill
+              className="object-contain rounded-full"
+              priority
+            />
           </div>
         </div>
         

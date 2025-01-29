@@ -131,7 +131,9 @@ const Produit = ({
   category,
   isFavorite = false,
   onToggleFavorite,
-  isTogglingFavorite = false
+  isTogglingFavorite = false,
+  onAddToCart,
+  isAddingToCart = false
 }) => {
   const [showModal, setShowModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -142,13 +144,20 @@ const Produit = ({
   const [quantity, setQuantity] = useState(1);
   const [showFavToast, setShowFavToast] = useState(false);
   const [showToast, setShowToast] = useState(false);
-  const [isAddingToCart, setIsAddingToCart] = useState(false);
 
   const handleFavoriteClick = (e) => {
     e.preventDefault();
     e.stopPropagation();
     if (onToggleFavorite) {
       onToggleFavorite();
+    }
+  };
+
+  const handleAddToCart = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (onAddToCart && !isAddingToCart) {
+      onAddToCart();
     }
   };
 
@@ -193,15 +202,6 @@ const Produit = ({
     } else if (action === 'decrement' && quantity > 1) {
       setQuantity(prev => prev - 1);
     }
-  };
-
-  const handleAddToCart = () => {
-    setIsAddingToCart(true);
-    setTimeout(() => {
-      setIsAddingToCart(false);
-      setShowToast(true);
-      setTimeout(() => setShowToast(false), 3000);
-    }, 1000);
   };
 
   return (
@@ -298,14 +298,30 @@ const Produit = ({
             </div>
           )}
 
-          {/* Bouton Ajouter au panier */}
-          <button 
+          {/* Bouton Ajouter au panier avec état de chargement */}
+          <motion.button 
             onClick={handleAddToCart}
-            className="w-full bg-[#048B9A] text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300"
+            disabled={isAddingToCart}
+            className={`w-full bg-[#048B9A] text-white px-4 py-2 rounded-lg 
+              flex items-center justify-center gap-2 
+              md:opacity-0 md:group-hover:opacity-100 transition-all duration-300
+              ${isAddingToCart ? 'opacity-75 cursor-not-allowed' : 'hover:bg-[#037483]'}
+            `}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
           >
-            <FaShoppingCart className="text-[14px]" />
-            <span className="text-[14px]">Ajouter au panier</span>
-          </button>
+            {isAddingToCart ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                <span className="text-[14px]">Ajout en cours...</span>
+              </>
+            ) : (
+              <>
+                <FaShoppingCart className="text-[14px]" />
+                <span className="text-[14px]">Ajouter au panier</span>
+              </>
+            )}
+          </motion.button>
         </div>
       </div>
 
