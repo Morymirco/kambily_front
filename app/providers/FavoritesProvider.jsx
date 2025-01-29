@@ -73,7 +73,7 @@ export function FavoritesProvider({ children }) {
   // Retirer un produit des favoris
   const removeFromFavorites = async (productId) => {
     try {
-      const response = await authFetch(`https://api.kambily.store/favorites/${productId}/delete/`, {
+      const response = await authFetch(`https://api.kambily.store/favorites/delete/${productId}/`, {
         method: 'DELETE'
       });
 

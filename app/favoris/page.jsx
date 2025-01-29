@@ -1,18 +1,40 @@
 'use client'
 import { useFavorites } from '@/app/providers/FavoritesProvider';
+import { AnimatePresence, motion } from 'framer-motion';
 import Link from 'next/link';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { toast } from 'react-hot-toast';
 import { FaHeart } from 'react-icons/fa';
 import Produit from '../Components/Common/Product';
 
 export default function Wishlist() {
-  const { favorites, loading, refreshFavorites } = useFavorites();
+  const { favorites, loading, refreshFavorites, toggleFavorite } = useFavorites();
+  const [isTogglingFavorite, setIsTogglingFavorite] = useState(false);
+  const [removedProductId, setRemovedProductId] = useState(null);
 
   useEffect(() => {
     refreshFavorites();
   }, []);
 
-  console.log(favorites);
+  const handleToggleFavorite = async (productId) => {
+    if (isTogglingFavorite) return;
+    
+    setIsTogglingFavorite(true);
+    setRemovedProductId(productId);
+    
+    try {
+      await toggleFavorite(productId);
+      toast.success('Produit retiré des favoris');
+      await refreshFavorites(); // Rafraîchir la liste après le retrait
+    } catch (error) {
+      console.error('Erreur lors du retrait des favoris:', error);
+      toast.error('Une erreur est survenue');
+    } finally {
+      setIsTogglingFavorite(false);
+      setRemovedProductId(null);
+    }
+  };
+
   return (
     <div className="max-w-[1400px] mx-auto px-4 md:px-16 py-12">
       {/* Fil d'Ariane */}
@@ -42,38 +64,59 @@ export default function Wishlist() {
           ))}
         </div>
       ) : favorites.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {favorites.map((favorite) => (
-            <Produit
-              key={favorite.id}
-              image={favorite.product.image.image}
-              gallery={favorite.product.gallery || []}
-              title={favorite.product.name}
-              price={favorite.product.promo_price}
-              oldPrice={favorite.product.regular_price}
-              inStock={favorite.product.etat_stock}
-              description={favorite.product.description}
-              category={favorite.product.category?.name}
-              isFavorite={true}
-            />
-          ))}
-        </div>
+        <AnimatePresence>
+          <motion.div 
+            className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
+          >
+            {favorites.map((favorite) => (
+              <motion.div
+                key={favorite.id}
+                layout
+                initial={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                transition={{ duration: 0.2 }}
+              >
+                <Produit
+                  id={favorite.product.id}
+                  image={favorite.product.image.image}
+                  gallery={favorite.product.gallery || []}
+                  title={favorite.product.name}
+                  price={favorite.product.promo_price}
+                  oldPrice={favorite.product.regular_price}
+                  inStock={favorite.product.etat_stock}
+                  description={favorite.product.description}
+                  category={favorite.product.category?.name}
+                  isFavorite={true}
+                  onToggleFavorite={() => handleToggleFavorite(favorite.product.id)}
+                  isTogglingFavorite={isTogglingFavorite && removedProductId === favorite.product.id}
+                />
+              </motion.div>
+            ))}
+          </motion.div>
+        </AnimatePresence>
       ) : (
-        <div className="text-center py-16">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center py-16"
+        >
           <div className="mb-4">
             <FaHeart className="w-16 h-16 mx-auto text-gray-400" />
           </div>
-          <h2 className="text-xl font-semibold mb-2">Votre liste de favoris est vide</h2>
+          <h2 className="text-xl font-semibold mb-2">
+            Votre liste de favoris est vide
+          </h2>
           <p className="text-gray-600 mb-6">
             Parcourez notre boutique et ajoutez des produits à vos favoris
           </p>
           <Link 
             href="/boutique"
-            className="inline-block bg-[#048B9A] text-white px-6 py-3 rounded-lg hover:bg-[#037483] transition-colors"
+            className="inline-block bg-[#048B9A] text-white px-6 py-3 rounded-lg 
+              hover:bg-[#037483] transition-colors"
           >
             Découvrir nos produits
           </Link>
-        </div>
+        </motion.div>
       )}
     </div>
   );
