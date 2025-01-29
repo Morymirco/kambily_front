@@ -8,6 +8,59 @@ import { toast } from 'react-hot-toast';
 import { FaHeart } from 'react-icons/fa';
 import Produit from '../Components/Common/Product';
 
+const FavoritesSkeleton = () => {
+  return (
+    <div className="max-w-[1400px] mx-auto px-4 md:px-16 py-12">
+      {/* Skeleton du Fil d'Ariane */}
+      <div className="flex items-center gap-2 mb-8">
+        <div className="h-4 w-16 bg-gray-200 rounded animate-pulse"></div>
+        <span className="text-gray-300">›</span>
+        <div className="h-4 w-20 bg-gray-200 rounded animate-pulse"></div>
+      </div>
+
+      {/* Skeleton de l'en-tête */}
+      <div className="mb-8 space-y-2">
+        <div className="h-8 w-48 bg-gray-200 rounded animate-pulse"></div>
+        <div className="h-4 w-32 bg-gray-200 rounded animate-pulse"></div>
+      </div>
+
+      {/* Grille de produits skeleton */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        {[...Array(8)].map((_, index) => (
+          <div key={index} className="bg-white rounded-xl overflow-hidden shadow-sm">
+            {/* Image */}
+            <div className="aspect-square bg-gray-200 animate-pulse"></div>
+            
+            {/* Contenu */}
+            <div className="p-4 space-y-3">
+              {/* Titre */}
+              <div className="h-4 bg-gray-200 rounded w-3/4 animate-pulse"></div>
+              
+              {/* Prix */}
+              <div className="flex gap-2">
+                <div className="h-4 bg-gray-200 rounded w-20 animate-pulse"></div>
+                <div className="h-4 bg-gray-200 rounded w-24 animate-pulse"></div>
+              </div>
+              
+              {/* Stock */}
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-gray-200 rounded-full animate-pulse"></div>
+                <div className="h-3 bg-gray-200 rounded w-16 animate-pulse"></div>
+              </div>
+              
+              {/* Boutons */}
+              <div className="flex gap-2 pt-2">
+                <div className="h-8 bg-gray-200 rounded flex-grow animate-pulse"></div>
+                <div className="h-8 w-8 bg-gray-200 rounded animate-pulse"></div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 export default function Wishlist() {
   const { favorites, loading, refreshFavorites, toggleFavorite } = useFavorites();
   const { addToCart } = useCart();
@@ -60,6 +113,10 @@ export default function Wishlist() {
     }
   };
 
+  if (loading) {
+    return <FavoritesSkeleton />;
+  }
+
   return (
     <div className="max-w-[1400px] mx-auto px-4 md:px-16 py-12">
       {/* Fil d'Ariane */}
@@ -77,18 +134,7 @@ export default function Wishlist() {
         </p>
       </div>
 
-      {loading ? (
-        // Skeleton loader pendant le chargement
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {[...Array(4)].map((_, index) => (
-            <div key={index} className="border rounded-xl p-4 space-y-4 animate-pulse">
-              <div className="aspect-square bg-gray-200 rounded-lg" />
-              <div className="h-4 bg-gray-200 rounded w-3/4" />
-              <div className="h-4 bg-gray-200 rounded w-1/2" />
-            </div>
-          ))}
-        </div>
-      ) : favorites.length > 0 ? (
+      {favorites.length > 0 ? (
         <AnimatePresence>
           <motion.div 
             className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"

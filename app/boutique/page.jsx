@@ -381,7 +381,7 @@ const ProductCard = ({ id, image, gallery = [], title, price, inStock, category,
               ) : (
                 <>
                   <FaShoppingCart className="w-4 h-4" />
-                  Ajouter au panier
+                  Ajouter
                 </>
               )}
             </button>

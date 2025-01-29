@@ -1,8 +1,50 @@
 'use client'
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
-import LoadingSpinner from '../LoadingSpinner';
 import SmallProductCard from './SmallProductCard';
+
+const ElectronicsSkeleton = () => {
+  return (
+    <div className="px-4 space-y-4 animate-pulse">
+      {/* Skeleton carte principale */}
+      <div className="bg-white rounded-lg overflow-hidden">
+        <div className="relative aspect-square bg-gray-200"></div>
+        <div className="p-4 space-y-3">
+          <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+          <div className="flex gap-2">
+            <div className="h-4 bg-gray-200 rounded w-24"></div>
+            <div className="h-4 bg-gray-200 rounded w-24"></div>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 bg-gray-200 rounded-full"></div>
+            <div className="h-3 bg-gray-200 rounded w-16"></div>
+          </div>
+          <div className="h-3 bg-gray-200 rounded w-full"></div>
+        </div>
+      </div>
+
+      {/* Skeleton petites cartes */}
+      <div className="space-y-2">
+        {[1, 2, 3].map((index) => (
+          <div key={index} className="bg-white rounded-lg p-2 flex gap-3">
+            <div className="w-20 h-20 bg-gray-200 rounded"></div>
+            <div className="flex-1 space-y-2">
+              <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+              <div className="flex gap-2">
+                <div className="h-3 bg-gray-200 rounded w-20"></div>
+                <div className="h-3 bg-gray-200 rounded w-20"></div>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-gray-200 rounded-full"></div>
+                <div className="h-2 bg-gray-200 rounded w-14"></div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
 
 export default function ElectronicsSection() {
   const [mainProduct, setMainProduct] = useState(null);
@@ -36,7 +78,7 @@ export default function ElectronicsSection() {
   }, [mainProduct]);
 
   if (loading) {
-    return <LoadingSpinner />;
+    return <ElectronicsSkeleton />;
   }
 
   if (!mainProduct || smallProducts.length === 0) {
