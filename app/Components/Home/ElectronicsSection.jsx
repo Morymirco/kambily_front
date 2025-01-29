@@ -1,5 +1,6 @@
 'use client'
 import Image from 'next/image';
+import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import SmallProductCard from './SmallProductCard';
 
@@ -87,53 +88,56 @@ export default function ElectronicsSection() {
 
   return (
     <div className="px-4 space-y-4">
-      {/* Carte principale */}
-      <div className="bg-white rounded-lg overflow-hidden">
-        <div className="relative aspect-square">
-          <Image
-            src={mainProduct.images[0].image}
-            alt={mainProduct.name}
-            fill
-            className="object-contain p-4"
-          />
-        </div>
-        <div className="p-4">
-          <h3 className="text-sm font-medium">
-            {mainProduct.name}
-          </h3>
-          <div className="flex items-center gap-2 mt-2">
-            {mainProduct.regular_price && (
-              <span className="text-gray-400 line-through text-sm">
-                {mainProduct.regular_price.toLocaleString()}GNF
+      {/* Carte principale avec navigation */}
+      <Link href={`/boutique/${mainProduct.id}`}>
+        <div className="bg-white rounded-lg overflow-hidden">
+          <div className="relative aspect-square">
+            <Image
+              src={mainProduct.images[0].image}
+              alt={mainProduct.name}
+              fill
+              className="object-contain p-4"
+            />
+          </div>
+          <div className="p-4">
+            <h3 className="text-sm font-medium">
+              {mainProduct.name}
+            </h3>
+            <div className="flex items-center gap-2 mt-2">
+              {mainProduct.regular_price && (
+                <span className="text-gray-400 line-through text-sm">
+                  {mainProduct.regular_price.toLocaleString()}GNF
+                </span>
+              )}
+              <span className="text-[#048B9A] font-medium">
+                {mainProduct.promo_price.toLocaleString()}GNF
               </span>
+            </div>
+            <div className="flex items-center gap-2 text-xs text-green-600 mt-1">
+              <span className="inline-block w-2 h-2 bg-green-600 rounded-full"></span>
+              {mainProduct.etat_stock ? 'En stock' : 'Rupture de stock'}
+            </div>
+            {mainProduct.short_description && (
+              <p className="text-xs text-gray-400 mt-1">
+                {mainProduct.short_description}
+              </p>
             )}
-            <span className="text-[#048B9A] font-medium">
-              {mainProduct.promo_price.toLocaleString()}GNF
-            </span>
           </div>
-          <div className="flex items-center gap-2 text-xs text-green-600 mt-1">
-            <span className="inline-block w-2 h-2 bg-green-600 rounded-full"></span>
-            {mainProduct.etat_stock ? 'En stock' : 'Rupture de stock'}
-          </div>
-          {mainProduct.short_description && (
-            <p className="text-xs text-gray-400 mt-1">
-              {mainProduct.short_description}
-            </p>
-          )}
         </div>
-      </div>
+      </Link>
 
-      {/* Petites cartes */}
+      {/* Petites cartes avec navigation */}
       <div className="space-y-2">
         {smallProducts.map((product) => (
-          <SmallProductCard 
-            key={product.id}
-            imageUrl={product.images[0].image}
-            title={product.name}
-            price={product.promo_price}
-            originalPrice={product.regular_price}
-            inStock={product.etat_stock}
-          />
+          <Link key={product.id} href={`/boutique/${product.id}`}>
+            <SmallProductCard 
+              imageUrl={product.images[0].image}
+              title={product.name}
+              price={product.promo_price}
+              originalPrice={product.regular_price}
+              inStock={product.etat_stock}
+            />
+          </Link>
         ))}
       </div>
     </div>

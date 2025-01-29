@@ -719,11 +719,11 @@ const ProductDetail = () => {
               ) : (
                 <>
                   <FaShoppingCart />
-                  <span>Ajouter au panier</span>
+                  <span>Ajouter</span>
                 </>
               )}
             </button>
-            <button className="flex-1 border border-[#048B9A] text-[#048B9A] h-14 rounded-lg flex items-center justify-center gap-2 hover:bg-[#048B9A] hover:text-white transition-colors">
+            <button className="flex-[0.7] sm:flex-1 border border-[#048B9A] text-[#048B9A] h-14 rounded-lg flex items-center justify-center gap-2 hover:bg-[#048B9A] hover:text-white transition-colors text-sm sm:text-base">
               Acheter maintenant
             </button>
           </div>

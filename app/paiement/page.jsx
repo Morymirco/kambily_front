@@ -123,26 +123,26 @@ const Payment = () => {
 
   return (
     <motion.div 
-      className="max-w-[1400px] mx-auto px-4 md:px-16 py-12"
+      className="max-w-[1400px] mx-auto px-4 md:px-16 py-8 md:py-12"
       variants={containerVariants}
       initial="hidden"
       animate="visible"
     >
       <motion.h1 
-        className="text-3xl font-bold mb-8"
+        className="text-2xl md:text-3xl font-bold mb-6 md:mb-8"
         variants={itemVariants}
       >
         Paiement
       </motion.h1>
 
-      <div className="flex flex-col lg:flex-row gap-8">
+      <div className="flex flex-col lg:flex-row gap-6 md:gap-8">
         {/* Formulaire de paiement */}
         <motion.div 
-          className="flex-1 w-full lg:w-auto"
+          className="flex-1 w-full"
           variants={itemVariants}
         >
           <motion.div 
-            className="bg-white rounded-lg shadow-sm p-6 mb-6 w-full"
+            className="bg-white rounded-lg shadow-sm p-4 md:p-6 mb-6 w-full"
             variants={itemVariants}
           >
             <h2 className="text-xl font-semibold mb-6">Méthode de paiement</h2>
@@ -249,7 +249,7 @@ const Payment = () => {
 
           {/* Adresse de facturation */}
           <motion.div 
-            className="bg-white rounded-lg shadow-sm p-6 w-full"
+            className="bg-white rounded-lg shadow-sm p-4 md:p-6 w-full"
             variants={itemVariants}
           >
             <h2 className="text-xl font-semibold mb-6">Adresse de facturation</h2>
@@ -331,7 +331,7 @@ const Payment = () => {
           className="w-full lg:w-96"
           variants={itemVariants}
         >
-          <div className="bg-white rounded-lg shadow-sm p-6 sticky top-6 w-full">
+          <div className="bg-white rounded-lg shadow-sm p-4 md:p-6 sticky top-6 w-full">
             <h2 className="text-xl font-semibold mb-6">Résumé de la commande</h2>
             
             {/* Code Promo */}

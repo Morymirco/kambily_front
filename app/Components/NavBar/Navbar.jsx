@@ -1,14 +1,14 @@
 'use client'
 
+import { useAuth } from '@/app/providers/AuthProvider';
 import { AnimatePresence, motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
+import { toast } from 'react-hot-toast';
 import { FaEnvelope, FaGlobe, FaPhone, FaSun, FaTimes } from 'react-icons/fa';
 import MobileNav from './MobileNav';
-import { useAuth } from '@/app/providers/AuthProvider';
-import { toast } from 'react-hot-toast';
 
 export default function Navbar() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -23,6 +23,8 @@ export default function Navbar() {
   const [cartItems, setCartItems] = useState([]);
   const [cartLoading, setCartLoading] = useState(true);
   const [deletingItemId, setDeletingItemId] = useState(null);
+  const [categories, setCategories] = useState([]);
+  const [loadingCategories, setLoadingCategories] = useState(true);
 
   
   const languages = [
@@ -32,21 +34,6 @@ export default function Navbar() {
   ];
 
   const [currentLang, setCurrentLang] = useState(languages[0]);
-
-  const categories = [
-    {
-      name: "Vêtements",
-      subcategories: ["Hommes", "Femmes", "Enfants"]
-    },
-    {
-      name: "Électronique",
-      subcategories: ["Téléphones", "Ordinateurs", "Accessoires"]
-    },
-    {
-      name: "Accessoires",
-      subcategories: ["Sacs", "Bijoux", "Montres"]
-    }
-  ];
 
   const pathname = usePathname();
   useEffect(() => {
@@ -137,6 +124,57 @@ export default function Navbar() {
   const handleCartClick = () => {
     router.push('/panier');
   };
+
+  // Récupération des catégories
+  useEffect(() => {
+    const fetchCategories = async () => {
+      const token = localStorage.getItem('access_token');
+      try {
+        const response = await fetch('https://api.kambily.store/categories/',
+          {
+            method: 'GET',
+            mode: 'cors',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Accept': 'application/json'
+            }
+          }
+        );
+        if (!response.ok) throw new Error('Erreur lors du chargement des catégories',
+
+
+        );
+        
+        const data = await response.json();
+        
+        // Filtrer et transformer les données pour n'avoir que les catégories principales
+        const formattedCategories = Array.isArray(data) ? data
+          .filter(category => category?.is_main === true) // Filtre les catégories principales
+          .map(category => ({
+            id: category?.id || '',
+            name: category?.name || '',
+            slug: category?.slug || '',
+            subcategories: Array.isArray(category?.subcategories) 
+              ? category.subcategories.map(sub => ({
+                  id: sub?.id || '',
+                  name: sub?.name || '',
+                  slug: sub?.slug || ''
+                }))
+              : []
+          })) : [];
+        
+        setCategories(formattedCategories);
+      } catch (error) {
+        console.error('Erreur:', error);
+        toast.error('Erreur lors du chargement des catégories');
+        setCategories([]);
+      } finally {
+        setLoadingCategories(false);
+      }
+    };
+
+    fetchCategories();
+  }, []);
 
   return (
     <nav className="w-full bg-white shadow-sm font-krub">
@@ -265,37 +303,45 @@ export default function Navbar() {
             <div className="mb-8">
               <h3 className="text-gray-400 text-sm font-medium mb-4">MAIN MENU</h3>
               <nav className="space-y-4">
-                <Link href="/" className="block text-gray-800 hover:text-[#048B9A]">
+                <Link 
+                  href="/" 
+                  className="block text-gray-800 hover:text-[#048B9A]"
+                  onClick={() => setIsDrawerOpen(false)}
+                >
                   Accueil
                 </Link>
                 <div>
                   <button 
                     className="flex items-center justify-between w-full text-gray-800 hover:text-[#048B9A]"
-                    onClick={() => setIsDrawerOpen(true)} // Ajoutez un state pour gérer l'ouverture/fermeture
+                    onClick={() => setIsDrawerOpen(false)}
                   >
                     <div className="flex items-center gap-2">
                       Nos catégories
-                      <svg 
-                        className="w-4 h-4 transition-transform duration-200" 
-                        viewBox="0 0 24 24" 
-                        fill="none" 
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
+                      <svg className="w-4 h-4 transition-transform duration-200" viewBox="0 0 24 24">
                         <path d="M19 9l-7 7-7-7" />
                       </svg>
                     </div>
                   </button>
                 </div>
-                <Link href="/boutique" className="block text-gray-800 hover:text-[#048B9A]">
+                <Link 
+                  href="/boutique" 
+                  className="block text-gray-800 hover:text-[#048B9A]"
+                  onClick={() => setIsDrawerOpen(false)}
+                >
                   Boutique
                 </Link>
-                <Link href="/contact" className="block text-gray-800 hover:text-[#048B9A]">
+                <Link 
+                  href="/contact" 
+                  className="block text-gray-800 hover:text-[#048B9A]"
+                  onClick={() => setIsDrawerOpen(false)}
+                >
                   Contact
                 </Link>
-                <Link href="/about" className="block text-gray-800 hover:text-[#048B9A]">
+                <Link 
+                  href="/about" 
+                  className="block text-gray-800 hover:text-[#048B9A]"
+                  onClick={() => setIsDrawerOpen(false)}
+                >
                   À propos de nous
                 </Link>
               </nav>
@@ -304,7 +350,82 @@ export default function Navbar() {
             {/* Menu catégories */}
             <div className="mb-8">
               <h3 className="text-gray-400 text-sm font-medium mb-4">CATEGORY MENU</h3>
-              {/* Ajoutez ici vos catégories */}
+              {/* Menu des catégories */}
+              <div className="relative group">
+                <Link href="/boutique" className="hover:text-cyan-600 flex items-center">
+                  <div className="flex items-center gap-2">
+                    Nos catégories
+                    <svg 
+                      className="w-4 h-4 transition-transform duration-200" 
+                      viewBox="0 0 24 24" 
+                      fill="none" 
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
+                </Link>
+                
+                {/* Dropdown menu */}
+                <div className="absolute left-0 mt-2 w-60 bg-white border rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
+                  {loadingCategories ? (
+                    // Skeleton loader
+                    <div className="p-2 space-y-2">
+                      {[1, 2, 3].map((item) => (
+                        <div key={item} className="h-8 bg-gray-100 rounded animate-pulse" />
+                      ))}
+                    </div>
+                  ) : categories.length > 0 ? (
+                    categories.map((category) => (
+                      <div key={category.id || Math.random()} className="relative group/sub">
+                        <Link 
+                          href={`/categories/${category.slug}`}
+                          className="block px-4 py-2 hover:bg-gray-50 hover:text-cyan-600"
+                        >
+                          <div className="flex items-center justify-between">
+                            <span>{category.name}</span>
+                            {(category.subcategories?.length || 0) > 0 && (
+                              <svg 
+                                className="w-4 h-4 transition-transform duration-200" 
+                                viewBox="0 0 24 24" 
+                                fill="none" 
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              >
+                                <path d="M9 18l6-6-6-6" />
+                              </svg>
+                            )}
+                          </div>
+                        </Link>
+                        
+                        {/* Sous-catégories */}
+                        {(category.subcategories?.length || 0) > 0 && (
+                          <div className="absolute left-full top-0 w-48 bg-white border rounded-lg shadow-lg opacity-0 invisible group-hover/sub:opacity-100 group-hover/sub:visible transition-all duration-300">
+                            {category.subcategories.map((sub) => (
+                              <Link 
+                                key={sub.id || Math.random()}
+                                href={`/categories/${category.slug}/${sub.slug}`}
+                                className="block px-4 py-2 hover:bg-gray-50 hover:text-cyan-600"
+                              >
+                                {sub.name}
+                              </Link>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ))
+                  ) : (
+                    <div className="p-4 text-gray-500 text-center">
+                      Aucune catégorie disponible
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
 
             {/* Coordonnées */}
@@ -406,7 +527,7 @@ export default function Navbar() {
                     {categories.map((category, index) => (
                       <div key={index} className="relative group/sub">
                         <Link 
-                          href={`/categories/${category.name.toLowerCase()}`}
+                          href={`/categories/${category.slug}`}
                           className="block px-4 py-2 hover:bg-gray-50 hover:text-cyan-600"
                         >
                           <div className="flex items-center justify-between">
@@ -430,10 +551,10 @@ export default function Navbar() {
                           {category.subcategories.map((sub, subIndex) => (
                             <Link 
                               key={subIndex}
-                              href={`/categories/${category.name.toLowerCase()}/${sub.toLowerCase()}`}
+                              href={`/categories/${category.slug}/${sub.slug}`}
                               className="block px-4 py-2 hover:bg-gray-50 hover:text-cyan-600"
                             >
-                              {sub}
+                              {sub.name}
                             </Link>
                           ))}
                         </div>
@@ -461,10 +582,10 @@ export default function Navbar() {
                 onMouseEnter={handleCartMouseEnter}
                 onMouseLeave={handleCartMouseLeave}
               >
-                <button 
+                {/* <button 
                   className="relative text-gray-600 hover:text-[#048B9A]"
                   onClick={handleCartClick}
-                >
+                > */}
                   <Image
                     src="/cart.svg"
                     alt="Panier"
@@ -475,7 +596,7 @@ export default function Navbar() {
                   <span className="absolute -top-2 -right-2 w-5 h-5 bg-[#048B9A] text-white text-xs rounded-full flex items-center justify-center">
                     {cartItems.length}
                   </span>
-                </button>
+                {/* </button> */}
 
                 {/* Popup du panier */}
                 <AnimatePresence>
@@ -541,7 +662,7 @@ export default function Navbar() {
                             <div key={item.id} className="flex items-center gap-4 mb-4 relative">
                               <div className="relative w-16 h-16 rounded-lg overflow-hidden flex-shrink-0">
                                 <Image
-                                  src={item.product.image?.image || '/placeholder.png'}
+                                  src={item.product.images[0]?.image || '/placeholder.png'}
                                   alt={item.product.name}
                                   fill
                                   className="object-cover"
@@ -586,12 +707,14 @@ export default function Navbar() {
                         <div className="flex gap-2">
                           <Link 
                             href="/panier"
+                            onClick={() => setShowCartPopup(false)}
                             className="flex-1 block bg-[#048B9A] text-white text-center px-4 py-2 rounded-lg hover:bg-[#037483] transition-colors"
                           >
                             Voir le panier
                           </Link>
                           <Link 
                             href="/paiement"
+                            onClick={() => setShowCartPopup(false)}
                             className="flex-1 block bg-[#C4DE85] text-white text-center px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
                           >
                             Commander

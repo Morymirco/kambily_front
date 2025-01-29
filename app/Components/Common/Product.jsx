@@ -1,4 +1,5 @@
 'use client'
+import { useFavorites } from '@/app/providers/FavoritesProvider';
 import { AnimatePresence, motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -12,7 +13,7 @@ import {
   FaShoppingCart, FaTimes,
   FaTwitter, FaWhatsapp
 } from 'react-icons/fa';
-  
+
 const Spinner = () => (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
       <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#048B9A]"></div>
@@ -129,12 +130,10 @@ const Produit = ({
   oldPrice, 
   inStock, 
   category,
-  isFavorite = false,
-  onToggleFavorite,
-  isTogglingFavorite = false,
   onAddToCart,
   isAddingToCart = false
 }) => {
+  const { isFavorite, toggleFavorite } = useFavorites();
   const [showModal, setShowModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedImage, setSelectedImage] = useState(0);
@@ -144,12 +143,19 @@ const Produit = ({
   const [quantity, setQuantity] = useState(1);
   const [showFavToast, setShowFavToast] = useState(false);
   const [showToast, setShowToast] = useState(false);
+  const [isTogglingFavorite, setIsTogglingFavorite] = useState(false);
 
-  const handleFavoriteClick = (e) => {
+  const handleFavoriteClick = async (e) => {
     e.preventDefault();
     e.stopPropagation();
-    if (onToggleFavorite) {
-      onToggleFavorite();
+    
+    if (isTogglingFavorite) return;
+    
+    setIsTogglingFavorite(true);
+    try {
+      await toggleFavorite(id);
+    } finally {
+      setIsTogglingFavorite(false);
     }
   };
 
@@ -208,24 +214,26 @@ const Produit = ({
     <>
       <div className="border rounded-xl overflow-hidden bg-white group">
         <div className="relative h-[190px] w-full overflow-hidden rounded-2xl">
-          {hasGallery ? (
-            <ImageCarousel images={allImages} title={title} />
-          ) : (
-            <Image
-              src={image}
-              alt={title}
-              fill
-              className="object-cover transition-transform duration-300 group-hover:scale-105"
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            />
-          )}
+          <Link href={`/boutique/${id}`}>
+            {hasGallery ? (
+              <ImageCarousel images={allImages} title={title} />
+            ) : (
+              <Image
+                src={image}
+                alt={title}
+                fill
+                className="object-cover transition-transform duration-300 group-hover:scale-105 cursor-pointer"
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              />
+            )}
 
-          {/* Badge promo */}
-          {oldPrice && (
-            <div className="absolute top-3 left-3 bg-red-500 text-white text-xs px-2 py-1 rounded-full z-10">
-              Promo
-            </div>
-          )}
+            {/* Badge promo */}
+            {oldPrice && (
+              <div className="absolute top-3 left-3 bg-red-500 text-white text-xs px-2 py-1 rounded-full z-10">
+                Promo
+              </div>
+            )}
+          </Link>
 
           {/* Boutons d'action superposés */}
           <div className="absolute top-3 right-3 flex flex-col gap-2 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300">
@@ -234,7 +242,7 @@ const Produit = ({
               onClick={handleFavoriteClick}
               disabled={isTogglingFavorite}
               className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
-                isFavorite 
+                isFavorite(id) 
                   ? 'bg-red-50 hover:bg-red-100' 
                   : 'bg-white hover:bg-gray-100'
               }`}
@@ -246,7 +254,7 @@ const Produit = ({
               ) : (
                 <FaHeart 
                   className={`w-3.5 h-3.5 transition-colors duration-300 ${
-                    isFavorite ? 'text-red-500' : 'text-gray-600'
+                    isFavorite(id) ? 'text-red-500' : 'text-gray-600'
                   }`}
                 />
               )}
@@ -266,10 +274,12 @@ const Produit = ({
 
         {/* Informations du produit */}
         <div className="p-4">
-          {/* Titre */}
-          <h3 className="text-sm text-gray-800 mb-2 line-clamp-2">
-            {title}
-          </h3>
+          {/* Titre cliquable avec l'ID du produit */}
+          <Link href={`/boutique/${id}`}>
+            <h3 className="text-sm text-gray-800 mb-2 line-clamp-2 hover:text-[#048B9A] transition-colors cursor-pointer">
+              {title}
+            </h3>
+          </Link>
 
           {/* Prix avec gestion de la promo */}
           <div className="flex items-center gap-2 mb-2">
@@ -584,14 +594,14 @@ const Produit = ({
 
                 <div className="flex items-center gap-1.5">
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                    isFavorite ? 'bg-red-100' : 'bg-gray-100'
+                    isFavorite(id) ? 'bg-red-100' : 'bg-gray-100'
                   }`}>
                     <FaHeart className={`w-4 h-4 ${
-                      isFavorite ? 'text-red-500' : 'text-gray-600'
+                      isFavorite(id) ? 'text-red-500' : 'text-gray-600'
                     }`} />
                   </div>
                   <p className="text-sm font-medium">
-                    {isFavorite 
+                    {isFavorite(id) 
                       ? 'Ajouté aux favoris' 
                       : 'Retiré des favoris'
                     }

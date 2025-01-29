@@ -121,14 +121,17 @@ export default function Login() {
       <div className="min-h-screen flex items-center justify-center px-4 sm:px-3 lg:px-2">
         <div className="w-full max-w-md space-y-4">
           <div className="text-center">
-            <Image
+            {/* Logo - Caché sur mobile */}
+            <div className="hidden md:flex justify-center mb-8">
+              <Image
                 src="/logo6.svg"
                 alt="Logo"
                 width={150}
                 height={150}
-                className="mx-auto"
-            />
-            <h2 className="mt-3 text-3xl font-bold tracking-tight text-gray-900">
+                className="w-[150px] h-[150px]"
+              />
+            </div>
+            <h2 className=" text-3xl font-bold tracking-tight text-gray-900">
               Connectez-vous à votre compte
             </h2>
             <p className="mt-2 text-sm text-gray-600">

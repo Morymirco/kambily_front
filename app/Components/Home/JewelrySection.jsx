@@ -1,8 +1,8 @@
 'use client'
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
-import CategoryBanner from './CategoryBanner';
 import Product from '../Common/Product';
+import CategoryBanner from './CategoryBanner';
 
 export default function JewelrySection() {
   const [products, setProducts] = useState([]);
@@ -13,9 +13,20 @@ export default function JewelrySection() {
       try {
         const response = await fetch('https://api.kambily.store/products/');
         const data = await response.json();
-        console.log("data", data);
-        console.log("data_product", data.products.slice(0, 2));
-        setProducts(data.products.slice(0, 2)); // On prend seulement les 2 premiers produits
+        
+        // Transformer les données pour correspondre aux props de Product
+        const transformedProducts = data.products.slice(0, 2).map(product => ({
+          id: product.id,
+          image: product.images[0]?.image || "/bijoux/default.jpg",
+          gallery: product.images?.slice(1)?.map(img => img.image) || [],
+          title: product.name,
+          price: product.regular_price,
+          oldPrice: product.promo_price !== product.regular_price ? product.regular_price : null,
+          inStock: product.etat_stock === 'En stock',
+          category: product.categories?.[0]?.name || 'Non catégorisé'
+        }));
+
+        setProducts(transformedProducts);
       } catch (error) {
         console.error('Erreur lors du chargement des produits:', error);
       } finally {
@@ -28,7 +39,7 @@ export default function JewelrySection() {
 
   return (
     <>
-      <div className=" py-3">
+      <div className="py-3">
         <div className="flex items-center gap-3 mb-8">
           <div className="text-[#048B9A]">
             <Image src="/icons/price.png" alt="Quality" width={100} height={100} />
@@ -57,10 +68,14 @@ export default function JewelrySection() {
             products.map((product) => (
               <Product
                 key={product.id}
-                image={product.images[0].image || "/bijoux/default.jpg"}
-                title={product.name}
-                price={`${product.regular_price.toLocaleString()}`}
-                inStock={product.etat_stock === 'En stock'}
+                id={product.id}
+                image={product.image}
+                gallery={product.gallery}
+                title={product.title}
+                price={product.price}
+                oldPrice={product.oldPrice}
+                inStock={product.inStock}
+                category={product.category}
               />
             ))
           )}

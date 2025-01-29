@@ -7,7 +7,7 @@ import { FaChevronLeft, FaChevronRight, FaEye, FaFacebookF, FaFilter, FaLink, Fa
 
 // Composant Toast modifié
 const Toast = ({ message, image, onView, isError }) => (
-  <div className="fixed bottom-4 right-4 z-50 animate-slide-up">
+  <div className="fixed bottom-16 sm:bottom-4 right-4 z-[80] animate-slide-up">
     <div className={`bg-white border rounded-lg shadow-lg p-4 w-[300px] flex items-center gap-4 ${
       isError ? 'border-red-500' : 'border-green-500'
     }`}>
@@ -671,7 +671,7 @@ const ProductCard = ({ id, image, gallery = [], title, price, inStock, category,
                     ) : (
                       <>
                         <FaShoppingCart className="w-4 h-4" />
-                        Ajouter au panier
+                        Ajouter
                       </>
                     )}
                   </button>

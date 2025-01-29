@@ -1,17 +1,16 @@
-import React from 'react';
-import Link from 'next/link';
 import Image from 'next/image';
+import Link from 'next/link';
 
 const Footer = () => {
   return (
     <footer className="bg-[#1F2937] text-white">
-      <div className="max-w-[1400px] mx-auto px-16 py-12">
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-16 py-6 sm:py-8 lg:py-10">
         {/* Section principale */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 sm:gap-8 mb-6 sm:mb-8">
           {/* Colonne 1 - À propos */}
           <div>
-            <h3 className="text-xl font-bold mb-6">Trouvez-Cliquez-Achetez</h3>
-            <p className="text-gray-400 mb-4">
+            <h3 className="text-lg font-bold mb-3 sm:mb-4">Trouvez-Cliquez-Achetez</h3>
+            <p className="text-gray-400 mb-3">
               Nous sommes bien plus qu'une simple plateforme e-commerce. Nous sommes une équipe passionnée, dédiée à offrir la meilleure expérience d'achat possible à nos clients.
             </p>
             <Link href="/about" className="text-[#048B9A] hover:text-[#048B9A]/80">
@@ -21,11 +20,11 @@ const Footer = () => {
 
           {/* Colonne 2 - Contact */}
           <div>
-            <h3 className="text-xl font-bold mb-6">Besoin d'aide?</h3>
+            <h3 className="text-lg font-bold mb-3 sm:mb-4">Besoin d'aide?</h3>
             <div className="text-gray-400">
-              <p className="text-xl font-bold text-white mb-4">(+224) 624 00 00 00</p>
-              <p className="mb-2">Lundi – Vendredi: 9:00-20:00</p>
-              <p className="mb-4">Samedi: 10:00 – 15:00</p>
+              <p className="text-xl font-bold text-white mb-2 sm:mb-3">(+224) 624 00 00 00</p>
+              <p className="mb-1">Lundi – Vendredi: 9:00-20:00</p>
+              <p className="mb-2 sm:mb-3">Samedi: 10:00 – 15:00</p>
               <a href="mailto:contact@kambily.com" className="text-[#048B9A] hover:text-[#048B9A]/80">
                 contact@kambily.com
               </a>
@@ -119,19 +118,19 @@ const Footer = () => {
 
         {/* Bannière promotionnelle */}
         <div className="grid grid-cols-1 md:grid-cols-2 border-t border-b border-gray-700 text-center">
-          <div className="py-4 px-6 border-r border-gray-700">
+          <div className="py-3 px-4 border-r border-gray-700">
             Profitez de tous nos produits en promo maintenant
           </div>
-          <div className="py-4 px-6">
+          <div className="py-3 px-4">
             Livraison gratuite pour toute commande de plus de 350.000GNF
           </div>
         </div>
 
         {/* Pied de page */}
-        <div className="pt-8 mt-8 border-t border-gray-700">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-6">
+        <div className="pt-6 mt-6 border-t border-gray-700">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             {/* Liens légaux avec navigation Next.js */}
-            <div className="flex flex-wrap gap-6 text-sm text-gray-400">
+            <div className="flex flex-wrap gap-4 text-sm text-gray-400">
               <Link 
                 href="/confidentialite" 
                 className="hover:text-white transition-colors"
@@ -159,7 +158,7 @@ const Footer = () => {
             </div>
 
             {/* Méthodes de paiement */}
-            <div className="flex gap-3">
+            <div className="flex gap-2">
               <Image src="/paiements/om.png" alt="Orange Money" width={40} height={24}  className='bg-white object-contain'/>
               <Image src="/paiements/momo.png" alt="MTN" width={40} height={24}  className='bg-white object-contain '/>
               <Image src="/paiements/paycard.png" alt="Apple Pay" width={40} height={24} className='bg-white object-contain p-1'/>
@@ -170,7 +169,7 @@ const Footer = () => {
           </div>
 
           {/* Copyright */}
-          <div className="text-center text-gray-400 text-sm mt-8">
+          <div className="text-center text-gray-400 text-sm mt-6">
             Copyright 2024 © Kambily Sarl. Tous droits réservés.
           </div>
         </div>

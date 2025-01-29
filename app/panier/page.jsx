@@ -8,7 +8,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import toast, { Toaster } from 'react-hot-toast';
-import { FaCheckCircle, FaEdit, FaMapPin, FaSearchLocation, FaTag, FaTrash } from 'react-icons/fa';
+import { FaEdit, FaMapPin, FaSearchLocation, FaTrash } from 'react-icons/fa';
 import DeliveryTimeSelector from '../Components/DeliveryTimeSelector';
 
 const containerStyle = {
@@ -459,40 +459,6 @@ const Panier = () => {
     }
   };
 
-  const handleApplyPromoCode = async (e) => {
-    e.preventDefault();
-    setIsApplyingPromo(true);
-
-    try {
-      // Vérifier d'abord si le code promo est valide
-      const checkResponse = await authFetch('https://api.kambily.store/promocode/check/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          code: promoCode
-        })
-      });
-      console.log(checkResponse);
-
-      if (!checkResponse.ok) {
-        throw new Error('Code promo invalide');
-      }
-
-      const checkData = await checkResponse.json();
-      console.log(checkData);
-      
-
-    } catch (error) {
-      console.error('Erreur:', error);
-      toast.error(error.message || 'Erreur lors de l\'application du code promo');
-      setPromoApplied(false);
-    } finally {
-      setIsApplyingPromo(false);
-    }
-  };
-
   return (
     <motion.div 
       className="w-full max-w-[1400px] mx-auto px-3 sm:px-4 md:px-16 py-3 sm:py-6 overflow-hidden"
@@ -516,14 +482,14 @@ const Panier = () => {
             {cartItems.map((item) => (
               <motion.div
                 key={item.product.id}
-                className="bg-white rounded-lg shadow-sm p-3 sm:p-4 flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-4 w-full"
+                className="bg-white rounded-lg shadow-sm p-3 sm:p-4 flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-4 w-full cursor-pointer hover:shadow-md transition-shadow"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, x: -100 }}
                 whileHover={{ scale: 1.01 }}
                 layout
+                onClick={() => router.push(`/boutique/${item.product.id}`)}
               >
-              
                 {/* Image du produit */}
                 <div className="relative w-16 h-16 sm:w-24 sm:h-24 flex-shrink-0">
                   <Image
@@ -536,7 +502,9 @@ const Panier = () => {
 
                 {/* Détails du produit */}
                 <div className="flex-1 min-w-0 w-[calc(100%-5rem)] sm:w-auto">
-                  <h3 className="font-medium text-sm sm:text-base truncate">{item.product.name}</h3>
+                  <h3 className="font-medium text-sm sm:text-base truncate hover:text-[#048B9A] transition-colors">
+                    {item.product.name}
+                  </h3>
                   
                   {/* Couleurs et tailles */}
                   <div className="mt-2 space-y-1">
@@ -598,8 +566,8 @@ const Panier = () => {
                   </p>
                 </div>
                 
-                <div className="mt-4 flex items-center justify-between">
-                  {/* Contrôles de quantité et suppression */}
+                {/* Contrôles de quantité et suppression - Empêcher la propagation du clic */}
+                <div className="mt-4 flex items-center justify-between" onClick={e => e.stopPropagation()}>
                   <div className="flex items-center gap-2 sm:gap-4 w-full sm:w-auto justify-end">
                     <div className="flex items-center gap-1 sm:gap-2">
                       <button
@@ -637,7 +605,7 @@ const Panier = () => {
             ))}
           </AnimatePresence>
 
-          {/* Bouton Continuer les achats */}
+          {/* Boutons d'action */}
           <motion.div variants={itemVariants} className="flex justify-between items-center">
             <Link href="/boutique">
               <motion.button
@@ -648,86 +616,31 @@ const Panier = () => {
                 Continuer les achats
               </motion.button>
             </Link>
-          </motion.div>
 
-          {/* Code Promo et Vider le panier */}
-          <motion.div variants={itemVariants} className="bg-white rounded-lg shadow-sm p-4 max-w-[600px]">
-            <div className="flex justify-between items-center mb-3">
-              <h3 className="text-sm font-medium flex items-center gap-2">
-                <FaTag className="text-[#048B9A]" />
-                Code Promo
-              </h3>
-              <button
-                onClick={() => {
-                  if (window.confirm('Êtes-vous sûr de vouloir vider votre panier ?')) {
-                    const clearCart = async () => {
-                      try {
-                        const response = await authFetch('https://api.kambily.store/carts/clear/', {
-                          method: 'DELETE'
-                        });
+            {cartItems.length > 0 && (
+              <motion.button
+                onClick={async () => {
+                  try {
+                    const response = await authFetch('https://api.kambily.store/carts/clear/', {
+                      method: 'DELETE'
+                    });
 
-                        if (!response.ok) {
-                          throw new Error('Erreur lors de la suppression du panier');
-                        }
+                    if (!response.ok) throw new Error('Erreur lors de la suppression du panier');
 
-                        await fetchCart();
-                        toast.success('Votre panier a été vidé');
-                      } catch (error) {
-                        console.error('Erreur:', error);
-                        toast.error('Erreur lors de la suppression du panier');
-                      }
-                    };
-                    clearCart();
+                    await fetchCart();
+                    toast.success('Panier vidé avec succès');
+                  } catch (error) {
+                    console.error('Erreur:', error);
+                    toast.error('Erreur lors de la suppression du panier');
                   }
                 }}
-                className="text-red-500 hover:text-red-600 text-sm flex items-center gap-1"
+                className="px-4 sm:px-6 py-2 border-2 border-red-500 text-red-500 rounded-lg hover:bg-red-500 hover:text-white transition-colors text-sm sm:text-base flex items-center gap-2"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
               >
-                <FaTrash className="w-3 h-3" />
+                <FaTrash className="w-4 h-4" />
                 Vider le panier
-              </button>
-            </div>
-            
-            <form onSubmit={handleApplyPromoCode} className="space-y-2">
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={promoCode}
-                  onChange={(e) => setPromoCode(e.target.value)}
-                  placeholder="Entrez votre code promo"
-                  className="flex-1 px-4 py-2 text-sm border border-gray-300 rounded-lg focus:ring-[#048B9A] focus:border-[#048B9A]"
-                  disabled={isApplyingPromo || promoApplied}
-                />
-                <button
-                  type="submit"
-                  disabled={isApplyingPromo || promoApplied || !promoCode.trim()}
-                  className="px-4 py-2 text-sm bg-[#048B9A] text-white rounded-lg hover:bg-[#037483] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 whitespace-nowrap"
-                >
-                  {isApplyingPromo ? (
-                    <>
-                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      <span>Application...</span>
-                    </>
-                  ) : promoApplied ? (
-                    <>
-                      <FaCheckCircle />
-                      <span>Appliqué</span>
-                    </>
-                  ) : (
-                    'Appliquer'
-                  )}
-                </button>
-              </div>
-            </form>
-
-            {promoApplied && (
-              <motion.div 
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="mt-2 text-sm text-green-600 flex items-center gap-2"
-              >
-                <FaCheckCircle />
-                <span>Réduction de 15,000 GNF appliquée</span>
-              </motion.div>
+              </motion.button>
             )}
           </motion.div>
         </div>

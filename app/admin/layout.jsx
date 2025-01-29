@@ -113,7 +113,7 @@ const AdminLayout = ({ children }) => {
       <main className={`transition-all duration-300 ${
         isSidebarOpen ? 'md:ml-64' : ''
       }`}>
-        <div className="p-4 md:p-8 mt-16 md:mt-0">
+        <div className="p-4 md:p-2 mt-2 md:mt-0">
           {children}
         </div>
       </main>
