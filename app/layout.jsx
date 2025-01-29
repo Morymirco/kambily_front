@@ -3,8 +3,10 @@ import MainLayout from '@/app/layouts/MainLayout';
 import { Krub } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from './providers/AuthProvider';
+import { CartProvider } from './providers/CartProvider';
 import { FavoritesProvider } from './providers/FavoritesProvider';
 import { LoadingProvider } from './providers/LoadingProvider';
+
 
 
 const krub = Krub({
@@ -87,9 +89,13 @@ export default function RootLayout({ children }) {
         <LoadingProvider>
           <AuthProvider>
             <FavoritesProvider>
-              <MainLayout>
-                {children}
-              </MainLayout>
+              <CartProvider>
+               
+                  <MainLayout>
+                    {children}
+                  </MainLayout>
+               
+              </CartProvider>
             </FavoritesProvider>
           </AuthProvider>
         </LoadingProvider>

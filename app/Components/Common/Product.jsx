@@ -251,7 +251,7 @@ const Produit = ({ image, gallery = [], title, price, oldPrice, inStock, categor
             {/* Prix avec gestion de la promo */}
             <div className="flex items-center gap-2 mb-2">
               <p className="text-lg font-bold text-gray-900">
-                {price}GNF
+                {price} GNF
               </p>
               {oldPrice && (
                 <p className="text-sm text-gray-500 line-through">

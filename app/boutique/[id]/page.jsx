@@ -1,5 +1,6 @@
 'use client'
 import { useAuth } from '@/app/providers/AuthProvider';
+import { useFavorites } from '@/app/providers/FavoritesProvider';
 import { AnimatePresence, motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -94,6 +95,7 @@ const ProductSkeleton = () => (
 );
 
 const ProductDetail = () => {
+  const { toggleFavorite, isFavorite } = useFavorites();
   const params = useParams();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -113,7 +115,6 @@ const ProductDetail = () => {
   const [lightboxImageIndex, setLightboxImageIndex] = useState(0);
   const [showShareModal, setShowShareModal] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
-  const [isFavorite, setIsFavorite] = useState(false);
   const [showFavToast, setShowFavToast] = useState(false);
   const [selectedColor, setSelectedColor] = useState(null);
   const { authFetch } = useAuth();
@@ -288,33 +289,14 @@ const ProductDetail = () => {
     }
   };
 
-  const toggleFavorite = async () => {
+  const handleToggleFavorite = async () => {
+    if (!product) return;
+    
     setIsTogglingFavorite(true);
     try {
-      if (isFavorite) {
-        // Supprimer des favoris
-        const response = await authFetch(`https://api.kambily.store/favorites/remove/${params.id}/`, {
-          method: 'DELETE'
-        });
-
-        if (response.ok) {
-          setIsFavorite(false);
-          toast.success('Retiré des favoris');
-        }
-      } else {
-        // Ajouter aux favoris
-        const response = await authFetch(`https://api.kambily.store/favorites/create/${params.id}/`, {
-          method: 'POST'
-        });
-
-        if (response.ok) {
-          setIsFavorite(true);
-          toast.success('Ajouté aux favoris');
-        }
-      }
+      await toggleFavorite(product.id);
     } catch (error) {
       console.error('Erreur lors de la modification des favoris:', error);
-      toast.error('Une erreur est survenue');
     } finally {
       setIsTogglingFavorite(false);
     }
@@ -441,7 +423,7 @@ const ProductDetail = () => {
 
     setIsAddingToCart(true);
     try {
-      const response = await authFetch('https://api.kambily.store/carts/create/', {
+      const response = await authFetch(`https://api.kambily.store/carts/create/${product.id}/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -456,6 +438,7 @@ const ProductDetail = () => {
 
       if (!response.ok) {
         throw new Error('Erreur lors de l\'ajout au panier');
+        console.log(response);
       }
 
       toast.custom((t) => (
@@ -493,25 +476,6 @@ const ProductDetail = () => {
       setIsAddingToCart(false);
     }
   };
-
-  // Vérifier si le produit est déjà en favori au chargement
-  useEffect(() => {
-    const checkFavoriteStatus = async () => {
-      try {
-        const response = await authFetch(`https://api.kambily.store/favorites/check/${params.id}/`);
-        if (response.ok) {
-          const data = await response.json();
-          setIsFavorite(data.is_favorite);
-        }
-      } catch (error) {
-        console.error('Erreur lors de la vérification des favoris:', error);
-      }
-    };
-
-    if (params.id) {
-      checkFavoriteStatus();
-    }
-  }, [params.id]);
 
   if (loading) {
     return <ProductSkeleton />;
@@ -666,22 +630,26 @@ const ProductDetail = () => {
             <div className="flex items-center gap-3">
               {/* Bouton favoris */}
               <button 
-                onClick={toggleFavorite}
-                disabled={isTogglingFavorite}
-                className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
-                  isFavorite 
-                    ? 'bg-red-50 text-red-500' 
+                onClick={handleToggleFavorite}
+                disabled={isTogglingFavorite || !product}
+                className={`
+                  w-12 h-12 rounded-full flex items-center justify-center transition-all
+                  ${isFavorite(product?.id) 
+                    ? 'bg-red-50 text-red-500 hover:bg-red-100' 
                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                }`}
+                  }
+                  disabled:opacity-50 disabled:cursor-not-allowed
+                `}
+                aria-label={isFavorite(product?.id) ? "Retirer des favoris" : "Ajouter aux favoris"}
               >
                 {isTogglingFavorite ? (
-                  <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                  <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
                 ) : (
                   <FaHeart 
-                    className={`w-5 h-5 transition-colors ${
-                      isFavorite 
-                        ? 'fill-current' 
-                        : 'stroke-[2] stroke-current fill-transparent'
+                    className={`w-6 h-6 transition-transform duration-200 ${
+                      isFavorite(product?.id) 
+                        ? 'scale-110 fill-current' 
+                        : 'scale-100 fill-transparent stroke-2'
                     }`}
                   />
                 )}
@@ -690,7 +658,8 @@ const ProductDetail = () => {
               {/* Bouton partager */}
               <button 
                 onClick={() => setShowShareModal(true)}
-                className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors"
+                className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors"
+                aria-label="Partager"
               >
                 <FaShare className="w-5 h-5 text-gray-600" />
               </button>
@@ -1190,14 +1159,14 @@ const ProductDetail = () => {
 
                 <div className="flex items-center gap-1.5">
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                    isFavorite ? 'bg-red-100' : 'bg-gray-100'
+                    isFavorite(product?.id) ? 'bg-red-100' : 'bg-gray-100'
                   }`}>
                     <FaHeart className={`w-4 h-4 ${
-                      isFavorite ? 'text-red-500' : 'text-gray-600'
+                      isFavorite(product?.id) ? 'text-red-500' : 'text-gray-600'
                     }`} />
                   </div>
                   <p className="text-sm font-medium">
-                    {isFavorite 
+                    {isFavorite(product?.id) 
                       ? 'Ajouté aux favoris' 
                       : 'Retiré des favoris'
                     }

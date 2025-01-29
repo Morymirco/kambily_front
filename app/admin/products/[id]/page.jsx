@@ -124,7 +124,7 @@ export default function ProductDetailAdmin() {
     setIsDeleting(true);
     try {
       const token = localStorage.getItem('access_token');
-      const response = await fetch(`${PROTOCOL_HTTP}://${HOST_IP}${PORT}/products/${params.id}/delete/`, {
+      const response = await fetch(`${PROTOCOL_HTTP}://${HOST_IP}${PORT}/products/delete/${params.id}/`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
