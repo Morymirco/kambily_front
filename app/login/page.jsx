@@ -118,11 +118,11 @@ export default function Login() {
   }
 
   return (
-      <div className="min-h-screen flex items-center justify-center px-4 sm:px-3 lg:px-2">
-        <div className="w-full max-w-md space-y-4">
+      <div className=" flex flex-col justify-center items-center px-4 sm:px-6 lg:px-8 py-6 sm:py-12">
+        <div className="w-full max-w-md space-y-6">
           <div className="text-center">
-            {/* Logo - Caché sur mobile */}
-            <div className="hidden md:flex justify-center mb-8">
+            {/* Logo - Visible uniquement sur desktop */}
+            <div className="hidden md:flex justify-center mb-6">
               <Image
                 src="/logo6.svg"
                 alt="Logo"
@@ -131,7 +131,7 @@ export default function Login() {
                 className="w-[150px] h-[150px]"
               />
             </div>
-            <h2 className=" text-3xl font-bold tracking-tight text-gray-900">
+            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-gray-900">
               Connectez-vous à votre compte
             </h2>
             <p className="mt-2 text-sm text-gray-600">

@@ -71,7 +71,7 @@ export default function RegisterPage() {
       console.log('Données à envoyer: FormData');
 
       // 1. Inscription
-      const registerResponse = await fetch('https://api.kambily.store/accounts/register', {
+      const registerResponse = await fetch('https://api.kambily.store/accounts/register/', {
         method: 'POST',
         body: formDataToSend
       });

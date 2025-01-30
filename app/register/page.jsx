@@ -84,7 +84,7 @@ export default function Register() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || 'Erreur lors de l\'inscription');
+        throw new Error(data.message || 'Erreur lors de l\'inscription', { cause: data.message });
       }
 
       // Connexion automatique après inscription réussie
