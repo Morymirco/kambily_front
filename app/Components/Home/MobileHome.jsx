@@ -30,7 +30,7 @@ export default function MobileHome() {
   const carouselImages = [
     {
       id: 1,
-      src: "/banne1.png",
+      src: "/banne1.avif",
       alt: "Nouvelle collection été",
       link: "/collections/ete"
     },

@@ -68,65 +68,19 @@ const Contact = () => {
     }));
   };
 
-  const showSuccessToast = () => {
-    toast.custom((t) => (
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: 20 }}
-        className={`${
-          t.visible ? 'animate-enter' : 'animate-leave'
-        } max-w-md w-full bg-white shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-black ring-opacity-5`}
-      >
-        <div className="flex-1 w-0 p-4">
-          <div className="flex items-start">
-            <div className="flex-shrink-0 pt-0.5">
-              <FaCheckCircle className="h-10 w-10 text-green-500" />
-            </div>
-            <div className="ml-3 flex-1">
-              <p className="text-sm font-medium text-gray-900">
-                Message envoyé !
-              </p>
-              <p className="mt-1 text-sm text-gray-500">
-                Nous vous répondrons dans les plus brefs délais.
-              </p>
-            </div>
-          </div>
-        </div>
-        <div className="flex border-l border-gray-200">
-          <button
-            onClick={() => toast.dismiss(t.id)}
-            className="w-full border border-transparent rounded-none rounded-r-lg p-4 flex items-center justify-center text-sm font-medium text-[#048B9A] hover:text-[#037483] focus:outline-none"
-          >
-            Fermer
-          </button>
-        </div>
-      </motion.div>
-    ), {
-      duration: 4000,
-      position: 'top-right',
-    });
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
-    const token = localStorage.getItem('access_token');
 
     try {
-      const response = await fetch('https://api.kambily.store/accounts/contact/', {
+      const response = await fetch('https://api.kambily.store/contact/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({
-          email: formData.email,
-          subject: formData.subject,
-          message: formData.message
-        })
+        body: JSON.stringify(formData)
       });
-      showSuccessToast(); 
+
       if (!response.ok) {
         throw new Error('Erreur lors de l\'envoi du message');
       }
@@ -137,24 +91,48 @@ const Contact = () => {
         subject: '',
         message: ''
       });
-      
-      // Nouveau toast personnalisé
-    } catch (error) {
-      console.error('Erreur:', error);
-      toast.error('Une erreur est survenue. Veuillez réessayer.', {
-        style: {
-          border: '1px solid #FF0000',
-          padding: '16px',
-          color: '#FF0000',
-        },
-        iconTheme: {
-          primary: '#FF0000',
-          secondary: '#FFFFFF',
-        },
+
+      // Afficher le toast de succès
+      toast.custom((t) => (
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 20 }}
+          className="max-w-md w-full bg-white shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-black ring-opacity-5"
+        >
+          <div className="flex-1 w-0 p-4">
+            <div className="flex items-start">
+              <div className="flex-shrink-0 pt-0.5">
+                <FaCheckCircle className="h-10 w-10 text-green-500" />
+              </div>
+              <div className="ml-3 flex-1">
+                <p className="text-sm font-medium text-gray-900">
+                  Message envoyé avec succès !
+                </p>
+                <p className="mt-1 text-sm text-gray-500">
+                  Nous vous répondrons dans les plus brefs délais.
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="flex border-l border-gray-200">
+            <button
+              onClick={() => toast.dismiss(t.id)}
+              className="w-full border border-transparent rounded-none rounded-r-lg p-4 flex items-center justify-center text-sm font-medium text-[#048B9A] hover:text-[#037483] focus:outline-none"
+            >
+              Fermer
+            </button>
+          </div>
+        </motion.div>
+      ), {
+        duration: 4000,
+        position: 'top-right',
       });
+
+    } catch (error) {
+      toast.error("Une erreur est survenue lors de l'envoi du message");
     } finally {
       setIsSubmitting(false);
-     
     }
   };
 

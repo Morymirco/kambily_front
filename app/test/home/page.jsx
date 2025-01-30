@@ -20,7 +20,7 @@ export default function TestHome() {
   const carouselImages = [
     {
       id: 1,
-      src: "/banne1.png",
+      src: "/.png",
       alt: "Nouvelle collection été",
       link: "/collections/ete"
     },
