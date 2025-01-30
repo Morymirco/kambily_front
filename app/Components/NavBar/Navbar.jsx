@@ -281,7 +281,7 @@ export default function Navbar() {
           {/* Header avec logo et bouton fermer */}
           <div className="p-4 flex justify-between items-center border-b">
             <Image
-              src="/logo.webp"
+              src="/logo6.svg"
               alt="Kambily"
               width={120}
               height={40}

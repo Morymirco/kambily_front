@@ -108,13 +108,15 @@ export default function Register() {
     <div className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8">
       <div className="w-full max-w-md space-y-8">
         <div className="text-center">
-          <Image
-            src="/logo.webp"
-            alt="Logo"
-            width={150}
-            height={50}
-            className="mx-auto"
-          />
+          <div className="hidden md:block">
+            <Image
+              src="/logo.webp"
+              alt="Logo"
+              width={150}
+              height={50}
+              className="mx-auto"
+            />
+          </div>
           <h2 className="mt-6 text-3xl font-bold tracking-tight text-gray-900">
             Créez votre compte
           </h2>
