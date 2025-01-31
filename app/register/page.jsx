@@ -6,6 +6,16 @@ import { useEffect, useState } from 'react';
 import { FaEye, FaEyeSlash, FaUser } from 'react-icons/fa';
 import axios from 'axios';
 
+/**
+ * Auteur : koulibaly
+ * email : [koulibalyamadou10@gmail.com, amadoukoulibaly@kambily.store]
+ * Date : 31/10/2025 16h35mn
+ * endpoint : /register
+ * param : None
+ * description : permet d'inscrire un utilisateur !
+ * @returns {JSX.Element}
+ * @constructor
+ */
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
     email: '',
