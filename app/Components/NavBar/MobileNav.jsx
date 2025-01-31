@@ -8,8 +8,14 @@ import { useState } from 'react';
 const MobileNav = () => {
   const pathname = usePathname();
   const [isLoggedIn, setIsLoggedIn] = useState(true);
-  const { user, isAuthenticated } = useAuth();
+  const { userOld, isAuthenticated } = useAuth();
 
+  const user = {
+    first_name : "amadou",
+    last_name: "koulibaly",
+    email : "koulibalyamadou10@gmail.com"
+  }
+  
   const navItems = [
     {
       label: 'Accueil',

@@ -101,7 +101,7 @@ export default function RegisterPage() {
         localStorage.setItem('access_token', response.data.access);
         localStorage.setItem('refresh_token', response.data.refresh);
         localStorage.setItem('user', response.data.user);
-        // window.location.href = '/test/profile'; // À adapter si besoin
+        window.location.href = '/register/confirmation'; // À adapter si besoin
       } else {
         // Gérer les autres codes de réponse
         console.warn('Réponse inattendue du serveur:', response.status, response.data);
