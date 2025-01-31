@@ -118,16 +118,18 @@ export default function RegisterPage() {
   }; // gestion de l'evenement
   
   return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4">
+      <div className=" flex items-center justify-center bg-gray-50">
         <div className="max-w-md w-full space-y-8">
           <div>
+
             <Image
-                src="/logo.jpg"
+                src="/logot.png"
                 alt="Logo"
-                width={100}
-                height={100}
+                width={300}
+                height={300}
                 className="mx-auto"
             />
+
             <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
               Créez votre compte
             </h2>
