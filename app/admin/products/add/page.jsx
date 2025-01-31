@@ -1,10 +1,10 @@
 "use client";
 import Image from "next/image";
-import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
-import {useEffect, useRef, useState} from "react";
+import { useEffect, useRef, useState } from "react";
+import toast from "react-hot-toast";
 import { FaPlus, FaTrash } from "react-icons/fa";
-import {generateSKU, generateSlug, HOST_DNS, HOST_IP, PORT, PROTOCOL_HTTP} from './../../../constants'
+import { generateSKU } from './../../../constants';
 
 export default function AddProduct() {
   const [formData, setFormData] = useState({
@@ -41,51 +41,11 @@ export default function AddProduct() {
   
   const router = useRouter();
   
-  function websocketManagement(){
-    // Créer une connexion WebSocket avec l'URL du serveur
-    const socket = new WebSocket('ws://54.214.37.131:8001/websocket/');
-    
-    // Lorsque la connexion est ouverte
-    socket.onopen = function(event) {
-      console.log("Connexion WebSocket établie avec succès.");
-      
-      // Vous pouvez envoyer un message une fois la connexion établie
-      socket.send(JSON.stringify({ message: "Hello, Server!" }));
-    };
-    
-    // Écouter les messages du serveu
-    socket.onmessage = function(event) {
-      console.log("Message du serveur:", event.data);
-      // Essayer de convertir les messages qui viennent du serveur
-      try {
-        const jsonData = JSON.parse(event.data);
-        if(jsonData.code === 1){
-          // cela veux dire que un produit a été ajouté par l'administrateur
-          // mettre une logique pour que tous les clients sache
-          // ça peut etre reactualiser la variables qui contient les produits de la base de donnée en local
-          //etc
-        }
-      }catch (e) {
-        console.error("Erreur de decodage du message du serveur: " + e.message);
-      }
-    };
-    
-    // Lorsque la connexion est fermée
-    socket.onclose = function(event) {
-      console.log("Connexion WebSocket fermée.");
-    };
-    
-    // En cas d'erreur
-    socket.onerror = function(error) {
-      console.error("Erreur WebSocket:", error);
-    };
-  }
-  
-  // Vérifier l'authentification admin au chargement
+  // Modifier useEffect pour enlever l'appel à websocketManagement
   useEffect(() => {
     // Avant la déconnexion ou avant de rediriger l'utilisateur
-    const currentRoute = window.location.pathname;  // Cela récupère la route actuelle
-    localStorage.setItem('redirectRoute', currentRoute);  // Stocke la route dans le localStorage
+    const currentRoute = window.location.pathname;  
+    localStorage.setItem('redirectRoute', currentRoute);  
     
     const token = localStorage.getItem('access_token');
     if (!token) {
@@ -93,9 +53,6 @@ export default function AddProduct() {
       return;
     }
     localStorage.setItem('access_token', token);
-    
-    // gestion des websocket
-    websocketManagement()
     
     // Charger les données nécessaires
     fetchCategories();
