@@ -27,7 +27,6 @@ export default function ConfirmAccount() {
 
         try {
             const token = localStorage.getItem('access_token');
-            console.log(token);
             const response = await axios.post(
                 'https://api.kambily.store/accounts/confirm/',
                 { confirmation: parseInt(confirmation, 10) },
@@ -35,22 +34,27 @@ export default function ConfirmAccount() {
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${token}`,
-                    },
+                    }
                 }
             );
 
-            if (response.data.status === 200 || response.data.status === 201) {
+            console.log(response);
+
+            if (response.status === 200 || response.status === 201) {
                 // Stockage des informations d'authentification
                 if (response.data.access) {
                     localStorage.setItem('access_token', response.data.access);
                 }
                 if (response.data.user) {
                     localStorage.setItem('user', JSON.stringify(response.data.user));
-                    console.log(response.data.user);
                 }
                 
                 setMessage('Compte confirmé avec succès ! Redirection...');
-                setTimeout(() => router.push('/login'), 2000);
+                
+                // Utiliser window.location.href pour une redirection plus forcée
+                setTimeout(() => {
+                    window.location.href = '/login';
+                }, 2000);
             } else {
                 setMessage(`Erreur: ${response.data.message || 'Une erreur est survenue'}`);
             }
