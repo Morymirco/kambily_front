@@ -4,7 +4,7 @@ import axios from "axios";
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 export default function ConfirmAccount() {
     const [confirmation, setConfirmation] = useState('');
@@ -12,40 +12,61 @@ export default function ConfirmAccount() {
     const [message, setMessage] = useState('');
     const router = useRouter();
 
-    const handleConfirm = () => {
+    // Vérification au chargement de la page
+    useEffect(() => {
+        const token = localStorage.getItem('access_token');
+        if (!token) {
+            setMessage('Accès non autorisé. Redirection vers la page d\'inscription...');
+            setTimeout(() => router.push('/register'), 1000);
+        }
+    }, [router]);
+
+    const handleConfirm = async () => {
         setLoading(true);
         setMessage('');
 
-        const token = localStorage.getItem('access_token'); // Récupération du token stocké
+        try {
+            const token = localStorage.getItem('access_token');
+            console.log(token);
+            const response = await axios.post(
+                'https://api.kambily.store/accounts/confirm/',
+                { confirmation: parseInt(confirmation, 10) },
+                {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`,
+                    },
+                }
+            );
 
-        const response = axios.post(
-            'https://api.kambily.store/accounts/confirm/',
-            { confirmation : parseInt(confirmation, 10) }, // Données envoyées
-            {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`, // Ajout du Bearer Token
-                },
-            }
-        );
-
-        response.then((response) => {
-            if( response.data.status === 200 || response.data.status === 201 ) {
+            if (response.data.status === 200 || response.data.status === 201) {
+                // Stockage des informations d'authentification
+                if (response.data.access) {
+                    localStorage.setItem('access_token', response.data.access);
+                }
+                if (response.data.user) {
+                    localStorage.setItem('user', JSON.stringify(response.data.user));
+                    console.log(response.data.user);
+                }
+                
                 setMessage('Compte confirmé avec succès ! Redirection...');
                 setTimeout(() => router.push('/login'), 2000);
-            }else {
-                console.warn('Réponse inattendue du serveur:', response.status, response.data);
-                setMessage(`Erreur: ${response.status} - ${response.data.message || 'Réponse inattendue'}`);
+            } else {
+                setMessage(`Erreur: ${response.data.message || 'Une erreur est survenue'}`);
             }
-        })
-        response.catch((error) => {
-            setMessage(error)
-        })
-        response.finally(() => setLoading(false));
+        } catch (error) {
+            if (axios.isAxiosError(error)) {
+                setMessage(error.response?.data?.message || 'Erreur lors de la confirmation');
+            } else {
+                setMessage('Une erreur inattendue est survenue');
+            }
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
-        <div className=" flex items-center justify-center bg-gray-50">
+        <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4">
             <div className="max-w-md w-full space-y-8">
                 <div>
                     <Image

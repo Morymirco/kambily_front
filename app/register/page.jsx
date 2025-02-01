@@ -1,10 +1,11 @@
 'use client'
+import axios from 'axios';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { FaEye, FaEyeSlash, FaUser } from 'react-icons/fa';
-import axios from 'axios';
 
 /**
  * Auteur : koulibaly
@@ -17,6 +18,7 @@ import axios from 'axios';
  * @constructor
  */
 export default function RegisterPage() {
+  const router = useRouter();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -35,7 +37,7 @@ export default function RegisterPage() {
   useEffect(() => {
     const token = localStorage.getItem('access_token');
     if (token) {
-      window.location.href = '/test/profile';
+      window.location.href = '/profile';
     }
   }, []); // Execution de la prémière page
   
@@ -97,13 +99,14 @@ export default function RegisterPage() {
     registerResponse.then(response => {
       console.log('Register response:', response.status);
       if (response.status === 200 || response.status === 201) {
-        // Succès : Stocker les tokens et rediriger
+        // Stockage des tokens
         localStorage.setItem('access_token', response.data.access);
         localStorage.setItem('refresh_token', response.data.refresh);
-        localStorage.setItem('user', response.data.user);
-        window.location.href = '/register/confirmation'; // À adapter si besoin
+        localStorage.setItem('user', JSON.stringify(response.data.user));
+        
+        // Utilisation du router pour la navigation
+        router.push('/register/confirmation');
       } else {
-        // Gérer les autres codes de réponse
         console.warn('Réponse inattendue du serveur:', response.status, response.data);
         setError(`Erreur: ${response.status} - ${response.data.message || 'Réponse inattendue'}`);
       }
