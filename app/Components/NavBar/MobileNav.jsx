@@ -1,21 +1,15 @@
 'use client'
-import { useAuth } from '@/app/providers/AuthProvider';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
+import { useAuth } from '@/app/providers/AuthProvider';
 
 const MobileNav = () => {
   const pathname = usePathname();
   const [isLoggedIn, setIsLoggedIn] = useState(true);
-  const { userOld, isAuthenticated } = useAuth();
+  const { user, isAuthenticated } = useAuth();
 
-  const user = {
-    first_name : "amadou",
-    last_name: "koulibaly",
-    email : "koulibalyamadou10@gmail.com"
-  }
-  
   const navItems = [
     {
       label: 'Accueil',
