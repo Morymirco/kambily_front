@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { FaEye, FaEyeSlash, FaUser } from 'react-icons/fa';
+import { isGuineanPhoneNumber } from '../constants';
 
 /**
  * Auteur : koulibaly
@@ -70,6 +71,12 @@ export default function RegisterPage() {
     
     if (formData.password !== formData.confirmPassword) {
       setError("Les mots de passe ne correspondent pas");
+      setLoading(false);
+      return;
+    }
+    
+    if (formData.phone_number && !isGuineanPhoneNumber(formData.phone_number)) {
+      setError("Le numéro de téléphone n'est pas valide. Format attendu : 6X XX XX XX");
       setLoading(false);
       return;
     }

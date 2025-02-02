@@ -1,7 +1,8 @@
 'use client'
 import { motion } from 'framer-motion';
-import { FaCheckCircle, FaBox, FaTruck, FaEnvelope } from 'react-icons/fa';
 import Link from 'next/link';
+import { FaBox, FaCheckCircle, FaEnvelope, FaTruck } from 'react-icons/fa';
+import { useSearchParams } from 'next/navigation';
 
 // Composant pour les boutons d'action
 const ActionButton = ({ href, variant = 'primary', children }) => {
@@ -60,22 +61,27 @@ const OrderSummary = () => (
 );
 
 // Composant pour l'en-tête de confirmation
-const ConfirmationHeader = () => (
-  <motion.div 
-    className="text-center mb-12"
-    initial={{ scale: 0 }}
-    animate={{ scale: 1 }}
-    transition={{ delay: 0.2, type: "spring" }}
-  >
-    <div className="inline-block p-4 bg-green-100 rounded-full mb-4">
-      <FaCheckCircle className="w-12 h-12 text-green-500" />
-    </div>
-    <h1 className="text-3xl font-bold mb-4">Commande confirmée !</h1>
-    <p className="text-gray-600 max-w-md mx-auto">
-      Merci pour votre commande. Votre numéro de commande est #123456
-    </p>
-  </motion.div>
-);
+const ConfirmationHeader = () => {
+  const searchParams = useSearchParams();
+  const orderNumber = searchParams.get('order');
+
+  return (
+    <motion.div 
+      className="text-center mb-12"
+      initial={{ scale: 0 }}
+      animate={{ scale: 1 }}
+      transition={{ delay: 0.2, type: "spring" }}
+    >
+      <div className="inline-block p-4 bg-green-100 rounded-full mb-4">
+        <FaCheckCircle className="w-12 h-12 text-green-500" />
+      </div>
+      <h1 className="text-3xl font-bold mb-4">Commande confirmée !</h1>
+      <p className="text-gray-600 max-w-md mx-auto">
+        Merci pour votre commande. Votre numéro de commande est #{orderNumber}
+      </p>
+    </motion.div>
+  );
+};
 
 // Composant pour les actions
 const ActionButtons = () => (

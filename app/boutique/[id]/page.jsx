@@ -1,13 +1,16 @@
 'use client'
 import { useAuth } from '@/app/providers/AuthProvider';
 import { useFavorites } from '@/app/providers/FavoritesProvider';
+import axios from 'axios';
+import { format } from 'date-fns';
+import { fr } from 'date-fns/locale';
 import { AnimatePresence, motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
-import { FaFacebookF, FaHeart, FaLinkedinIn, FaShare, FaShoppingCart, FaStar, FaTimes, FaTwitter, FaWhatsapp } from 'react-icons/fa';
+import { FaFacebookF, FaHeart, FaImage, FaLinkedinIn, FaShare, FaShoppingCart, FaStar, FaTimes, FaTwitter, FaUser, FaWhatsapp } from 'react-icons/fa';
 import { FiZoomIn } from 'react-icons/fi';
 import { IoMdClose } from 'react-icons/io';
 import 'swiper/css';
@@ -98,6 +101,231 @@ const ProductSkeleton = () => (
   </div>
 );
 
+const ReviewsTab = ({ reviews }) => {
+  if (!reviews || reviews.length === 0) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-gray-500">Aucun avis pour le moment</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {reviews.map((review) => (
+        <div 
+          key={review.id}
+          className="border-b border-gray-200 pb-6 last:border-b-0"
+        >
+          <div className="flex items-start justify-between mb-2">
+            <div className="flex items-center gap-3">
+              {review.user?.image ? (
+                <Image
+                  src={review.user.image}
+                  alt={`${review.user.first_name} ${review.user.last_name}`}
+                  width={40}
+                  height={40}
+                  className="rounded-full object-cover"
+                />
+              ) : (
+                <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
+                  <FaUser className="text-gray-400 w-5 h-5" />
+                </div>
+              )}
+              <div>
+                <h4 className="font-medium text-gray-900">
+                  {`${review.user.first_name} ${review.user.last_name}`}
+                </h4>
+                <p className="text-sm text-gray-500">
+                  {format(new Date(review.created_at), 'dd MMMM yyyy', { locale: fr })}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-1">
+              {[...Array(5)].map((_, i) => (
+                <FaStar
+                  key={i}
+                  className={`w-4 h-4 ${
+                    i < Math.floor(review.rating) 
+                      ? 'text-yellow-400' 
+                      : 'text-gray-300'
+                  }`}
+                />
+              ))}
+              <span className="text-sm text-gray-600 ml-1">
+                {parseFloat(review.rating).toFixed(1)}
+              </span>
+            </div>
+          </div>
+          
+          <p className="text-gray-600">
+            {review.comment}
+          </p>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+const ReviewForm = ({ productId, setReviews }) => {
+  const [rating, setRating] = useState(0);
+  const [hover, setHover] = useState(0);
+  const [comment, setComment] = useState('');
+  const [images, setImages] = useState([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    try {
+      const formData = new FormData();
+      formData.append('rating', rating);
+      formData.append('comment', comment);
+      formData.append('product_id', productId);
+      
+
+    
+      const response = await axios.post(
+        'https://api.kambily.store/reviews/create/',
+        formData,
+        {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+            'Content-Type': 'multipart/form-data'
+          }
+        }
+      );
+
+      if (response.status === 201) {
+        // Récupérer les données de l'utilisateur connecté
+        const userData = JSON.parse(localStorage.getItem('user'));
+        
+        // Créer le nouvel avis avec le format attendu
+        const newReview = {
+          id: response.data.id,
+          user: {
+            id: userData.id,
+            first_name: userData.first_name,
+            last_name: userData.last_name,
+            email: userData.email,
+            image: userData.image
+          },
+          rating: rating.toString(),
+          comment: comment,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        };
+
+        // Ajouter le nouvel avis à la liste existante
+        setReviews(prevReviews => [newReview, ...prevReviews]);
+        
+        // Réinitialiser le formulaire
+        setRating(0);
+        setComment('');
+        setImages([]);
+        
+        toast.success('Votre avis a été publié avec succès !');
+      }
+    } catch (error) {
+      toast.error('Une erreur est survenue lors de la publication de votre avis');
+      console.error('Erreur:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="mt-8 border-t pt-8">
+      <h3 className="text-lg font-medium text-gray-900 mb-4">Donner votre avis</h3>
+      
+      <div className="mb-4">
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Note
+        </label>
+        <div className="flex gap-1">
+          {[...Array(5)].map((_, index) => {
+            const ratingValue = index + 1;
+            return (
+              <button
+                type="button"
+                key={index}
+                onClick={() => setRating(ratingValue)}
+                onMouseEnter={() => setHover(ratingValue)}
+                onMouseLeave={() => setHover(0)}
+                className="focus:outline-none"
+              >
+                <FaStar
+                  className={`w-8 h-8 ${
+                    ratingValue <= (hover || rating)
+                      ? 'text-yellow-400'
+                      : 'text-gray-300'
+                  }`}
+                />
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="mb-4">
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Votre commentaire
+        </label>
+        <textarea
+          value={comment}
+          onChange={(e) => setComment(e.target.value)}
+          rows={4}
+          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#048B9A] focus:border-[#048B9A]"
+          placeholder="Partagez votre expérience avec ce produit..."
+          required
+        />
+      </div>
+
+      <div className="mb-6">
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Ajouter des photos (optionnel)
+        </label>
+        <div className="flex items-center gap-4">
+          <label className="cursor-pointer px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50">
+            <input
+              type="file"
+              multiple
+              accept="image/*"
+              onChange={(e) => setImages([...e.target.files])}
+              className="hidden"
+            />
+            <div className="flex items-center gap-2">
+              <FaImage className="w-5 h-5 text-gray-500" />
+              <span>Choisir des images</span>
+            </div>
+          </label>
+          {images.length > 0 && (
+            <span className="text-sm text-gray-500">
+              {images.length} image{images.length > 1 ? 's' : ''} sélectionnée{images.length > 1 ? 's' : ''}
+            </span>
+          )}
+        </div>
+      </div>
+
+      <button
+        type="submit"
+        disabled={!rating || !comment || isSubmitting}
+        className="w-full px-4 py-2 bg-[#048B9A] text-white rounded-lg hover:bg-[#037483] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+      >
+        {isSubmitting ? (
+          <div className="flex items-center justify-center gap-2">
+            <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            <span>Publication en cours...</span>
+          </div>
+        ) : (
+          'Publier votre avis'
+        )}
+      </button>
+    </form>
+  );
+};
+
 const ProductDetail = () => {
   const { toggleFavorite, isFavorite } = useFavorites();
   const params = useParams();
@@ -124,6 +352,7 @@ const ProductDetail = () => {
   const { authFetch } = useAuth();
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [isTogglingFavorite, setIsTogglingFavorite] = useState(false);
+  const [reviews, setReviews] = useState([]);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -142,6 +371,7 @@ const ProductDetail = () => {
 
         const data = await response.json();
         setProduct(data);
+        setReviews(data.reviews || []);
       } catch (err) {
         setError(err.message);
         toast.error(err.message);
@@ -196,26 +426,6 @@ const ProductDetail = () => {
       oldPrice: "100,000",
       inStock: true,
       description: "Ne manquez pas cette opportunité tant qu'elle dure"
-    }
-  ];
-
-  // Données des avis
-  const reviews = [
-    {
-      id: 1,
-      user: "Marie S.",
-      rating: 5,
-      date: "15 Mars 2024",
-      comment: "Très satisfaite de mon achat ! Le tissu est de bonne qualité et la taille correspond parfaitement.",
-      avatar: "/avatars/user1.jpg"
-    },
-    {
-      id: 2,
-      user: "Sophie L.",
-      rating: 4,
-      date: "10 Mars 2024",
-      comment: "Bon rapport qualité-prix. Seul petit bémol : le délai de livraison un peu long.",
-      avatar: "/avatars/user2.jpg"
     }
   ];
 
@@ -874,49 +1084,13 @@ const ProductDetail = () => {
                 </div>
               </div>
 
-              {/* Liste des avis */}
-              <div className="space-y-6">
-                {reviews.map((review) => (
-                  <div key={review.id} className="border-b pb-6">
-                    <div className="flex items-center gap-4 mb-3">
-                      <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
-                        <FaUser className="text-gray-400" />
-                      </div>
-                      <div>
-                        <h4 className="font-medium">{review.user}</h4>
-                        <div className="flex items-center gap-2">
-                          <div className="flex">
-                            {[...Array(5)].map((_, i) => (
-                              <FaStar 
-                                key={i}
-                                className={i < review.rating ? "text-yellow-400 w-4 h-4" : "text-gray-300 w-4 h-4"}
-                              />
-                            ))}
-                          </div>
-                          <span className="text-sm text-gray-500">{review.date}</span>
-                        </div>
-                      </div>
-                    </div>
-                    <p className="text-gray-600">{review.comment}</p>
-                  </div>
-                ))}
-              </div>
-
-              {/* Bouton Ajouter un avis */}
-              <div className="text-center mt-8">
-                <motion.button
-                  onClick={() => setShowReviewModal(true)}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="bg-[#048B9A] text-white px-6 py-3 rounded-lg hover:bg-[#037483] transition-colors"
-                >
-                  Donner votre avis
-                </motion.button>
-              </div>
+              <ReviewsTab reviews={reviews} />
+              <ReviewForm productId={params.id} setReviews={setReviews} />
             </div>
           )}
         </div>
       </div>
+
 
       {/* Section Produits Similaires */}
       <div className="mt-16">

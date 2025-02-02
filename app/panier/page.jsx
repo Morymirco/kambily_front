@@ -424,39 +424,13 @@ const Panier = () => {
     if (!selectedAddress?.id) {
       toast.error("Veuillez sélectionner une adresse de livraison");
       return;
-      
     }
 
-    setIsProcessing(true);
-    console.log(selectedAddress);
-    try {
-      const response = await authFetch('https://api.kambily.store/orders/create/', {
-        method: 'POST',
-        body: JSON.stringify({
-          delivery_address_id: selectedAddress.id,
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error('Erreur lors de la création de la commande', response.statusText);
-      }
-
-      const orderData = await response.json();
-      
-      // Vider le panier après une commande réussie
-      clearCart();
-      
-      // Rediriger vers la page de confirmation
-      router.push(`/commandes/${orderData.id}`);
-      
-      toast.success('Votre commande a été créée avec succès');
-
-    } catch (error) {
-      console.error('Erreur:', error);
-      toast.error("Impossible de créer la commande. Veuillez réessayer.");
-    } finally {
-      setIsProcessing(false);
-    }
+    // Stocker l'adresse sélectionnée dans localStorage
+    localStorage.setItem('selectedDeliveryAddress', JSON.stringify(selectedAddress));
+    
+    // Rediriger vers la page de paiement
+    router.push('/paiement');
   };
 
   return (

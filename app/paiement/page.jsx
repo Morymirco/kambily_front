@@ -1,9 +1,10 @@
 'use client'
+import axios from 'axios';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
-import { FaCheckCircle, FaCreditCard, FaLock, FaMobileAlt, FaMoneyBill, FaTag } from 'react-icons/fa';
+import { FaCheckCircle, FaCreditCard, FaMobileAlt, FaMoneyBill, FaTag } from 'react-icons/fa';
 
 const Payment = () => {
   const router = useRouter();
@@ -20,6 +21,18 @@ const Payment = () => {
   const [promoCode, setPromoCode] = useState('');
   const [isApplyingPromo, setIsApplyingPromo] = useState(false);
   const [promoApplied, setPromoApplied] = useState(false);
+  const [isCreatingOrder, setIsCreatingOrder] = useState(false);
+  const [orderId, setOrderId] = useState(null);
+  const [error, setError] = useState(null);
+  const [selectedAddress, setSelectedAddress] = useState(null);
+
+  useEffect(() => {
+    // Récupérer l'adresse stockée
+    const storedAddress = localStorage.getItem('selectedDeliveryAddress');
+    if (storedAddress) {
+      setSelectedAddress(JSON.parse(storedAddress));
+    }
+  }, []);
 
   // Résumé de la commande (à connecter avec votre panier)
   const orderSummary = {
@@ -40,6 +53,64 @@ const Payment = () => {
       ...billingAddress,
       [e.target.name]: e.target.value
     });
+  };
+
+  const handleCreateOrder = async () => {
+    try {
+      setIsCreatingOrder(true);
+      
+      // Vérifier si une adresse est sélectionnée
+      if (!selectedAddress) {
+        toast.error("Veuillez retourner au panier pour sélectionner une adresse");
+        router.push('/panier');
+        return;
+      }
+
+      // Préparer les données de la commande
+      const orderData = {
+        delivery_address_id: selectedAddress.id  // S'assurer d'envoyer l'ID et non l'objet complet
+      };
+
+      // Ajouter le code promo si valide
+      if (promoCode && isPromoValid) {
+        orderData.promo_code = promoCode;
+      }
+
+      // Log des données avant envoi
+      console.log('Données envoyées:', orderData);
+
+      const response = await axios.post(
+        'https://api.kambily.store/orders/create/',
+        orderData,
+        {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      console.log('Réponse du serveur:', response.data);
+
+      if (response.status === 201 || response.status === 200) {
+        // Rediriger vers la page de confirmation avec le numéro de commande
+        router.push(`/confirmation?order=${response.data.number}`);
+      } else {
+        setError("Une erreur est survenue lors de la création de la commande");
+      }
+
+    } catch (error) {
+      console.error('Erreur détaillée:', error.response?.data);
+      if (axios.isAxiosError(error)) {
+        const errorMessage = error.response?.data?.message || 
+                           "Une erreur est survenue lors de la création de la commande";
+        toast.error(errorMessage);
+      } else {
+        toast.error("Une erreur inattendue est survenue");
+      }
+    } finally {
+      setIsCreatingOrder(false);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -416,23 +487,17 @@ const Payment = () => {
             </motion.div>
 
             <motion.button
-              onClick={handleSubmit}
-              className="w-full bg-[#048B9A] text-white py-3 rounded-md hover:bg-[#037483] transition-colors flex items-center justify-center gap-2"
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              disabled={isProcessing}
+              onClick={handleCreateOrder}
+              disabled={isCreatingOrder || !selectedAddress}
+              className="w-full py-3 bg-[#048B9A] text-white rounded-lg hover:bg-[#037483] disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isProcessing ? (
-                <motion.div
-                  className="w-5 h-5 border-2 border-white border-t-transparent rounded-full"
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                />
+              {isCreatingOrder ? (
+                <div className="flex items-center justify-center gap-2">
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <span>Traitement en cours...</span>
+                </div>
               ) : (
-                <>
-                  <FaLock />
-                  <span>Payer {orderSummary.total.toLocaleString()} GNF</span>
-                </>
+                'Payer maintenant'
               )}
             </motion.button>
 

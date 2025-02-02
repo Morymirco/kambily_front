@@ -83,3 +83,39 @@ export const generateSKU = (product) =>{
 export const STOCK_STATUS = ['En Stock', 'Rupture de stock', 'Sur commande']
 
 export const PRODUCT_TYPE = ['simple', 'variable']
+
+/**
+ * Vérifie si un numéro de téléphone guinéen est valide
+ * Formats acceptés : 
+ * - +224 6X XX XX XX
+ * - 00224 6X XX XX XX
+ * - 224 6X XX XX XX
+ * - 6X XX XX XX
+ * - 6XXXXXXXX (sans espace)
+ * Opérateurs : 61, 62, 63, 64, 65, 66, 67, 68, 69
+ * @param {string} phoneNumber - Le numéro à vérifier
+ * @returns {boolean} - true si le numéro est valide, false sinon
+ */
+export const isGuineanPhoneNumber = (phoneNumber) => {
+	// Supprimer tous les espaces, tirets et autres caractères spéciaux
+	const cleanNumber = phoneNumber.toString().replace(/[\s-\.()]/g, '');
+
+	// Expression régulière pour les numéros guinéens
+	// Accepte les formats avec ou sans espaces
+	const guineaPhoneRegex = /^(?:(?:\+|00)?224)?6[1-9]\d{7}$/;
+
+	// Vérifier si le numéro correspond au format
+	if (!guineaPhoneRegex.test(cleanNumber)) {
+		return false;
+	}
+
+	// Extraire les 2 chiffres après le 6 pour vérifier l'opérateur
+	const indexOfSix = cleanNumber.indexOf('6');
+	const operatorCode = cleanNumber.slice(indexOfSix, indexOfSix + 2);
+	
+	// Liste des codes opérateurs valides
+	const validOperatorCodes = ['61', '62', '63', '64', '65', '66', '67', '68', '69'];
+
+	// Vérifier si le code opérateur est valide
+	return validOperatorCodes.includes(operatorCode);
+};
