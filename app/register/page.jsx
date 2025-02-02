@@ -112,7 +112,7 @@ export default function RegisterPage() {
       }
     })
     registerResponse.catch(reaseon => {
-      setError(reaseon.message);
+      setError(reaseon.request.responseText);
       setLoading(false)
     })
     registerResponse.finally(()=>{
@@ -121,17 +121,19 @@ export default function RegisterPage() {
   }; // gestion de l'evenement
   
   return (
-      <div className=" flex items-center justify-center bg-gray-50">
+      <div className="flex items-center justify-center ">
         <div className="max-w-md w-full space-y-8">
           <div>
-
-            <Image
-                src="/logot.png"
-                alt="Logo"
-                width={300}
-                height={300}
-                className="mx-auto"
-            />
+            {/* Logo - caché sur mobile, visible sur tablette et desktop */}
+            <div className="hidden md:block">
+              <Image
+                  src="/logot.png"
+                  alt="Logo"
+                  width={300}
+                  height={300}
+                  className="mx-auto"
+              />
+            </div>
 
             <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
               Créez votre compte
@@ -167,7 +169,7 @@ export default function RegisterPage() {
                     value={formData.first_name}
                     onChange={handleChange}
                     className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-[#048B9A] focus:border-[#048B9A] sm:text-sm"
-                    placeholder="John"
+                    placeholder="Veuillez entrer votre prénom "
                 />
               </div>
               
@@ -182,7 +184,7 @@ export default function RegisterPage() {
                     value={formData.last_name}
                     onChange={handleChange}
                     className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-[#048B9A] focus:border-[#048B9A] sm:text-sm"
-                    placeholder="Doe"
+                    placeholder="Veuillez entrer votre nom"
                 />
               </div>
               
@@ -197,7 +199,7 @@ export default function RegisterPage() {
                     value={formData.phone_number}
                     onChange={handleChange}
                     className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-[#048B9A] focus:border-[#048B9A] sm:text-sm"
-                    placeholder="+224 000000000"
+                    placeholder="Veuillez entrer votre numéro de téléphone"
                 />
               </div>
               
@@ -214,7 +216,7 @@ export default function RegisterPage() {
                       value={formData.password}
                       onChange={handleChange}
                       className="appearance-none relative block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-[#048B9A] focus:border-[#048B9A] sm:text-sm"
-                      placeholder="••••••••"
+                      placeholder="Veuillez entrer votre mot de passe"
                   />
                   <button
                       type="button"
@@ -239,7 +241,7 @@ export default function RegisterPage() {
                       value={formData.confirmPassword}
                       onChange={handleChange}
                       className="appearance-none relative block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-[#048B9A] focus:border-[#048B9A] sm:text-sm"
-                      placeholder="••••••••"
+                      placeholder="Veuillez confirmer votre mot de passe"
                   />
                   <button
                       type="button"

@@ -5,6 +5,7 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: 'kambily.ddns.net',
+        
         port: '',
         pathname: '/media/**',
       },
