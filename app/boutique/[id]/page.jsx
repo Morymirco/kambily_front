@@ -10,6 +10,10 @@ import { toast } from 'react-hot-toast';
 import { FaFacebookF, FaHeart, FaLinkedinIn, FaShare, FaShoppingCart, FaStar, FaTimes, FaTwitter, FaWhatsapp } from 'react-icons/fa';
 import { FiZoomIn } from 'react-icons/fi';
 import { IoMdClose } from 'react-icons/io';
+import 'swiper/css';
+import 'swiper/css/free-mode';
+import { FreeMode } from 'swiper/modules';
+import { Swiper, SwiperSlide } from 'swiper/react';
 import ProductCard from './../../Components/Common/ProductCard';
 
 const ProductSkeleton = () => (
@@ -918,8 +922,33 @@ const ProductDetail = () => {
       <div className="mt-16">
         <h2 className="text-2xl font-bold mb-8">Produits Similaires</h2>
         
-        {/* Grille des produits similaires */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        {/* Version mobile avec swiper */}
+        <div className="md:hidden">
+          <Swiper
+            slidesPerView="auto"
+            spaceBetween={16}
+            freeMode={true}
+            modules={[FreeMode]}
+            className="w-full"
+          >
+            {similarProducts.map((product) => (
+              <SwiperSlide key={product.id} className="w-[280px]">
+                <ProductCard
+                  image={product.image}
+                  gallery={product.gallery}
+                  title={product.title}
+                  price={product.price}
+                  oldPrice={product.oldPrice}
+                  inStock={product.inStock}
+                  description={product.description}
+                />
+              </SwiperSlide>
+            ))}
+          </Swiper>
+        </div>
+
+        {/* Version desktop avec grid */}
+        <div className="hidden md:grid md:grid-cols-3 lg:grid-cols-4 gap-6">
           {similarProducts.map((product) => (
             <ProductCard
               key={product.id}
