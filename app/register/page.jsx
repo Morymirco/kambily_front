@@ -111,9 +111,26 @@ export default function RegisterPage() {
         setError(`Erreur: ${response.status} - ${response.data.message || 'Réponse inattendue'}`);
       }
     })
-    registerResponse.catch(reaseon => {
-      setError(reaseon.request.responseText);
-      setLoading(false)
+    registerResponse.catch(reason => {
+      try {
+        // Parser le message d'erreur JSON
+        const errorData = JSON.parse(reason.request.responseText);
+        
+        // Formater les messages d'erreur
+        const formattedError = Object.entries(errorData)
+          .map(([field, messages]) => {
+            // Si messages est un tableau, le joindre
+            const messageText = Array.isArray(messages) ? messages.join(', ') : messages;
+            return `${messageText}`;
+          })
+          .join('\n');
+        
+        setError(formattedError);
+      } catch (e) {
+        // Si le parsing échoue, afficher le message brut
+        setError(reason.request.responseText || 'Une erreur est survenue');
+      }
+      setLoading(false);
     })
     registerResponse.finally(()=>{
       setLoading(false)
