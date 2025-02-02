@@ -353,6 +353,7 @@ const ProductDetail = () => {
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [isTogglingFavorite, setIsTogglingFavorite] = useState(false);
   const [reviews, setReviews] = useState([]);
+  const [similarProducts, setSimilarProducts] = useState([]);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -383,6 +384,50 @@ const ProductDetail = () => {
     fetchProduct();
   }, [params.id]);
 
+  useEffect(() => {
+    const fetchSimilarProducts = async () => {
+      try {
+        const response = await axios.get(`https://api.kambily.store/products/similar/${params.id}/`);
+        
+        // Regrouper tous les produits similaires
+        const allSimilarProducts = [
+          ...(response.data.similar_products_by_colors || []),
+          ...(response.data.similar_products_by_categories || []),
+          ...(response.data.similar_products_by_tags || []),
+          ...(response.data.similar_products_by_sizes || [])
+        ];
+
+        // Transformer et dédupliquer les produits
+        const uniqueProducts = Array.from(
+          new Map(
+            allSimilarProducts.map(product => [
+              product.id,
+              {
+                id: product.id,
+                image: product.images[0]?.image,
+                gallery: product.images.map(img => img.image) || [],
+                title: product.name,
+                price: product.regular_price,
+                oldPrice: product.promo_price,
+                inStock: product.stock_status === 'in_stock',
+                description:product.short_description?.length > 100 ? 
+                             product.short_description.substring(0, 100) + '...' : 
+                             product.short_description
+
+              }
+            ])
+          ).values()
+        );
+
+        setSimilarProducts(uniqueProducts);
+      } catch (error) {
+        console.error('Erreur lors du chargement des produits similaires:', error);
+      }
+    };
+
+    fetchSimilarProducts();
+  }, [params.id]);
+
   // Récupérer les images du produit depuis l'API
   const productImages = product?.images?.map(img => img.image) || [];
 
@@ -390,7 +435,7 @@ const ProductDetail = () => {
   const sizes = ['S', 'M', 'L', 'XL'];
 
   // Données des produits similaires
-  const similarProducts = [
+  const similarProductsData = [
     {
       id: 1,
       image: "/realite.webp",

@@ -625,7 +625,7 @@ const Panier = () => {
           variants={itemVariants}
         >
           {/* Adresse d'expédition */}
-          <div className="space-y-3">
+          <div className="space-y-3 ">
             <div className="flex justify-between items-center">
               <h3 className="font-medium">Adresse de livraison</h3>
               <motion.button
@@ -745,7 +745,7 @@ const Panier = () => {
                             <motion.div
                               initial={{ opacity: 0, y: -10 }}
                               animate={{ opacity: 1, y: 0 }}
-                              className="bg-gray-50 p-3 rounded-lg space-y-1"
+                              className="bg-gray-50 p-3 rounded-lg space-y-1 "
                             >
                               <div className="flex items-center gap-2 text-sm">
                                 <span className="font-medium">Coordonnées:</span>

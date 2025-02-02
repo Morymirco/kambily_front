@@ -110,22 +110,22 @@ export const AddressSelector = ({ selectedAddress, onAddressSelect, showAddButto
   }
 
   return (
-    <div className="space-y-4">
-      <div className="grid gap-4 sm:grid-cols-2">
+    <div className="space-y-3 md:space-y-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
         {addresses.map((address) => (
           <motion.div
             key={address.id}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className={`p-4 border rounded-lg cursor-pointer transition-all ${
+            className={`p-3 md:p-4 border rounded-lg cursor-pointer transition-all ${
               selectedAddress?.id === address.id 
                 ? 'border-[#048B9A] bg-[#048B9A]/5' 
                 : 'hover:border-gray-300'
             }`}
             onClick={() => onAddressSelect(address)}
           >
-            <div className="flex items-start gap-3">
-              <div className={`w-5 h-5 rounded-full border-2 flex-shrink-0 mt-1 ${
+            <div className="flex items-start gap-2 md:gap-3">
+              <div className={`w-4 h-4 md:w-5 md:h-5 rounded-full border-2 flex-shrink-0 mt-1 ${
                 selectedAddress?.id === address.id 
                   ? 'border-[#048B9A] bg-[#048B9A]' 
                   : 'border-gray-300'
@@ -136,23 +136,31 @@ export const AddressSelector = ({ selectedAddress, onAddressSelect, showAddButto
                     animate={{ scale: 1 }}
                     className="w-full h-full flex items-center justify-center"
                   >
-                    <div className="w-2 h-2 bg-white rounded-full" />
+                    <div className="w-1.5 h-1.5 md:w-2 md:h-2 bg-white rounded-full" />
                   </motion.div>
                 )}
               </div>
               
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <h3 className="font-medium truncate">{address.addresse}</h3>
+                <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-2">
+                  <h3 className="font-medium text-sm md:text-base truncate">
+                    {address.addresse}
+                  </h3>
                   {address.is_default && (
-                    <span className="px-2 py-0.5 bg-[#048B9A]/10 text-[#048B9A] text-xs rounded-full">
+                    <span className="inline-block px-2 py-0.5 bg-[#048B9A]/10 text-[#048B9A] text-xs rounded-full w-fit">
                       Par défaut
                     </span>
                   )}
                 </div>
-                <p className="text-sm text-gray-600 mt-1">{address.ville}</p>
-                <p className="text-sm text-gray-600">{address.pays}</p>
-                <p className="text-sm text-gray-600 mt-1">{address.telephone}</p>
+                <p className="text-xs md:text-sm text-gray-600 mt-1 line-clamp-1 md:line-clamp-none">
+                  {address.ville}
+                </p>
+                <p className="text-xs md:text-sm text-gray-600 line-clamp-1 md:line-clamp-none">
+                  {address.pays}
+                </p>
+                <p className="text-xs md:text-sm text-gray-600 mt-1">
+                  {address.telephone}
+                </p>
               </div>
             </div>
           </motion.div>
@@ -163,10 +171,10 @@ export const AddressSelector = ({ selectedAddress, onAddressSelect, showAddButto
             onClick={() => setShowAddModal(true)}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            className="h-[160px] border-2 border-dashed border-[#048B9A] rounded-lg flex flex-col items-center justify-center gap-3 text-[#048B9A] hover:bg-[#048B9A]/5 transition-colors"
+            className="h-[140px] md:h-[160px] border-2 border-dashed border-[#048B9A] rounded-lg flex flex-col items-center justify-center gap-2 md:gap-3 text-[#048B9A] hover:bg-[#048B9A]/5 transition-colors"
           >
-            <FaPlus className="w-6 h-6" />
-            <span>Ajouter une adresse</span>
+            <FaPlus className="w-5 h-5 md:w-6 md:h-6" />
+            <span className="text-sm md:text-base">Ajouter une adresse</span>
           </motion.button>
         )}
       </div>
