@@ -421,7 +421,7 @@ const Panier = () => {
   };
 
   const handleCheckout = async () => {
-    if (!selectedAddress?.id) {
+    if (!selectedAddress?.pk) {
       toast.error("Veuillez sélectionner une adresse de livraison");
       return;
     }

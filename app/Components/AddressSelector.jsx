@@ -55,6 +55,7 @@ export const AddressSelector = ({ selectedAddress, onAddressSelect, showAddButto
       const data = await response.json();
       setAddresses(data);
       
+      console.log(data);
       if (!selectedAddress && data.length > 0) {
         const defaultAddress = data.find(addr => addr.is_default) || data[0];
         onAddressSelect(defaultAddress);
@@ -89,7 +90,7 @@ export const AddressSelector = ({ selectedAddress, onAddressSelect, showAddButto
       toast.success('Adresse ajoutée avec succès');
       
       setFormData({
-        addresse: '',
+        address: '',
         ville: '',
         pays: '',
         telephone: '',
@@ -114,11 +115,11 @@ export const AddressSelector = ({ selectedAddress, onAddressSelect, showAddButto
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
         {addresses.map((address) => (
           <motion.div
-            key={address.id}
+            key={address.pk}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className={`p-3 md:p-4 border rounded-lg cursor-pointer transition-all ${
-              selectedAddress?.id === address.id 
+              selectedAddress?.pk === address.pk
                 ? 'border-[#048B9A] bg-[#048B9A]/5' 
                 : 'hover:border-gray-300'
             }`}
@@ -126,11 +127,11 @@ export const AddressSelector = ({ selectedAddress, onAddressSelect, showAddButto
           >
             <div className="flex items-start gap-2 md:gap-3">
               <div className={`w-4 h-4 md:w-5 md:h-5 rounded-full border-2 flex-shrink-0 mt-1 ${
-                selectedAddress?.id === address.id 
+                selectedAddress?.pk === address.pk 
                   ? 'border-[#048B9A] bg-[#048B9A]' 
                   : 'border-gray-300'
               }`}>
-                {selectedAddress?.id === address.id && (
+                  {selectedAddress?.pk === address.pk && (
                   <motion.div
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
@@ -144,7 +145,7 @@ export const AddressSelector = ({ selectedAddress, onAddressSelect, showAddButto
               <div className="flex-1 min-w-0">
                 <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-2">
                   <h3 className="font-medium text-sm md:text-base truncate">
-                    {address.addresse}
+                    {address.address}
                   </h3>
                   {address.is_default && (
                     <span className="inline-block px-2 py-0.5 bg-[#048B9A]/10 text-[#048B9A] text-xs rounded-full w-fit">

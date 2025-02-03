@@ -984,9 +984,9 @@ const Profile = () => {
             const address = results[0];
             setFormData(prev => ({
               ...prev,
-              addresse: address.formatted_address,
-              ville: address.address_components.find(c => c.types.includes('locality'))?.long_name || '',
-              pays: address.address_components.find(c => c.types.includes('country'))?.long_name || '',
+              address: address.formatted_address,
+              city: address.address_components.find(c => c.types.includes('locality'))?.long_name || '',
+              country: address.address_components.find(c => c.types.includes('country'))?.long_name || '',
             }));
           }
         });
@@ -1008,9 +1008,9 @@ const Profile = () => {
             const address = results[0];
             setFormData(prev => ({
               ...prev,
-              addresse: address.formatted_address,
-              ville: address.address_components.find(c => c.types.includes('locality'))?.long_name || '',
-              pays: address.address_components.find(c => c.types.includes('country'))?.long_name || '',
+              address: address.formatted_address,
+              city: address.address_components.find(c => c.types.includes('locality'))?.long_name || '',
+              country: address.address_components.find(c => c.types.includes('country'))?.long_name || '',
             }));
           }
         });
@@ -1033,10 +1033,10 @@ const Profile = () => {
 
           setFormData({
             ...formData,
-            addresse: place.formatted_address,
+            address: place.formatted_address,
             latitude: position.lat(),
             longitude: position.lng(),
-            ville: place.address_components.find(c => c.types.includes('locality'))?.long_name || '',
+            city: place.address_components.find(c => c.types.includes('locality'))?.long_name || '',
             pays: place.address_components.find(c => c.types.includes('country'))?.long_name || '',
           });
         });
@@ -1095,8 +1095,8 @@ const Profile = () => {
                   </label>
                   <input
                     type="text"
-                    value={formData.addresse}
-                    onChange={(e) => setFormData({ ...formData, addresse: e.target.value })}
+                    value={formData.address}
+                    onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                     className="w-full px-3 py-2 border rounded-lg focus:ring-[#048B9A] focus:border-[#048B9A] text-sm"
                     required
                   />
@@ -1208,7 +1208,7 @@ const Profile = () => {
     
     // Mise à jour du state formData pour correspondre au format de l'API
     const [formData, setFormData] = useState({
-      addresse: '',
+      address: '',
       ville: '',
       pays: '',
       telephone: '',
@@ -1239,6 +1239,7 @@ const Profile = () => {
     const handleAddAddress = async (e) => {
       e.preventDefault();
       setIsSubmitting(true);
+      console.log(formData);
       try {
         const response = await authFetch('https://api.kambily.store/addresses/create/', {
           method: 'POST',
@@ -1247,13 +1248,13 @@ const Profile = () => {
           },
           body: JSON.stringify(formData)
         });
-
+        console.log(response);
         if (!response.ok) throw new Error('Erreur lors de l\'ajout de l\'adresse');
 
         toast.success('Adresse ajoutée avec succès');
         setShowAddModal(false);
         setFormData({
-          addresse: '',
+          address: '',
           ville: '',
           pays: '',
           telephone: '',
@@ -1380,7 +1381,7 @@ const Profile = () => {
               <div className="flex items-start gap-3">
                 <FaMapMarkerAlt className="w-5 h-5 text-[#048B9A] flex-shrink-0 mt-1" />
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-medium">{address.addresse}</h3>
+                  <h3 className="font-medium">{address.address}</h3>
                   <p className="text-sm text-gray-600 mt-1">{address.ville}</p>
                   <p className="text-sm text-gray-600">{address.pays}</p>
                   <p className="text-sm text-gray-600 mt-1">{address.telephone}</p>

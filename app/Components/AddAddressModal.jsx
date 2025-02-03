@@ -45,7 +45,7 @@ const AddAddressModal = ({ onSubmit, onClose, formData, setFormData, isSubmittin
           const address = results[0];
           setFormData(prev => ({
             ...prev,
-            addresse: address.formatted_address,
+            address: address.formatted_address,
             ville: address.address_components.find(c => c.types.includes('locality'))?.long_name || '',
             pays: address.address_components.find(c => c.types.includes('country'))?.long_name || '',
           }));
@@ -69,7 +69,7 @@ const AddAddressModal = ({ onSubmit, onClose, formData, setFormData, isSubmittin
           const address = results[0];
           setFormData(prev => ({
             ...prev,
-            addresse: address.formatted_address,
+            address: address.formatted_address,
             ville: address.address_components.find(c => c.types.includes('locality'))?.long_name || '',
             pays: address.address_components.find(c => c.types.includes('country'))?.long_name || '',
           }));
@@ -94,7 +94,7 @@ const AddAddressModal = ({ onSubmit, onClose, formData, setFormData, isSubmittin
 
         setFormData({
           ...formData,
-          addresse: place.formatted_address,
+          address: place.formatted_address,
           latitude: position.lat(),
           longitude: position.lng(),
           ville: place.address_components.find(c => c.types.includes('locality'))?.long_name || '',
@@ -156,8 +156,8 @@ const AddAddressModal = ({ onSubmit, onClose, formData, setFormData, isSubmittin
                 </label>
                 <input
                   type="text"
-                  value={formData.addresse}
-                  onChange={(e) => setFormData({ ...formData, addresse: e.target.value })}
+                  value={formData.address}
+                  onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                   className="w-full px-3 py-2 border rounded-lg focus:ring-[#048B9A] focus:border-[#048B9A] text-sm"
                   required
                 />

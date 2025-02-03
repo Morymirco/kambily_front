@@ -68,7 +68,7 @@ const Payment = () => {
 
       // Préparer les données de la commande
       const orderData = {
-        delivery_address_id: selectedAddress.id  // S'assurer d'envoyer l'ID et non l'objet complet
+        delivery_address_id: selectedAddress.pk  // S'assurer d'envoyer l'ID et non l'objet complet
       };
 
       // Ajouter le code promo si valide
