@@ -119,3 +119,29 @@ export const isGuineanPhoneNumber = (phoneNumber) => {
 	// Vérifier si le code opérateur est valide
 	return validOperatorCodes.includes(operatorCode);
 };
+
+export const generateInitialsAvatar = (firstName = '', lastName = '') => {
+	// Récupérer les initiales
+	const firstInitial = firstName ? firstName.charAt(0).toUpperCase() : '';
+	const lastInitial = lastName ? lastName.charAt(0).toUpperCase() : '';
+	const initials = `${firstInitial}${lastInitial}`;
+
+	// Générer une couleur de fond unique basée sur les initiales
+	const stringToColor = (str) => {
+		let hash = 0;
+		for (let i = 0; i < str.length; i++) {
+			hash = str.charCodeAt(i) + ((hash << 5) - hash);
+		}
+		const hue = Math.abs(hash % 360);
+		return `hsl(${hue}, 70%, 85%)`; // Utiliser HSL pour des couleurs pastel
+	};
+
+	const backgroundColor = stringToColor(initials);
+	const textColor = '#1a1a1a'; // Couleur du texte foncée pour le contraste
+
+	return {
+		initials,
+		backgroundColor,
+		textColor
+	};
+};

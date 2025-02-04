@@ -50,7 +50,12 @@ export const AddressSelector = ({ selectedAddress, onAddressSelect, showAddButto
 
   const fetchAddresses = async () => {
     try {
-      const response = await authFetch('https://api.kambily.store/addresses/');
+      const response = await authFetch('https://api.kambily.store/addresses/', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
       if (!response.ok) throw new Error('Erreur lors de la récupération des adresses');
       const data = await response.json();
       setAddresses(data);
@@ -75,14 +80,26 @@ export const AddressSelector = ({ selectedAddress, onAddressSelect, showAddButto
     try {
       const response = await authFetch('https://api.kambily.store/addresses/create/', {
         method: 'POST',
-        body: JSON.stringify(formData)
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          ...formData,
+          address: formData.address.trim(),
+          ville: formData.ville.trim(),
+          pays: formData.pays.trim(),
+          telephone: formData.telephone.trim()
+        })
       });
-      console.log(response);
 
-      if (!response.ok) throw new Error('Erreur lors de l\'ajout de l\'adresse', response);
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Erreur lors de l\'ajout de l\'adresse panier');
+      }
 
       const newAddress = await response.json();
       setAddresses(prev => [...prev, newAddress]);
+      
       if (formData.is_default || addresses.length === 0) {
         onAddressSelect(newAddress);
       }
@@ -90,6 +107,7 @@ export const AddressSelector = ({ selectedAddress, onAddressSelect, showAddButto
       setShowAddModal(false);
       toast.success('Adresse ajoutée avec succès');
       
+      // Réinitialiser le formulaire
       setFormData({
         address: '',
         ville: '',
@@ -99,9 +117,13 @@ export const AddressSelector = ({ selectedAddress, onAddressSelect, showAddButto
         longitude: -13.5784,
         is_default: false
       });
+
+      // Rafraîchir la liste des adresses
+      await fetchAddresses();
+      
     } catch (error) {
       console.error('Erreur:', error);
-      toast.error('Impossible d\'ajouter l\'adresse');
+      toast.error(error.message || 'Impossible d\'ajouter l\'adresse');
     } finally {
       setIsSubmitting(false);
     }

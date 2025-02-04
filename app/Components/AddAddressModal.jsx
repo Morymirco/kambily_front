@@ -105,138 +105,116 @@ const AddAddressModal = ({ onSubmit, onClose, formData, setFormData, isSubmittin
   }, [isGoogleMapsLoaded, formData.latitude, formData.longitude]);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
+    <div className="fixed inset-0 z-50 flex items-start justify-center p-2 md:p-4 bg-black bg-opacity-50 overflow-y-auto">
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.9 }}
-        className="bg-white rounded-lg shadow-xl p-4 w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+        className="bg-white rounded-lg shadow-xl p-2 md:p-4 w-full max-w-2xl my-2 md:my-0 max-h-[95vh] overflow-y-auto"
       >
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-semibold">Ajouter une adresse</h3>
-          <button 
-            onClick={onClose}
-            className="text-gray-500 hover:text-gray-700"
-          >
-            <FaTimes className="w-5 h-5" />
+        <div className="flex justify-between items-center mb-2 md:mb-4">
+          <h3 className="text-sm md:text-lg font-semibold">Ajouter une adresse</h3>
+          <button onClick={onClose} className="text-gray-500 hover:text-gray-700 p-1">
+            <FaTimes className="w-4 h-4" />
           </button>
         </div>
         
-        <form onSubmit={onSubmit} className="space-y-4">
-          <div className="grid md:grid-cols-2 gap-4">
-            {/* Colonne gauche : Carte et recherche */}
-            <div className="space-y-3">
+        <form onSubmit={onSubmit} className="space-y-2 md:space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-4">
+            {/* Colonne carte et recherche */}
+            <div className="space-y-2">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-xs font-medium text-gray-700 mb-1">
                   Rechercher une adresse
                 </label>
                 <input
                   id="address-search"
                   type="text"
                   placeholder="Entrez une adresse..."
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-[#048B9A] focus:border-[#048B9A] text-sm"
+                  className="w-full px-2 py-1 md:py-2 border border-gray-300 rounded-lg text-xs"
                 />
               </div>
 
               <div 
                 ref={mapRef} 
-                className="w-full h-[250px] rounded-lg border border-gray-300"
+                className="w-full h-[150px] md:h-[250px] rounded-lg border border-gray-300"
               />
-
-              <p className="text-xs text-gray-500 italic">
-                Cliquez sur la carte ou déplacez le marqueur pour sélectionner une position
-              </p>
             </div>
 
-            {/* Colonne droite : Formulaire */}
-            <div className="space-y-3">
+            {/* Colonne formulaire */}
+            <div className="space-y-2">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-xs font-medium text-gray-700 mb-1">
                   Adresse complète
                 </label>
                 <input
                   type="text"
                   value={formData.address}
                   onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                  className="w-full px-3 py-2 border rounded-lg focus:ring-[#048B9A] focus:border-[#048B9A] text-sm"
+                  className="w-full px-2 py-1 border rounded-lg text-xs"
                   required
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Ville
-                </label>
-                <input
-                  type="text"
-                  value={formData.ville}
-                  onChange={(e) => setFormData({ ...formData, ville: e.target.value })}
-                  className="w-full px-3 py-2 border rounded-lg focus:ring-[#048B9A] focus:border-[#048B9A] text-sm"
-                  required
-                />
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Ville</label>
+                  <input
+                    type="text"
+                    value={formData.ville}
+                    onChange={(e) => setFormData({ ...formData, ville: e.target.value })}
+                    className="w-full px-2 py-1 border rounded-lg text-xs"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Pays</label>
+                  <input
+                    type="text"
+                    value={formData.pays}
+                    onChange={(e) => setFormData({ ...formData, pays: e.target.value })}
+                    className="w-full px-2 py-1 border rounded-lg text-xs"
+                    required
+                  />
+                </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Pays
-                </label>
-                <input
-                  type="text"
-                  value={formData.pays}
-                  onChange={(e) => setFormData({ ...formData, pays: e.target.value })}
-                  className="w-full px-3 py-2 border rounded-lg focus:ring-[#048B9A] focus:border-[#048B9A] text-sm"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Téléphone
-                </label>
+                <label className="block text-xs font-medium text-gray-700 mb-1">Téléphone</label>
                 <input
                   type="tel"
                   value={formData.telephone}
                   onChange={(e) => setFormData({ ...formData, telephone: e.target.value })}
-                  className="w-full px-3 py-2 border rounded-lg focus:ring-[#048B9A] focus:border-[#048B9A] text-sm"
+                  className="w-full px-2 py-1 border rounded-lg text-xs"
                   required
                 />
               </div>
 
-              <div className="flex items-center gap-2 mt-2">
+              <div className="flex items-center gap-2">
                 <input
                   type="checkbox"
                   id="is_default"
                   checked={formData.is_default}
                   onChange={(e) => setFormData({ ...formData, is_default: e.target.checked })}
-                  className="rounded border-gray-300 text-[#048B9A] focus:ring-[#048B9A]"
+                  className="rounded border-gray-300 text-[#048B9A]"
                 />
-                <label htmlFor="is_default" className="text-sm text-gray-700">
+                <label htmlFor="is_default" className="text-xs text-gray-700">
                   Définir comme adresse par défaut
                 </label>
-              </div>
-
-              <div className="text-xs text-gray-500 grid grid-cols-2 gap-2">
-                <div>
-                  <span className="font-medium">Latitude:</span> {formData.latitude.toFixed(6)}
-                </div>
-                <div>
-                  <span className="font-medium">Longitude:</span> {formData.longitude.toFixed(6)}
-                </div>
               </div>
             </div>
           </div>
 
-          {/* Boutons d'action */}
-          <div className="flex gap-3 pt-2 border-t">
+          <div className="flex gap-2 pt-2 border-t">
             <button
               type="submit"
               disabled={isSubmitting}
-              className="flex-1 bg-[#048B9A] text-white px-4 py-2 rounded-lg hover:bg-[#037483] transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
+              className="flex-1 bg-[#048B9A] text-white px-3 py-1.5 rounded-lg text-xs font-medium"
             >
               {isSubmitting ? (
-                <div className="flex items-center justify-center gap-2">
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  <span>Ajout en cours...</span>
+                <div className="flex items-center justify-center gap-1">
+                  <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <span>Ajout...</span>
                 </div>
               ) : (
                 "Ajouter l'adresse"
@@ -246,7 +224,7 @@ const AddAddressModal = ({ onSubmit, onClose, formData, setFormData, isSubmittin
               type="button"
               onClick={onClose}
               disabled={isSubmitting}
-              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
+              className="flex-1 px-3 py-1.5 border border-gray-300 rounded-lg text-xs font-medium"
             >
               Annuler
             </button>

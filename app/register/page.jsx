@@ -81,12 +81,6 @@ export default function RegisterPage() {
       return;
     }
     
-    if( formData.image === null ) {
-      setError("Choisir une image !")
-      setLoading(false)
-      return;
-    }
-    
     const formDataToSend = new FormData();
     
     formDataToSend.append("first_name", formData.first_name)
@@ -94,7 +88,9 @@ export default function RegisterPage() {
     formDataToSend.append("phone_number", formData.phone_number)
     formDataToSend.append("email", formData.email)
     formDataToSend.append("password", formData.password)
-    formDataToSend.append("image", formData.image)
+    if (formData.image) {
+      formDataToSend.append("image", formData.image)
+    }
     
     console.log('Données à envoyer:', Object.fromEntries(formDataToSend) );
     

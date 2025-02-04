@@ -796,7 +796,7 @@ const Boutique = () => {
           gallery: product.images?.slice(1)?.map(img => img.image) || [],
           price: product.regular_price,
           oldPrice: product.promo_price !== product.regular_price ? product.regular_price : null,
-          inStock: product.etat_stock === 'En stock',
+          inStock: product.etat_stock === 'En Stock',
           category: product.categories?.[0]?.name || 'Non catégorisé'
         }));
 

@@ -121,6 +121,40 @@ const CartSkeleton = () => (
   </div>
 );
 
+const EmptyCart = () => (
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    className="flex flex-col items-center justify-center py-12 px-4"
+  >
+    <svg 
+      className="w-32 h-32 md:w-48 md:h-48 text-gray-300 mb-6"
+      fill="none" 
+      viewBox="0 0 24 24" 
+      stroke="currentColor"
+    >
+      <path 
+        strokeLinecap="round" 
+        strokeLinejoin="round" 
+        strokeWidth={1.5}
+        d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" 
+      />
+    </svg>
+    <h2 className="text-xl md:text-2xl font-semibold text-gray-900 mb-2">
+      Votre panier est vide
+    </h2>
+    <p className="text-gray-500 text-center mb-8">
+      Découvrez nos produits et commencez votre shopping !
+    </p>
+    <Link 
+      href="/products"
+      className="bg-[#048B9A] text-white px-6 py-3 rounded-lg hover:bg-[#037483] transition-colors"
+    >
+      Voir nos produits
+    </Link>
+  </motion.div>
+);
+
 const Panier = () => {
   const router = useRouter();
   const { authFetch } = useAuth();
@@ -376,6 +410,8 @@ const Panier = () => {
   const handleSaveAddress = async (e) => {
     e.preventDefault();
     setIsLoading(true);
+    console.log("Données du formulaire : ", formData);
+    
       try {
         const response = await authFetch('https://api.kambily.store/addresses/create/', {
           method: 'POST',
@@ -385,7 +421,7 @@ const Panier = () => {
           body: JSON.stringify(formData)
         });
         console.log(response);
-        if (!response.ok) throw new Error('Erreur lors de l\'ajout de l\'adresse');
+        if (!response.ok) throw new Error('Erreur lors de l\'ajout de l\'adresse 2');
 
         toast.success('Adresse ajoutée avec succès');
         setShowAddModal(false);
@@ -455,132 +491,136 @@ const Panier = () => {
       <div className="grid md:grid-cols-3 gap-4 sm:gap-8">
         {/* Liste des produits */}
         <div className="md:col-span-2 space-y-4 sm:space-y-6 w-full">
-          <AnimatePresence mode="wait">
-            {cartItems.map((item) => (
-              <motion.div
-                key={item.product.id}
-                className="bg-white rounded-lg shadow-sm p-3 sm:p-4 flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-4 w-full cursor-pointer hover:shadow-md transition-shadow"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, x: -100 }}
-                whileHover={{ scale: 1.01 }}
-                layout
-                onClick={() => router.push(`/boutique/${item.product.id}`)}
-              >
-                {/* Image du produit */}
-                <div className="relative w-16 h-16 sm:w-24 sm:h-24 flex-shrink-0">
-                  <Image
-                    src={item.product.images[0].image || '/placeholder.png'}
-                    alt={item.product.name}
-                    fill
-                    className="object-cover rounded-lg"
-                  />
-                </div>
-
-                {/* Détails du produit */}
-                <div className="flex-1 min-w-0 w-[calc(100%-5rem)] sm:w-auto">
-                  <h3 className="font-medium text-sm sm:text-base truncate hover:text-[#048B9A] transition-colors">
-                    {item.product.name}
-                  </h3>
-                  
-                  {/* Couleurs et tailles */}
-                  <div className="mt-2 space-y-1">
-                    {/* Tailles */}
-                    {item.product.sizes && item.product.sizes.length > 0 ? (
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs text-gray-500">Taille:</span>
-                        <div className="flex gap-1">
-                          {item.product.sizes.map((size) => (
-                            <div
-                              key={size.id}
-                              className={`px-2 py-0.5 text-xs rounded ${
-                                size.id === item.selected_size
-                                  ? 'bg-[#048B9A] text-white'
-                                  : 'bg-gray-100 text-gray-600'
-                              }`}
-                            >
-                              {size.name}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs text-gray-500">Taille:</span>
-                        <span className="text-xs text-gray-400 italic">Taille unique</span>
-                      </div>
-                    )}
-
-                    {/* Couleurs */}
-                    {item.product.colors && item.product.colors.length > 0 ? (
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs text-gray-500">Couleur:</span>
-                        <div className="flex gap-1">
-                          {item.product.colors.map((color) => (
-                            <div
-                              key={color.id}
-                              className={`w-4 h-4 rounded-full border ${
-                                color.id === item.selected_color
-                                  ? 'border-[#048B9A] ring-1 ring-[#048B9A] ring-offset-1'
-                                  : 'border-gray-300'
-                              }`}
-                              style={{ backgroundColor: color.code }}
-                              title={color.name}
-                            />
-                          ))}
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs text-gray-500">Couleur:</span>
-                        <span className="text-xs text-gray-400 italic">Couleur unique</span>
-                      </div>
-                    )}
+          {cartItems.length > 0 ? (
+            <AnimatePresence mode="wait">
+              {cartItems.map((item) => (
+                <motion.div
+                  key={item.product.id}
+                  className="bg-white rounded-lg shadow-sm p-3 sm:p-4 flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-4 w-full cursor-pointer hover:shadow-md transition-shadow"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, x: -100 }}
+                  whileHover={{ scale: 1.01 }}
+                  layout
+                  onClick={() => router.push(`/boutique/${item.product.id}`)}
+                >
+                  {/* Image du produit */}
+                  <div className="relative w-16 h-16 sm:w-24 sm:h-24 flex-shrink-0">
+                    <Image
+                      src={item.product.images[0].image || '/placeholder.png'}
+                      alt={item.product.name}
+                      fill
+                      className="object-cover rounded-lg"
+                    />
                   </div>
 
-                  <p className="text-[#048B9A] font-medium text-sm sm:text-base mt-2">
-                    {item.product.regular_price.toLocaleString()} GNF
-                  </p>
-                </div>
-                
-                {/* Contrôles de quantité et suppression - Empêcher la propagation du clic */}
-                <div className="mt-4 flex items-center justify-between" onClick={e => e.stopPropagation()}>
-                  <div className="flex items-center gap-2 sm:gap-4 w-full sm:w-auto justify-end">
-                    <div className="flex items-center gap-1 sm:gap-2">
+                  {/* Détails du produit */}
+                  <div className="flex-1 min-w-0 w-[calc(100%-5rem)] sm:w-auto">
+                    <h3 className="font-medium text-sm sm:text-base truncate hover:text-[#048B9A] transition-colors">
+                      {item.product.name}
+                    </h3>
+                    
+                    {/* Couleurs et tailles */}
+                    <div className="mt-2 space-y-1">
+                      {/* Tailles */}
+                      {item.product.sizes && item.product.sizes.length > 0 ? (
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-gray-500">Taille:</span>
+                          <div className="flex gap-1">
+                            {item.product.sizes.map((size) => (
+                              <div
+                                key={size.id}
+                                className={`px-2 py-0.5 text-xs rounded ${
+                                  size.id === item.selected_size
+                                    ? 'bg-[#048B9A] text-white'
+                                    : 'bg-gray-100 text-gray-600'
+                                }`}
+                              >
+                                {size.name}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-gray-500">Taille:</span>
+                          <span className="text-xs text-gray-400 italic">Taille unique</span>
+                        </div>
+                      )}
+
+                      {/* Couleurs */}
+                      {item.product.colors && item.product.colors.length > 0 ? (
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-gray-500">Couleur:</span>
+                          <div className="flex gap-1">
+                            {item.product.colors.map((color) => (
+                              <div
+                                key={color.id}
+                                className={`w-4 h-4 rounded-full border ${
+                                  color.id === item.selected_color
+                                    ? 'border-[#048B9A] ring-1 ring-[#048B9A] ring-offset-1'
+                                    : 'border-gray-300'
+                                }`}
+                                style={{ backgroundColor: color.code }}
+                                title={color.name}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-gray-500">Couleur:</span>
+                          <span className="text-xs text-gray-400 italic">Couleur unique</span>
+                        </div>
+                      )}
+                    </div>
+
+                    <p className="text-[#048B9A] font-medium text-sm sm:text-base mt-2">
+                      {item.product.regular_price.toLocaleString()} GNF
+                    </p>
+                  </div>
+                  
+                  {/* Contrôles de quantité et suppression - Empêcher la propagation du clic */}
+                  <div className="mt-4 flex items-center justify-between" onClick={e => e.stopPropagation()}>
+                    <div className="flex items-center gap-2 sm:gap-4 w-full sm:w-auto justify-end">
+                      <div className="flex items-center gap-1 sm:gap-2">
+                        <button
+                          onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
+                          disabled={updating || item.quantity <= 1}
+                          className="w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center border rounded-lg hover:bg-gray-50 text-sm disabled:opacity-50"
+                        >
+                          -
+                        </button>
+                        <span className="w-8 sm:w-12 text-center text-sm">
+                          {item.quantity}
+                        </span>
+                        <button
+                          onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
+                          disabled={updating}
+                          className="w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center border rounded-lg hover:bg-gray-50 text-sm disabled:opacity-50"
+                        >
+                          +
+                        </button>
+                      </div>
                       <button
-                        onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
-                        disabled={updating || item.quantity <= 1}
-                        className="w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center border rounded-lg hover:bg-gray-50 text-sm disabled:opacity-50"
+                        onClick={() => removeItem(item.product.id)}
+                        disabled={deletingItemId === item.product.id}
+                        className={`text-red-500 hover:text-red-600 disabled:opacity-50 w-6 h-6 flex items-center justify-center`}
                       >
-                        -
-                      </button>
-                      <span className="w-8 sm:w-12 text-center text-sm">
-                        {item.quantity}
-                      </span>
-                      <button
-                        onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
-                        disabled={updating}
-                        className="w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center border rounded-lg hover:bg-gray-50 text-sm disabled:opacity-50"
-                      >
-                        +
+                        {deletingItemId === item.product.id ? (
+                          <div className="w-4 h-4 border-2 border-red-500 border-t-transparent rounded-full animate-spin" />
+                        ) : (
+                          <FaTrash className="w-3 h-3 sm:w-4 sm:h-4" />
+                        )}
                       </button>
                     </div>
-                    <button
-                      onClick={() => removeItem(item.product.id)}
-                      disabled={deletingItemId === item.product.id}
-                      className={`text-red-500 hover:text-red-600 disabled:opacity-50 w-6 h-6 flex items-center justify-center`}
-                    >
-                      {deletingItemId === item.product.id ? (
-                        <div className="w-4 h-4 border-2 border-red-500 border-t-transparent rounded-full animate-spin" />
-                      ) : (
-                        <FaTrash className="w-3 h-3 sm:w-4 sm:h-4" />
-                      )}
-                    </button>
                   </div>
-                </div>
-              </motion.div>
-            ))}
-          </AnimatePresence>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          ) : (
+            <EmptyCart />
+          )}
 
           {/* Boutons d'action */}
           <motion.div variants={itemVariants} className="flex justify-between items-center">
@@ -637,8 +677,7 @@ const Panier = () => {
                 whileTap={{ scale: 0.95 }}
                 className="text-[#048B9A] text-sm flex items-center gap-2"
               >
-                <FaEdit />
-                {showAddressForm ? 'Fermer' : 'Modifier'}
+            
               </motion.button>
             </div>
 
