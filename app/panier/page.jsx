@@ -376,32 +376,35 @@ const Panier = () => {
   const handleSaveAddress = async (e) => {
     e.preventDefault();
     setIsLoading(true);
+      try {
+        const response = await authFetch('https://api.kambily.store/addresses/create/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(formData)
+        });
+        console.log(response);
+        if (!response.ok) throw new Error('Erreur lors de l\'ajout de l\'adresse');
 
-    try {
-      // Simulation d'une requête API
-      await new Promise(resolve => setTimeout(resolve, 1500));
-
-      // Succès
-      toast.success('Adresse sauvegardée avec succès !', {
-        duration: 3000,
-        position: 'top-center',
-        style: {
-          background: '#048B9A',
-          color: '#fff',
-        },
-        icon: '✅',
-      });
-
-      setShowAddressForm(false);
-    } catch (error) {
-      // Erreur
-      toast.error('Erreur lors de la sauvegarde', {
-        duration: 3000,
-        position: 'top-center',
-      });
-    } finally {
-      setIsLoading(false);
-    }
+        toast.success('Adresse ajoutée avec succès');
+        setShowAddModal(false);
+        setFormData({
+          address: '',
+          ville: '',
+          pays: '',
+          telephone: '',
+          latitude: 9.6412, // Coordonnées par défaut de Conakry
+          longitude: -13.5784,
+          is_default: false
+        });
+        fetchAddresses();
+      } catch (error) {
+        toast.error(error.message);
+      } finally {
+        setIsSubmitting(false);
+      }
+     
   };
 
   // Fonction pour augmenter la quantité

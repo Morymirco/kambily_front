@@ -764,9 +764,10 @@ const Profile = () => {
             <div className="flex justify-between items-start mb-6">
               <div>
                 <div className="flex items-center gap-3 mb-2">
-                  <h3 className="font-medium text-lg">Commande #{order.id}</h3>
+                  <h3 className="font-medium text-lg">Commande #{order.number}</h3>
                   <span className={`px-3 py-1 rounded-full text-sm ${
                     order.status === 'completed' ? 'bg-green-100 text-green-800' :
+
                     order.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
                     'bg-gray-100 text-gray-800'
                   }`}>
@@ -1282,7 +1283,7 @@ const Profile = () => {
 
         // Mettre à jour la liste des adresses
         setAddresses(prevAddresses => 
-          prevAddresses.filter(address => address.id !== addressId)
+          prevAddresses.filter(address => address.pk !== addressId)
         );
         
         setShowDeleteModal(false);
@@ -1393,7 +1394,7 @@ const Profile = () => {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => {
-                    setAddressToDelete(address.id);
+                    setAddressToDelete(address.pk);
                     setShowDeleteModal(true);
                   }}
                   className="p-2 text-gray-500 hover:text-red-500 transition-colors"

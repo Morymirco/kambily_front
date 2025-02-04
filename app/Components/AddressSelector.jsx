@@ -33,7 +33,7 @@ export const AddressSelector = ({ selectedAddress, onAddressSelect, showAddButto
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
   const [formData, setFormData] = useState({
-    addresse: '',
+    address: '',
     ville: '',
     pays: '',
     telephone: '',
@@ -73,12 +73,13 @@ export const AddressSelector = ({ selectedAddress, onAddressSelect, showAddButto
     setIsSubmitting(true);
 
     try {
-      const response = await authFetch('https://api.kambily.store/addresses/', {
+      const response = await authFetch('https://api.kambily.store/addresses/create/', {
         method: 'POST',
         body: JSON.stringify(formData)
       });
+      console.log(response);
 
-      if (!response.ok) throw new Error('Erreur lors de l\'ajout de l\'adresse');
+      if (!response.ok) throw new Error('Erreur lors de l\'ajout de l\'adresse', response);
 
       const newAddress = await response.json();
       setAddresses(prev => [...prev, newAddress]);
