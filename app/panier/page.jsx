@@ -125,33 +125,36 @@ const EmptyCart = () => (
   <motion.div
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
-    className="flex flex-col items-center justify-center py-12 px-4"
+    className="flex flex-col items-center justify-center min-h-[60vh] w-full max-w-4xl mx-auto py-12 px-4"
   >
-    <svg 
-      className="w-32 h-32 md:w-48 md:h-48 text-gray-300 mb-6"
-      fill="none" 
-      viewBox="0 0 24 24" 
-      stroke="currentColor"
-    >
-      <path 
-        strokeLinecap="round" 
-        strokeLinejoin="round" 
-        strokeWidth={1.5}
-        d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" 
-      />
-    </svg>
-    <h2 className="text-xl md:text-2xl font-semibold text-gray-900 mb-2">
-      Votre panier est vide
-    </h2>
-    <p className="text-gray-500 text-center mb-8">
-      Découvrez nos produits et commencez votre shopping !
-    </p>
-    <Link 
-      href="/products"
-      className="bg-[#048B9A] text-white px-6 py-3 rounded-lg hover:bg-[#037483] transition-colors"
-    >
-      Voir nos produits
-    </Link>
+    <div className="text-center max-w-lg mx-auto">
+      <svg 
+        className="w-32 h-32 md:w-48 md:h-48 text-gray-300 mb-8 mx-auto"
+        fill="none" 
+        viewBox="0 0 24 24" 
+        stroke="currentColor"
+      >
+        <path 
+          strokeLinecap="round" 
+          strokeLinejoin="round" 
+          strokeWidth={1.5} 
+          d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" 
+        />
+      </svg>
+      
+      <h2 className="text-2xl md:text-3xl font-semibold text-gray-900 mb-4">
+        Votre panier est vide
+      </h2>
+      <p className="text-gray-500 mb-8 mx-auto max-w-md">
+        Découvrez nos produits et commencez votre shopping !
+      </p>
+      <Link 
+        href="/products"
+        className="inline-block bg-[#048B9A] text-white px-8 py-3 rounded-lg hover:bg-[#037483] transition-colors"
+      >
+        Voir nos produits
+      </Link>
+    </div>
   </motion.div>
 );
 
@@ -218,6 +221,7 @@ const Panier = () => {
       const token = localStorage.getItem('access_token');
       if (!token) {
         router.push('/login');
+        
         return;
       }
 
@@ -406,43 +410,6 @@ const Panier = () => {
     }
   };
 
-  // Gestion de la sauvegarde
-  const handleSaveAddress = async (e) => {
-    e.preventDefault();
-    setIsLoading(true);
-    console.log("Données du formulaire : ", formData);
-    
-      try {
-        const response = await authFetch('https://api.kambily.store/addresses/create/', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(formData)
-        });
-        console.log(response);
-        if (!response.ok) throw new Error('Erreur lors de l\'ajout de l\'adresse 2');
-
-        toast.success('Adresse ajoutée avec succès');
-        setShowAddModal(false);
-        setFormData({
-          address: '',
-          ville: '',
-          pays: '',
-          telephone: '',
-          latitude: 9.6412, // Coordonnées par défaut de Conakry
-          longitude: -13.5784,
-          is_default: false
-        });
-        fetchAddresses();
-      } catch (error) {
-        toast.error(error.message);
-      } finally {
-        setIsSubmitting(false);
-      }
-     
-  };
-
   // Fonction pour augmenter la quantité
   const incrementQuantity = (productId) => {
     setQuantities(prev => ({
@@ -460,24 +427,15 @@ const Panier = () => {
   };
 
   const handleCheckout = async () => {
-    if (!selectedAddress?.pk) {
-      toast.error("Veuillez sélectionner une adresse de livraison");
-      return;
-    }
-
-    // Stocker l'adresse sélectionnée dans localStorage
-    localStorage.setItem('selectedDeliveryAddress', JSON.stringify(selectedAddress));
-    
-    // Rediriger vers la page de paiement
     router.push('/paiement');
   };
 
   return (
-    <motion.div 
-      className="w-full max-w-[1400px] mx-auto px-3 sm:px-4 md:px-16 py-3 sm:py-6 overflow-hidden"
+    <motion.div
       variants={containerVariants}
       initial="hidden"
       animate="visible"
+      className="w-full max-w-[1400px] mx-auto px-3 sm:px-4 md:px-16 py-3 sm:py-6"
     >
       <Toaster />
       
@@ -489,9 +447,11 @@ const Panier = () => {
       </motion.h1>
 
       <div className="grid md:grid-cols-3 gap-4 sm:gap-8">
-        {/* Liste des produits */}
-        <div className="md:col-span-2 space-y-4 sm:space-y-6 w-full">
-          {cartItems.length > 0 ? (
+        {/* Colonne principale - Liste des produits */}
+        <div className="md:col-span-2 space-y-4 sm:space-y-6">
+          {cartItems.length === 0 ? (
+            <EmptyCart />
+          ) : (
             <AnimatePresence mode="wait">
               {cartItems.map((item) => (
                 <motion.div
@@ -618,8 +578,6 @@ const Panier = () => {
                 </motion.div>
               ))}
             </AnimatePresence>
-          ) : (
-            <EmptyCart />
           )}
 
           {/* Boutons d'action */}
@@ -662,240 +620,62 @@ const Panier = () => {
           </motion.div>
         </div>
 
-        {/* Résumé de la commande */}
-        <motion.div 
-          className="bg-white rounded-lg shadow-sm p-3 sm:p-6 space-y-4 sm:space-y-6 w-full"
-          variants={itemVariants}
-        >
-          {/* Adresse d'expédition */}
-          <div className="space-y-3 ">
-            <div className="flex justify-between items-center">
-              <h3 className="font-medium">Adresse de livraison</h3>
+        {/* Colonne résumé - Affichée uniquement si le panier n'est pas vide */}
+        {cartItems.length > 0 && (
+          <div className="space-y-6">
+            {/* Expédition */}
+            <div className="mt-8">
+              <DeliveryTimeSelector 
+                onSelect={(deliveryInfo) => {
+                  console.log('Informations de livraison:', deliveryInfo);
+                }} 
+              />
+            </div>
+
+            {/* Résumé de la commande */}
+            <motion.div 
+              className="bg-white rounded-lg shadow-sm p-4 md:p-6"
+              variants={itemVariants}
+            >
+              {/* Résumé de la commande */}
+              <div className="space-y-4">
+                <h2 className="text-xl font-semibold">Résumé de la commande</h2>
+                <div className="space-y-3">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Sous-total</span>
+                    <span>{cartItems.reduce((acc, item) => acc + (item.product.regular_price * item.quantity), 0).toLocaleString()} GNF</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Expédition</span>
+                    <span> 3000 GNF</span>
+                  </div>
+                  <div className="flex justify-between font-medium text-lg pt-4 border-t">
+                    <span>Total</span>
+                    <span>{calculateTotal().toLocaleString()} GNF</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Bouton paiement */}
               <motion.button
-                onClick={() => setShowAddressForm(!showAddressForm)}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="text-[#048B9A] text-sm flex items-center gap-2"
+                onClick={handleCheckout}
+                disabled={isProcessing}
+                className="w-full bg-[#048B9A] text-white py-3 rounded-lg hover:bg-[#037483] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
               >
-            
+                {isProcessing ? (
+                  <>
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    <span>Création de la commande...</span>
+                  </>
+                ) : (
+                  'Passer la commande'
+                )}
               </motion.button>
-            </div>
-
-            <AnimatePresence mode="wait">
-              {!showAddressForm ? (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  className="space-y-3"
-                >
-                  {/* Liste des adresses sauvegardées */}
-                  <AddressSelector
-                    selectedAddress={selectedAddress}
-                    onAddressSelect={setSelectedAddress}
-                  />
-                </motion.div>
-              ) : (
-                // Le formulaire d'ajout/modification d'adresse existant
-                <motion.form
-                  onSubmit={handleSaveAddress}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  className="space-y-4"
-                >
-                  <div className="grid grid-cols-2 gap-4">
-                    <motion.input
-                      type="text"
-                      placeholder="Prénom"
-                      className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-[#048B9A] focus:border-[#048B9A]"
-                      whileFocus={{ scale: 1.01 }}
-                    />
-                    <motion.input
-                      type="text"
-                      placeholder="Nom"
-                      className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-[#048B9A] focus:border-[#048B9A]"
-                      whileFocus={{ scale: 1.01 }}
-                    />
-                  </div>
-
-                  {/* Carte et recherche d'adresse */}
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center">
-                      <label className="text-sm font-medium text-gray-700">
-                        Sélectionnez votre adresse sur la carte
-                      </label>
-                      <motion.button
-                        type="button"
-                        onClick={() => setShowMap(!showMap)}
-                        className="text-[#048B9A] text-sm flex items-center gap-2"
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                      >
-                        <FaMapPin />
-                        {showMap ? 'Masquer la carte' : 'Afficher la carte'}
-                      </motion.button>
-                    </div>
-
-                    <AnimatePresence>
-                      {showMap && (
-                        <motion.div
-                          className="space-y-2"
-                          initial={{ opacity: 0, height: 0 }}
-                          animate={{ opacity: 1, height: 'auto' }}
-                          exit={{ opacity: 0, height: 0 }}
-                        >
-                          {/* Barre de recherche d'adresse */}
-                          <div className="flex gap-2">
-                            <motion.input
-                              type="text"
-                              value={searchAddress}
-                              onChange={(e) => setSearchAddress(e.target.value)}
-                              placeholder="Rechercher une adresse..."
-                              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-[#048B9A] focus:border-[#048B9A]"
-                              whileFocus={{ scale: 1.01 }}
-                            />
-                            <motion.button
-                              onClick={searchByAddress}
-                              className="px-4 py-2 bg-[#048B9A] text-white rounded-lg"
-                              whileHover={{ scale: 1.05 }}
-                              whileTap={{ scale: 0.95 }}
-                            >
-                              <FaSearchLocation />
-                            </motion.button>
-                          </div>
-
-                          {/* Carte Google Maps */}
-                          <motion.div
-                            className="rounded-lg overflow-hidden"
-                            style={{ height: 300 }}
-                          >
-                            <LoadScript googleMapsApiKey="AIzaSyAlAKK7ldE7CcZMmGADZPb3GYOPI8C4bXs">
-                              <GoogleMap
-                                mapContainerStyle={containerStyle}
-                                center={position}
-                                zoom={15}
-                                onClick={handleMapClick}
-                              >
-                                <Marker position={position} />
-                              </GoogleMap>
-                            </LoadScript>
-                          </motion.div>
-
-                          {/* Affichage des coordonnées et de l'adresse sélectionnées */}
-                          {selectedLocation && (
-                            <motion.div
-                              initial={{ opacity: 0, y: -10 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              className="bg-gray-50 p-3 rounded-lg space-y-1 "
-                            >
-                              <div className="flex items-center gap-2 text-sm">
-                                <span className="font-medium">Coordonnées:</span>
-                                <span className="text-gray-600">{selectedLocation.coordinates}</span>
-                              </div>
-                              <div className="flex items-center gap-2 text-sm">
-                                <span className="font-medium">Adresse:</span>
-                                <span className="text-gray-600">{selectedLocation.address}</span>
-                              </div>
-                            </motion.div>
-                          )}
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-
-                  <motion.input
-                    type="text"
-                    value={address}
-                    onChange={(e) => setAddress(e.target.value)}
-                    placeholder="Adresse complète"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-[#048B9A] focus:border-[#048B9A]"
-                    whileFocus={{ scale: 1.01 }}
-                  />
-
-                  <div className="flex gap-2">
-                    <motion.button
-                      type="submit"
-                      className="flex-1 bg-[#048B9A] text-white py-2 rounded-lg hover:bg-[#037483] transition-colors flex items-center justify-center gap-2"
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      disabled={isLoading}
-                    >
-                      {isLoading ? (
-                        <>
-                          <motion.div
-                            className="w-5 h-5 border-2 border-white border-t-transparent rounded-full"
-                            animate={{ rotate: 360 }}
-                            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                          />
-                          <span>Sauvegarde en cours...</span>
-                        </>
-                      ) : (
-                        'Sauvegarder l\'adresse'
-                      )}
-                    </motion.button>
-                    <motion.button
-                      type="button"
-                      onClick={() => setShowAddressForm(false)}
-                      className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      disabled={isLoading}
-                    >
-                      Annuler
-                    </motion.button>
-                  </div>
-                </motion.form>
-              )}
-            </AnimatePresence>
+            </motion.div>
           </div>
-
-          {/* Expédition */}
-          <div className="mt-8">
-            <DeliveryTimeSelector 
-              onSelect={(deliveryInfo) => {
-                console.log('Informations de livraison:', deliveryInfo);
-              }} 
-            />
-          </div>
-
-          {/* Résumé */}
-          <div className="space-y-4">
-            <h2 className="text-xl font-semibold">Résumé de la commande</h2>
-            <div className="space-y-3">
-              <div className="flex justify-between">
-                <span className="text-gray-600">Sous-total</span>
-                <span>{cartItems.reduce((acc, item) => acc + (item.product.regular_price * item.quantity), 0).toLocaleString()} GNF</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Expédition</span>
-                <span> 3000 GNF</span>
-              </div>
-              <div className="flex justify-between font-medium text-lg pt-4 border-t">
-                <span>Total</span>
-                <span>{calculateTotal().toLocaleString()} GNF</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Bouton paiement */}
-          <motion.button
-            onClick={handleCheckout}
-            disabled={isProcessing || cartItems.length === 0}
-            className="w-full bg-[#048B9A] text-white py-3 rounded-lg hover:bg-[#037483] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-          >
-            {isProcessing ? (
-              <>
-                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                <span>Création de la commande...</span>
-              </>
-            ) : (
-              'Passer la commande'
-            )}
-          </motion.button>
-        </motion.div>
+        )}
       </div>
     </motion.div>
   );

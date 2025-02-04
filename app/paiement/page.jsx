@@ -4,7 +4,24 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
-import { FaCheckCircle, FaCreditCard, FaMobileAlt, FaMoneyBill, FaTag } from 'react-icons/fa';
+import { FaCheckCircle, FaCreditCard, FaMobileAlt, FaMoneyBill, FaTag, FaMapPin } from 'react-icons/fa';
+import { AddressSelector } from '@/app/Components/AddressSelector';
+
+const PaymentInput = ({ label, type, value, onChange, placeholder, required = false }) => (
+  <div className="relative">
+    <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1">
+      {label} {required && <span className="text-red-500">*</span>}
+    </label>
+    <input
+      type={type}
+      value={value}
+      onChange={onChange}
+      placeholder={placeholder}
+      required={required}
+      className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:border-[#048B9A] focus:ring-1 focus:ring-[#048B9A] transition-colors"
+    />
+  </div>
+);
 
 const Payment = () => {
   const router = useRouter();
@@ -193,25 +210,34 @@ const Payment = () => {
   };
 
   return (
-    <motion.div 
-      className="max-w-[1400px] mx-auto px-4 md:px-16 py-8 md:py-12"
+    <motion.div
       variants={containerVariants}
       initial="hidden"
       animate="visible"
+      className="w-full max-w-[1400px] mx-auto px-3 sm:px-4 md:px-16 py-3 sm:py-6"
     >
-      <motion.h1 
-        className="text-2xl md:text-3xl font-bold mb-6 md:mb-8"
-        variants={itemVariants}
-      >
-        Paiement
-      </motion.h1>
+      <div className="grid lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 space-y-6">
+          {/* Section Adresse de livraison */}
+          <motion.div 
+            className="bg-white rounded-lg shadow-sm p-4 md:p-6"
+            variants={itemVariants}
+          >
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-semibold">Adresse de livraison</h2>
+              <FaMapPin className="text-[#048B9A] text-xl" />
+            </div>
 
-      <div className="flex flex-col lg:flex-row gap-6 md:gap-8">
-        {/* Formulaire de paiement */}
-        <motion.div 
-          className="flex-1 w-full"
-          variants={itemVariants}
-        >
+            <AddressSelector 
+              onAddressSelect={(address) => {
+                setSelectedAddress(address);
+                localStorage.setItem('selectedDeliveryAddress', JSON.stringify(address));
+              }}
+              selectedAddress={selectedAddress}
+            />
+          </motion.div>
+
+          {/* Formulaire de paiement */}
           <motion.div 
             className="bg-white rounded-lg shadow-sm p-4 md:p-6 mb-6 w-full"
             variants={itemVariants}
@@ -259,35 +285,33 @@ const Payment = () => {
                   exit="exit"
                   className="space-y-4"
                 >
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Numéro de carte
-                    </label>
-                    <input
+                  <div className="space-y-4">
+                    <PaymentInput
+                      label="Numéro de carte"
                       type="text"
+                      value={billingAddress.cardNumber}
+                      onChange={(e) => setBillingAddress({ ...billingAddress, cardNumber: e.target.value })}
                       placeholder="0000 0000 0000 0000"
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-[#048B9A] focus:border-[#048B9A]"
+                      required
                     />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Date d'expiration
-                      </label>
-                      <input
+                    
+                    <div className="grid grid-cols-2 gap-4">
+                      <PaymentInput
+                        label="Date d'expiration"
                         type="text"
+                        value={billingAddress.expiry}
+                        onChange={(e) => setBillingAddress({ ...billingAddress, expiry: e.target.value })}
                         placeholder="MM/AA"
-                        className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-[#048B9A] focus:border-[#048B9A]"
+                        required
                       />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        CVC
-                      </label>
-                      <input
+                      
+                      <PaymentInput
+                        label="CVC"
                         type="text"
+                        value={billingAddress.cvc}
+                        onChange={(e) => setBillingAddress({ ...billingAddress, cvc: e.target.value })}
                         placeholder="123"
-                        className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-[#048B9A] focus:border-[#048B9A]"
+                        required
                       />
                     </div>
                   </div>
@@ -317,91 +341,10 @@ const Payment = () => {
               )}
             </AnimatePresence>
           </motion.div>
+        </div>
 
-          {/* Adresse de facturation */}
-          <motion.div 
-            className="bg-white rounded-lg shadow-sm p-4 md:p-6 w-full"
-            variants={itemVariants}
-          >
-            <h2 className="text-xl font-semibold mb-6">Adresse de facturation</h2>
-            
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Nom complet
-                  </label>
-                  <input
-                    type="text"
-                    name="fullName"
-                    value={billingAddress.fullName}
-                    onChange={handleBillingChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-[#048B9A] focus:border-[#048B9A]"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Email
-                  </label>
-                  <input
-                    type="email"
-                    name="email"
-                    value={billingAddress.email}
-                    onChange={handleBillingChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-[#048B9A] focus:border-[#048B9A]"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Téléphone
-                  </label>
-                  <input
-                    type="tel"
-                    name="phone"
-                    value={billingAddress.phone}
-                    onChange={handleBillingChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-[#048B9A] focus:border-[#048B9A]"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Ville
-                  </label>
-                  <input
-                    type="text"
-                    name="city"
-                    value={billingAddress.city}
-                    onChange={handleBillingChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-[#048B9A] focus:border-[#048B9A]"
-                    required
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Adresse complète
-                </label>
-                <textarea
-                  name="address"
-                  value={billingAddress.address}
-                  onChange={handleBillingChange}
-                  rows="3"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-[#048B9A] focus:border-[#048B9A]"
-                  required
-                ></textarea>
-              </div>
-            </form>
-          </motion.div>
-        </motion.div>
-
-        {/* Résumé de la commande */}
-        <motion.div 
-          className="w-full lg:w-96"
-          variants={itemVariants}
-        >
+        {/* Colonne résumé de la commande */}
+        <motion.div className="w-full lg:w-96">
           <div className="bg-white rounded-lg shadow-sm p-4 md:p-6 sticky top-6 w-full">
             <h2 className="text-xl font-semibold mb-6">Résumé de la commande</h2>
             
