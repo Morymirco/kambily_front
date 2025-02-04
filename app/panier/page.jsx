@@ -10,6 +10,7 @@ import { useEffect, useState } from 'react';
 import toast, { Toaster } from 'react-hot-toast';
 import { FaEdit, FaMapPin, FaSearchLocation, FaTrash } from 'react-icons/fa';
 import DeliveryTimeSelector from '../Components/DeliveryTimeSelector';
+import LoginPrompt from '../Components/LoginPrompt';
 
 const containerStyle = {
   width: '100%',
@@ -210,19 +211,23 @@ const Panier = () => {
   const [promoApplied, setPromoApplied] = useState(false);
   const [selectedAddress, setSelectedAddress] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   // Effet pour charger le panier
   useEffect(() => {
     fetchCart();
   }, []);
 
+  useEffect(() => {
+    const token = localStorage.getItem('access_token');
+    setIsAuthenticated(!!token);
+  }, []);
+
   const fetchCart = async () => {
     try {
       const token = localStorage.getItem('access_token');
       if (!token) {
-        router.push('/login');
-        
-        return;
+        return <LoginPrompt />;
       }
 
       const response = await fetch('https://api.kambily.store/carts/', {
@@ -429,6 +434,10 @@ const Panier = () => {
   const handleCheckout = async () => {
     router.push('/paiement');
   };
+
+  if (!isAuthenticated) {
+    return <LoginPrompt />;
+  }
 
   return (
     <motion.div
