@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { FaCheckCircle, FaCreditCard, FaMobileAlt, FaMoneyBill, FaTag, FaMapPin } from 'react-icons/fa';
 import { AddressSelector } from '@/app/Components/AddressSelector';
+import { useCart } from '@/app/providers/CartProvider';
 
 const PaymentInput = ({ label, type, value, onChange, placeholder, required = false }) => (
   <div className="relative">
@@ -25,6 +26,7 @@ const PaymentInput = ({ label, type, value, onChange, placeholder, required = fa
 
 const Payment = () => {
   const router = useRouter();
+  const { cartItems } = useCart();
   const [paymentMethod, setPaymentMethod] = useState('card');
   const [isProcessing, setIsProcessing] = useState(false);
   const [billingAddress, setBillingAddress] = useState({
@@ -42,6 +44,12 @@ const Payment = () => {
   const [orderId, setOrderId] = useState(null);
   const [error, setError] = useState(null);
   const [selectedAddress, setSelectedAddress] = useState(null);
+  const [orderSummary, setOrderSummary] = useState({
+    subtotal: 0,
+    shipping: 15000,
+    total: 0,
+    items: []
+  });
 
   useEffect(() => {
     // Récupérer l'adresse stockée
@@ -51,19 +59,41 @@ const Payment = () => {
     }
   }, []);
 
-  // Résumé de la commande (à connecter avec votre panier)
-  const orderSummary = {
-    subtotal: 65000,
-    shipping: 15000,
-    total: 80000,
-    items: [
-      {
-        name: "Ensemble De Pyjama",
-        quantity: 1,
-        price: 65000
-      }
-    ]
-  };
+  useEffect(() => {
+    console.log(cartItems);
+    // Vérifier si cartItems existe et n'est pas vide
+    if (!cartItems || cartItems.length === 0) {
+      return;
+    }
+
+    // Calculer le sous-total en vérifiant chaque propriété
+    const subtotal = cartItems.reduce((total, item) => {
+      if (!item || !item.product) return total;
+      
+      const price = parseFloat(item.product.regular_price) || 0;
+      const quantity = parseInt(item.quantity) || 0;
+      console.log(price, quantity);
+      return total + (price * quantity);
+    }, 0);
+
+    // Créer le résumé des articles avec vérification
+    const items = cartItems.map(item => {
+      if (!item || !item.product) return null;
+      
+      return {
+        name: item.product.name || 'Produit inconnu',
+        quantity: parseInt(item.quantity) || 0,
+        price: parseFloat(item.product.regular_price) || 0
+      };
+    }).filter(Boolean); // Enlever les éléments null
+
+    setOrderSummary({
+      subtotal,
+      shipping: 3000,
+      total: subtotal + 3000,
+      items
+    });
+  }, [cartItems]);
 
   const handleBillingChange = (e) => {
     setBillingAddress({
@@ -409,22 +439,22 @@ const Payment = () => {
                   className="flex justify-between text-sm"
                 >
                   <span>{item.name} (x{item.quantity})</span>
-                  <span>{item.price.toLocaleString()} GNF</span>
+                  <span>{Number(item.price).toLocaleString()} GNF</span>
                 </motion.div>
               ))}
               
               <div className="border-t pt-4">
                 <div className="flex justify-between mb-2">
                   <span className="text-gray-600">Sous-total</span>
-                  <span>{orderSummary.subtotal.toLocaleString()} GNF</span>
+                  <span>{Number(orderSummary.subtotal).toLocaleString()} GNF</span>
                 </div>
                 <div className="flex justify-between mb-2">
                   <span className="text-gray-600">Frais de livraison</span>
-                  <span>{orderSummary.shipping.toLocaleString()} GNF</span>
+                  <span>{Number(orderSummary.shipping).toLocaleString()} GNF</span>
                 </div>
                 <div className="flex justify-between font-semibold text-lg pt-2 border-t">
                   <span>Total</span>
-                  <span>{orderSummary.total.toLocaleString()} GNF</span>
+                  <span>{Number(orderSummary.total).toLocaleString()} GNF</span>
                 </div>
               </div>
             </motion.div>

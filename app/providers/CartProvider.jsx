@@ -21,7 +21,9 @@ export const CartProvider = ({ children }) => {
           const response = await authFetch('https://api.kambily.store/carts/');
           if (response.ok) {
             const data = await response.json();
-            setCartItems(data.items || []);
+            console.log("depuis le pro",data);
+            setCartItems(data || []);
+            
           }
         } catch (error) {
           console.error('Erreur chargement panier:', error);
