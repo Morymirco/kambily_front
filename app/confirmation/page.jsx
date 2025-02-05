@@ -3,6 +3,8 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { FaBox, FaCheckCircle, FaEnvelope, FaTruck } from 'react-icons/fa';
 import { useSearchParams } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import axios from 'axios';
 
 // Composant pour les boutons d'action
 const ActionButton = ({ href, variant = 'primary', children }) => {
@@ -35,30 +37,91 @@ const TrackingStep = ({ icon: Icon, title, description, delay }) => (
 );
 
 // Composant pour le résumé de la commande
-const OrderSummary = () => (
-  <motion.div 
-    className="max-w-3xl mx-auto bg-white rounded-lg shadow-sm p-6 mb-8"
-    initial={{ opacity: 0, y: 20 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ delay: 0.8 }}
-  >
-    <h2 className="text-xl font-semibold mb-4">Détails de la commande</h2>
-    <div className="space-y-4">
-      <div className="flex justify-between pb-4 border-b">
-        <span className="text-gray-600">Total</span>
-        <span className="font-medium">80,000 GNF</span>
+const OrderSummary = () => {
+  const searchParams = useSearchParams();
+  const orderNumber = searchParams.get('order');
+  const [orderDetails, setOrderDetails] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchOrderDetails = async () => {
+      try {
+        const response = await axios.get(
+          `https://api.kambily.store/orders/show/?number=${orderNumber}/`,
+          {
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+            }
+          }
+        );
+
+        if (response.status === 200) {
+          setOrderDetails(response.data);
+        }
+      } catch (error) {
+        setError('Impossible de récupérer les détails de la commande');
+        console.error('Erreur:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (orderNumber) {
+      fetchOrderDetails();
+    }
+  }, [orderNumber]);
+
+  if (loading) {
+    return (
+      <motion.div className="max-w-3xl mx-auto p-6">
+        <div className="animate-pulse space-y-4">
+          <div className="h-4 bg-gray-200 rounded w-1/4"></div>
+          <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+          <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+        </div>
+      </motion.div>
+    );
+  }
+
+  if (error) {
+    return (
+      <motion.div className="max-w-3xl mx-auto p-6 text-red-500">
+        {error}
+      </motion.div>
+    );
+  }
+
+  return (
+    <motion.div 
+      className="max-w-3xl mx-auto bg-white rounded-lg shadow-sm p-6 mb-8"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.8 }}
+    >
+      <h2 className="text-xl font-semibold mb-4">Détails de la commande</h2>
+      <div className="space-y-4">
+        <div className="flex justify-between pb-4 border-b">
+          <span className="text-gray-600">Total</span>
+          <span className="font-medium">
+            {orderDetails?.total_paid?.toLocaleString()} GNF
+          </span>
+        </div>
+        <div className="flex justify-between pb-4 border-b">
+          <span className="text-gray-600">Mode de livraison</span>
+          <span className="font-medium">Standard</span>
+        </div>
+        <div className="flex justify-between">
+          <span className="text-gray-600">Adresse de livraison</span>
+          <span className="font-medium text-right">
+            {orderDetails?.delivery_address?.address}<br />
+            {orderDetails?.delivery_address?.city}, {orderDetails?.delivery_address?.country}
+          </span>
+        </div>
       </div>
-      <div className="flex justify-between pb-4 border-b">
-        <span className="text-gray-600">Mode de livraison</span>
-        <span className="font-medium">Standard</span>
-      </div>
-      <div className="flex justify-between">
-        <span className="text-gray-600">Adresse de livraison</span>
-        <span className="font-medium text-right">123 Rue Principale<br />Conakry, Guinée</span>
-      </div>
-    </div>
-  </motion.div>
-);
+    </motion.div>
+  );
+};
 
 // Composant pour l'en-tête de confirmation
 const ConfirmationHeader = () => {

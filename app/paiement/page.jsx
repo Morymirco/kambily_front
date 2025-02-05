@@ -108,23 +108,19 @@ const Payment = () => {
       
       // Vérifier si une adresse est sélectionnée
       if (!selectedAddress) {
-        toast.error("Veuillez retourner au panier pour sélectionner une adresse");
-        router.push('/panier');
+        toast.error("Veuillez sélectionner une adresse de livraison");
         return;
       }
 
-      // Préparer les données de la commande
+      const finalTotal = promoApplied 
+        ? orderSummary.total - 15000
+        : orderSummary.total;
+
       const orderData = {
-        delivery_address_id: selectedAddress.pk  // S'assurer d'envoyer l'ID et non l'objet complet
+        delivery_address_id: selectedAddress.pk,
+        total_paid: finalTotal,
+        promo_code: promoApplied ? promoCode : undefined
       };
-
-      // Ajouter le code promo si valide
-      if (promoCode && isPromoValid) {
-        orderData.promo_code = promoCode;
-      }
-
-      // Log des données avant envoi
-      console.log('Données envoyées:', orderData);
 
       const response = await axios.post(
         'https://api.kambily.store/orders/create/',
@@ -137,24 +133,17 @@ const Payment = () => {
         }
       );
 
-      console.log('Réponse du serveur:', response.data);
-
       if (response.status === 201 || response.status === 200) {
-        // Rediriger vers la page de confirmation avec le numéro de commande
-        router.push(`/confirmation?order=${response.data.number}`);
-      } else {
-        setError("Une erreur est survenue lors de la création de la commande");
+        console.log(response.data);
+        const orderNumber = response.data?.order?.number;
+        toast.success('Commande créée avec succès !');
+        console.log(orderNumber);
+        router.push(`/confirmation?order=${orderNumber}`);
       }
 
     } catch (error) {
-      console.error('Erreur détaillée:', error.response?.data);
-      if (axios.isAxiosError(error)) {
-        const errorMessage = error.response?.data?.message || 
-                           "Une erreur est survenue lors de la création de la commande";
-        toast.error(errorMessage);
-      } else {
-        toast.error("Une erreur inattendue est survenue");
-      }
+      console.error('Erreur:', error.response?.data);
+      toast.error(error.response?.data?.message || "Une erreur est survenue lors de la création de la commande");
     } finally {
       setIsCreatingOrder(false);
     }

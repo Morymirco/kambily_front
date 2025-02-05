@@ -8,7 +8,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { toast } from 'react-hot-toast';
 import { FaFacebookF, FaHeart, FaImage, FaLinkedinIn, FaShare, FaShoppingCart, FaStar, FaTimes, FaTwitter, FaUser, FaWhatsapp } from 'react-icons/fa';
 import { FiZoomIn } from 'react-icons/fi';
@@ -323,6 +323,98 @@ const ReviewForm = ({ productId, setReviews }) => {
         )}
       </button>
     </form>
+  );
+};
+
+const LightboxGallery = ({ images, onClose }) => {
+  const [activeIndex, setActiveIndex] = useState(0);
+  const swiperRef = useRef(null);
+
+  // Gestionnaire de fermeture avec vérification
+  const handleClose = (e) => {
+    e.stopPropagation(); // Empêcher la propagation de l'événement
+    if (typeof onClose === 'function') {
+      onClose();
+    }
+  };
+
+  const handleThumbnailClick = (index) => {
+    setActiveIndex(index);
+    swiperRef.current?.swiper?.slideTo(index);
+  };
+
+  return (
+    <motion.div 
+      className="fixed inset-0 bg-black bg-opacity-90 z-50"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+    >
+      <div className="relative h-full flex flex-col">
+        {/* Image principale */}
+        <div className="flex-1 relative">
+          <Swiper
+            ref={swiperRef}
+            spaceBetween={0}
+            slidesPerView={1}
+            onSlideChange={(swiper) => setActiveIndex(swiper.activeIndex)}
+            className="h-full"
+          >
+            {images.map((image, index) => (
+              <SwiperSlide key={index}>
+                <div className="relative h-full flex items-center justify-center">
+                  <Image
+                    src={image}
+                    alt={`Product ${index + 1}`}
+                    fill
+                    className="object-contain"
+                  />
+                </div>
+              </SwiperSlide>
+            ))}
+          </Swiper>
+        </div>
+
+        {/* Miniatures centrées */}
+        <div className="w-full pb-20 md:pb-8 px-4">
+          <Swiper
+            modules={[FreeMode]}
+            spaceBetween={8}
+            slidesPerView="auto"
+            freeMode={true}
+            centeredSlides={true}
+            className="max-w-3xl mx-auto"
+          >
+            {images.map((image, index) => (
+              <SwiperSlide 
+                key={index}
+                className={`!w-16 !h-16 relative rounded-lg overflow-hidden cursor-pointer transition-all ${
+                  activeIndex === index ? 'ring-2 ring-[#048B9A] scale-110' : ''
+                }`}
+                onClick={() => handleThumbnailClick(index)}
+              >
+                <Image
+                  src={image}
+                  alt={`Thumbnail ${index + 1}`}
+                  fill
+                  className="object-cover"
+                />
+              </SwiperSlide>
+            ))}
+          </Swiper>
+        </div>
+
+        {/* Bouton fermer modifié */}
+        <motion.button
+          onClick={handleClose}
+          className="absolute top-4 right-4 z-50 p-2 bg-white/10 rounded-full hover:bg-white/20 transition-colors"
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+        >
+          <IoMdClose className="w-6 h-6 text-white" />
+        </motion.button>
+      </div>
+    </motion.div>
   );
 };
 
@@ -807,65 +899,10 @@ const ProductDetail = () => {
 
         {/* Lightbox */}
         {isLightboxOpen && (
-          <div className="fixed inset-0 bg-black/95 z-50 flex items-center justify-center">
-            {/* Bouton fermer - Correction de la position et du z-index */}
-            <button
-              onClick={closeLightbox}
-              className="fixed top-4 right-4 w-12 h-12 flex items-center justify-center text-white hover:text-gray-300 transition-colors z-[60]"
-            >
-              <IoMdClose className="w-8 h-8" />
-            </button>
-
-            {/* Container de l'image */}
-            <div className="relative w-full h-full flex items-center justify-center p-4">
-              {/* Image */}
-              <div className="relative w-full h-full flex items-center justify-center border-[#048B9A]">
-                <img
-                  src={productImages[lightboxImageIndex]}
-                  alt="Product zoom view"
-                  className="max-h-full max-w-full object-contain border-2 "
-                />
-              </div>
-
-              {/* Boutons navigation */}
-              <button
-                onClick={prevImage}
-                className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/10 rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-colors"
-              >
-                ‹
-              </button>
-              <button
-                onClick={nextImage}
-                className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/10 rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-colors"
-              >
-                ›
-              </button>
-
-              {/* Miniatures en bas */}
-              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
-                {productImages.map((_, index) => (
-                  <button
-                    key={index}
-                    onClick={() => setLightboxImageIndex(index)}
-                    className={`w-16 h-16 rounded-lg overflow-hidden border-2 transition-colors ${
-                      lightboxImageIndex === index 
-                        ? 'border-white' 
-                        : 'border-transparent hover:border-white/50'
-                    }`}
-                  >
-                    <div className="relative w-full h-full">
-                      <Image
-                        src={productImages[index]}
-                        alt={`Thumbnail ${index + 1}`}
-                        fill
-                        className="object-cover"
-                      />
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
+          <LightboxGallery
+            images={productImages}
+            onClose={closeLightbox}
+          />
         )}
 
         {/* Informations produit */}
