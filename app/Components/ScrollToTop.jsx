@@ -39,10 +39,10 @@ const ScrollToTop = () => {
         >
           <div className="relative w-4 h-4 sm:w-5 sm:h-5">
             <Image 
-              src="/arrow.svg"
+              src="/arrow (2).svg"
               alt="Remonter"
               fill
-              className="object-contain transition-transform rotate-180"
+              className="object-contain transition-transform"
             />
           </div>
         </button>

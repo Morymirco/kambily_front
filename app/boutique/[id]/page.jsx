@@ -330,26 +330,13 @@ const LightboxGallery = ({ images, onClose }) => {
   const [activeIndex, setActiveIndex] = useState(0);
   const swiperRef = useRef(null);
 
-  // Gestionnaire de fermeture avec vérification
-  const handleClose = (e) => {
-    e.stopPropagation(); // Empêcher la propagation de l'événement
-    if (typeof onClose === 'function') {
-      onClose();
-    }
-  };
-
   const handleThumbnailClick = (index) => {
     setActiveIndex(index);
     swiperRef.current?.swiper?.slideTo(index);
   };
 
   return (
-    <motion.div 
-      className="fixed inset-0 bg-black bg-opacity-90 z-50"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-    >
+    <div className="fixed inset-0 bg-black bg-opacity-90 z-50">
       <div className="relative h-full flex flex-col">
         {/* Image principale */}
         <div className="flex-1 relative">
@@ -404,18 +391,24 @@ const LightboxGallery = ({ images, onClose }) => {
           </Swiper>
         </div>
 
-        {/* Bouton fermer modifié */}
-        <motion.button
-          onClick={handleClose}
-          className="absolute top-4 right-4 z-50 p-2 bg-white/10 rounded-full hover:bg-white/20 transition-colors"
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
+        {/* Bouton fermer */}
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 text-white p-2"
         >
-          <IoMdClose className="w-6 h-6 text-white" />
-        </motion.button>
+          <IoMdClose className="w-6 h-6" />
+        </button>
       </div>
-    </motion.div>
+    </div>
   );
+};
+
+const formatPrice = (price) => {
+  // Enlever les décimales et formater avec des espaces
+  return price
+    .toString()
+    .split('.')[0]
+    .replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + ' GNF';
 };
 
 const ProductDetail = () => {
@@ -907,161 +900,166 @@ const ProductDetail = () => {
 
         {/* Informations produit */}
         <div className="space-y-6">
-          <h1 className="text-3xl font-bold">{product?.name}</h1>
+          <div className="space-y-6">
+            {/* Titre du produit avec taille adaptée pour mobile */}
+            <h1 className="text-lg md:text-2xl font-semibold leading-tight">
+              {product?.name}
+            </h1>
 
-          {/* Prix et notation */}
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-3">
-              <span className="text-2xl font-bold text-[#048B9A]">
-                {product?.regular_price?.toLocaleString()} GN
-              </span>
-              {product?.promo_price && (
-                <span className="text-lg text-gray-500 line-through">
-                  {product.promo_price.toLocaleString()} GNF
+            {/* Prix et notation */}
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <span className="text-2xl font-bold text-[#048B9A]">
+                  {formatPrice(product?.regular_price)}
                 </span>
-              )}
+                {product?.promo_price && (
+                  <span className="text-lg text-gray-500 line-through">
+                    {formatPrice(product?.promo_price)}
+                  </span>
+                )}
+              </div>
+
+              {/* Boutons d'action */}
+              <div className="flex items-center gap-3">
+                {/* Bouton favoris */}
+                <button 
+                  onClick={handleToggleFavorite}
+                  disabled={isTogglingFavorite || !product}
+                  className={`
+                    w-12 h-12 rounded-full flex items-center justify-center transition-all
+                    ${isFavorite(product?.id) 
+                      ? 'bg-red-50 text-red-500 hover:bg-red-100' 
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    }
+                    disabled:opacity-50 disabled:cursor-not-allowed
+                  `}
+                  aria-label={isFavorite(product?.id) ? "Retirer des favoris" : "Ajouter aux favoris"}
+                >
+                  {isTogglingFavorite ? (
+                    <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <FaHeart 
+                      className={`w-6 h-6 transition-transform duration-200 ${
+                        isFavorite(product?.id) 
+                          ? 'scale-110 fill-current' 
+                          : 'scale-100 fill-transparent stroke-2'
+                      }`}
+                    />
+                  )}
+                </button>
+
+                {/* Bouton partager */}
+                <button 
+                  onClick={() => setShowShareModal(true)}
+                  className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors"
+                  aria-label="Partager"
+                >
+                  <FaShare className="w-5 h-5 text-gray-600" />
+                </button>
+              </div>
+            </div>
+
+            {/* Description */}
+            <p className="text-gray-600">
+            {product?.long_description}
+            </p>
+
+            {/* Sélection de taille */}
+            <div>
+              <h3 className="font-medium mb-3">Taille</h3>
+              <div className="flex gap-3">
+                {renderSizes()}
+              </div>
+            </div>
+
+            {/* Section des couleurs */}
+            <div className="space-y-6">
+              <div>
+                <h3 className="font-medium mb-3">Couleur</h3>
+                {renderColors()}
+              </div>
+            </div>
+
+            {/* Quantité */}
+            <div>
+              <h3 className="font-medium mb-3">Quantité</h3>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                  className="w-12 h-12 rounded-lg border border-gray-300 flex items-center justify-center hover:bg-gray-50"
+                >
+                  -
+                </button>
+                <span className="w-12 text-center">{quantity}</span>
+                <button
+                  onClick={() => setQuantity(quantity + 1)}
+                  className="w-12 h-12 rounded-lg border border-gray-300 flex items-center justify-center hover:bg-gray-50"
+                >
+                  +
+                </button>
+              </div>
             </div>
 
             {/* Boutons d'action */}
-            <div className="flex items-center gap-3">
-              {/* Bouton favoris */}
+            <div className="flex gap-4 pt-6">
               <button 
-                onClick={handleToggleFavorite}
-                disabled={isTogglingFavorite || !product}
-                className={`
-                  w-12 h-12 rounded-full flex items-center justify-center transition-all
-                  ${isFavorite(product?.id) 
-                    ? 'bg-red-50 text-red-500 hover:bg-red-100' 
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                  }
-                  disabled:opacity-50 disabled:cursor-not-allowed
-                `}
-                aria-label={isFavorite(product?.id) ? "Retirer des favoris" : "Ajouter aux favoris"}
+                onClick={handleAddToCart}
+                disabled={isAddingToCart}
+                className="flex-1 bg-[#048B9A] text-white h-14 rounded-lg flex items-center justify-center gap-2 hover:bg-[#037483] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isTogglingFavorite ? (
-                  <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                {isAddingToCart ? (
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                 ) : (
-                  <FaHeart 
-                    className={`w-6 h-6 transition-transform duration-200 ${
-                      isFavorite(product?.id) 
-                        ? 'scale-110 fill-current' 
-                        : 'scale-100 fill-transparent stroke-2'
-                    }`}
-                  />
+                  <>
+                    <FaShoppingCart />
+                    <span>Ajouter</span>
+                  </>
                 )}
               </button>
-
-              {/* Bouton partager */}
-              <button 
-                onClick={() => setShowShareModal(true)}
-                className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors"
-                aria-label="Partager"
-              >
-                <FaShare className="w-5 h-5 text-gray-600" />
+              <button className="flex-[0.7] sm:flex-1 border border-[#048B9A] text-[#048B9A] h-14 rounded-lg flex items-center justify-center gap-2 hover:bg-[#048B9A] hover:text-white transition-colors text-sm sm:text-base">
+                Acheter maintenant
               </button>
             </div>
-          </div>
 
-          {/* Description */}
-          <p className="text-gray-600">
-          {product?.long_description}
-          </p>
-
-          {/* Sélection de taille */}
-          <div>
-            <h3 className="font-medium mb-3">Taille</h3>
-            <div className="flex gap-3">
-              {renderSizes()}
+            {/* Catégories */}
+            <div className="pt-6 border-t">
+              <div className="flex items-center gap-2">
+                <span className="text-gray-700 font-medium">Catégories:</span>
+                {renderCategories()}
+              </div>
             </div>
-          </div>
 
-          {/* Section des couleurs */}
-          <div className="space-y-6">
-            <div>
-              <h3 className="font-medium mb-3">Couleur</h3>
-              {renderColors()}
+            {/* Étiquettes - à placer après les catégories */}
+            <div className="pt-4">
+              <div className="flex items-center gap-2">
+                <span className="text-gray-700 font-medium">Étiquettes:</span>
+                {renderTags()}
+              </div>
             </div>
-          </div>
 
-          {/* Quantité */}
-          <div>
-            <h3 className="font-medium mb-3">Quantité</h3>
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                className="w-12 h-12 rounded-lg border border-gray-300 flex items-center justify-center hover:bg-gray-50"
-              >
-                -
-              </button>
-              <span className="w-12 text-center">{quantity}</span>
-              <button
-                onClick={() => setQuantity(quantity + 1)}
-                className="w-12 h-12 rounded-lg border border-gray-300 flex items-center justify-center hover:bg-gray-50"
-              >
-                +
-              </button>
-            </div>
-          </div>
-
-          {/* Boutons d'action */}
-          <div className="flex gap-4 pt-6">
-            <button 
-              onClick={handleAddToCart}
-              disabled={isAddingToCart}
-              className="flex-1 bg-[#048B9A] text-white h-14 rounded-lg flex items-center justify-center gap-2 hover:bg-[#037483] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isAddingToCart ? (
-                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              ) : (
-                <>
-                  <FaShoppingCart />
-                  <span>Ajouter</span>
-                </>
-              )}
-            </button>
-            <button className="flex-[0.7] sm:flex-1 border border-[#048B9A] text-[#048B9A] h-14 rounded-lg flex items-center justify-center gap-2 hover:bg-[#048B9A] hover:text-white transition-colors text-sm sm:text-base">
-              Acheter maintenant
-            </button>
-          </div>
-
-          {/* Catégories */}
-          <div className="pt-6 border-t">
-            <div className="flex items-center gap-2">
-              <span className="text-gray-700 font-medium">Catégories:</span>
-              {renderCategories()}
-            </div>
-          </div>
-
-          {/* Étiquettes - à placer après les catégories */}
-          <div className="pt-4">
-            <div className="flex items-center gap-2">
-              <span className="text-gray-700 font-medium">Étiquettes:</span>
-              {renderTags()}
-            </div>
-          </div>
-
-          {/* Partage social */}
-          <div className="pt-6 border-t">
-            <h3 className="font-medium mb-3">Partager</h3>
-            <div className="flex gap-3">
-              <a 
-                href="#" 
-                className="w-10 h-10 rounded-full bg-[#3b5998] text-white flex items-center justify-center hover:opacity-90 transition-opacity"
-              >
-                <FaFacebookF />
-              </a>
-              <a 
-                href="#" 
-                className="w-10 h-10 rounded-full bg-[#1DA1F2] text-white flex items-center justify-center hover:opacity-90 transition-opacity"
-              >
-                <FaTwitter />
-              </a>
-              <a 
-                href="#" 
-                className="w-10 h-10 rounded-full bg-[#0077B5] text-white flex items-center justify-center hover:opacity-90 transition-opacity"
-              >
-                <FaLinkedinIn />
-              </a>
+            {/* Partage social */}
+            <div className="pt-6 border-t">
+              <h3 className="font-medium mb-3">Partager</h3>
+              <div className="flex gap-3">
+                <a 
+                  href="#" 
+                  className="w-10 h-10 rounded-full bg-[#3b5998] text-white flex items-center justify-center hover:opacity-90 transition-opacity"
+                >
+                  <FaFacebookF />
+                </a>
+                <a 
+                  href="#" 
+                  className="w-10 h-10 rounded-full bg-[#1DA1F2] text-white flex items-center justify-center hover:opacity-90 transition-opacity"
+                >
+                  <FaTwitter />
+                </a>
+                <a 
+                  href="#" 
+                  className="w-10 h-10 rounded-full bg-[#0077B5] text-white flex items-center justify-center hover:opacity-90 transition-opacity"
+                >
+                  <FaLinkedinIn />
+                </a>
+              </div>
             </div>
           </div>
         </div>
