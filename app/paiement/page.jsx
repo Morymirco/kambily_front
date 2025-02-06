@@ -26,7 +26,7 @@ const PaymentInput = ({ label, type, value, onChange, placeholder, required = fa
 
 const Payment = () => {
   const router = useRouter();
-  const { cartItems } = useCart();
+  const { cartItems, isLoading: cartLoading } = useCart();
   const [paymentMethod, setPaymentMethod] = useState('card');
   const [isProcessing, setIsProcessing] = useState(false);
   const [billingAddress, setBillingAddress] = useState({
@@ -46,7 +46,7 @@ const Payment = () => {
   const [selectedAddress, setSelectedAddress] = useState(null);
   const [orderSummary, setOrderSummary] = useState({
     subtotal: 0,
-    shipping: 15000,
+    shipping: 3000,
     total: 0,
     items: []
   });
@@ -60,32 +60,28 @@ const Payment = () => {
   }, []);
 
   useEffect(() => {
-    console.log(cartItems);
+    // Attendre que les données du panier soient chargées
+    if (cartLoading) return;
+
     // Vérifier si cartItems existe et n'est pas vide
     if (!cartItems || cartItems.length === 0) {
+      router.push('/panier');
       return;
     }
 
-    // Calculer le sous-total en vérifiant chaque propriété
+    // Calculer le sous-total
     const subtotal = cartItems.reduce((total, item) => {
-      if (!item || !item.product) return total;
-      
       const price = parseFloat(item.product.regular_price) || 0;
       const quantity = parseInt(item.quantity) || 0;
-      console.log(price, quantity);
       return total + (price * quantity);
     }, 0);
 
-    // Créer le résumé des articles avec vérification
-    const items = cartItems.map(item => {
-      if (!item || !item.product) return null;
-      
-      return {
-        name: item.product.name || 'Produit inconnu',
-        quantity: parseInt(item.quantity) || 0,
-        price: parseFloat(item.product.regular_price) || 0
-      };
-    }).filter(Boolean); // Enlever les éléments null
+    // Créer le résumé des articles
+    const items = cartItems.map(item => ({
+      name: item.product.name,
+      quantity: parseInt(item.quantity),
+      price: parseFloat(item.product.regular_price)
+    }));
 
     setOrderSummary({
       subtotal,
@@ -93,7 +89,7 @@ const Payment = () => {
       total: subtotal + 3000,
       items
     });
-  }, [cartItems]);
+  }, [cartItems, cartLoading, router]);
 
   const handleBillingChange = (e) => {
     setBillingAddress({
@@ -227,6 +223,15 @@ const Payment = () => {
       }
     }
   };
+
+  // Afficher un loader pendant le chargement
+  if (cartLoading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="w-10 h-10 border-4 border-[#048B9A] border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <motion.div

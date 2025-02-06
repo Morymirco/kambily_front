@@ -915,7 +915,7 @@ const Profile = () => {
             >
               <ProductCard
                 id={favorite.product.id}
-                image={favorite.product.image?.image || '/3.png'}
+                image={favorite.product.images[0]?.image || '/3.png'}
                 gallery={favorite.product.images?.slice(1).map(img => img.image) || []}
                 title={favorite.product.name}
                 price={favorite.product.regular_price}
