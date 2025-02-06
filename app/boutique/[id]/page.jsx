@@ -520,44 +520,44 @@ const ProductDetail = () => {
   const sizes = ['S', 'M', 'L', 'XL'];
 
   // Données des produits similaires
-  const similarProductsData = [
-    {
-      id: 1,
-      image: "/realite.webp",
-      gallery: ["/realite.webp", "/realite2.webp", "/realite3.webp"],
-      title: "Réalité Virtuelle Casque , Portable 3D Virtuel Réalité Lunettes Pour Films Et Jeux",
-      price: "185,000",
-      oldPrice: "210,000",
-      inStock: true,
-      description: "Profitez dès maintenant avant la fin de l'offre"
-    },
-    {
-      id: 2,
-      image: "/pochette.webp",
-      gallery: ["/pochette.webp", "/pochette2.webp"],
-      title: "Coque De Téléphone Portable Figure",
-      price: "45,000",
-      inStock: true
-    },
-    {
-      id: 3,
-      image: "/lumiere.webp",
-      gallery: ["/lumiere.webp", "/lumiere2.webp"],
-      title: "1 pièce Lumière d'ambiance pour téléphone clip rond avec miroir",
-      price: "40,000",
-      inStock: true
-    },
-    {
-      id: 4,
-      image: "/lunettes.webp",
-      gallery: ["/lunettes.webp", "/lunettes2.webp"],
-      title: "3 Pièces Lunettes De Soleil De Mode",
-      price: "85,000",
-      oldPrice: "100,000",
-      inStock: true,
-      description: "Ne manquez pas cette opportunité tant qu'elle dure"
-    }
-  ];
+  // const similarProductsData = [
+  //   {
+  //     id: 1,
+  //     image: "/realite.webp",
+  //     gallery: ["/realite.webp", "/realite2.webp", "/realite3.webp"],
+  //     title: "Réalité Virtuelle Casque , Portable 3D Virtuel Réalité Lunettes Pour Films Et Jeux",
+  //     price: "185,000",
+  //     oldPrice: "210,000",
+  //     inStock: true,
+  //     description: "Profitez dès maintenant avant la fin de l'offre"
+  //   },
+  //   {
+  //     id: 2,
+  //     image: "/pochette.webp",
+  //     gallery: ["/pochette.webp", "/pochette2.webp"],
+  //     title: "Coque De Téléphone Portable Figure",
+  //     price: "45,000",
+  //     inStock: true
+  //   },
+  //   {
+  //     id: 3,
+  //     image: "/lumiere.webp",
+  //     gallery: ["/lumiere.webp", "/lumiere2.webp"],
+  //     title: "1 pièce Lumière d'ambiance pour téléphone clip rond avec miroir",
+  //     price: "40,000",
+  //     inStock: true
+  //   },
+  //   {
+  //     id: 4,
+  //     image: "/lunettes.webp",
+  //     gallery: ["/lunettes.webp", "/lunettes2.webp"],
+  //     title: "3 Pièces Lunettes De Soleil De Mode",
+  //     price: "85,000",
+  //     oldPrice: "100,000",
+  //     inStock: true,
+  //     description: "Ne manquez pas cette opportunité tant qu'elle dure"
+  //   }
+  // ];
 
   // Données des catégories
   const categories = ['Pyjama', 'Femme', 'Ensemble', 'Nuit'];
@@ -912,7 +912,7 @@ const ProductDetail = () => {
                 <span className="text-2xl font-bold text-[#048B9A]">
                   {formatPrice(product?.regular_price)}
                 </span>
-                {product?.promo_price && (
+                {product?.promo_price != 0 && (
                   <span className="text-lg text-gray-500 line-through">
                     {formatPrice(product?.promo_price)}
                   </span>
@@ -961,7 +961,7 @@ const ProductDetail = () => {
 
             {/* Description */}
             <p className="text-gray-600">
-            {product?.long_description}
+            {product?.short_description}
             </p>
 
             {/* Sélection de taille */}
@@ -1104,9 +1104,9 @@ const ProductDetail = () => {
               <div>
                 <h3 className="font-semibold text-lg mb-3">Description du produit</h3>
                 <p className="text-gray-600 leading-relaxed">
-                  Découvrez notre ensemble pyjama élégant et confortable, parfait pour vos moments de détente. 
-                  Confectionné dans un tissu doux et respirant, cet ensemble comprend un top à fines brides 
-                  et un short assorti, tous deux ornés d'un charmant motif cœur.
+                {
+                
+                }
                 </p>
               </div>
 

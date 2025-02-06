@@ -130,14 +130,11 @@ export default function Navbar() {
     const fetchCategories = async () => {
       const token = localStorage.getItem('access_token');
       try {
-        const response = await fetch('https://api.kambily.store/categories/',
+        const response = await fetch('https://api.kambily.store/categories/nested/',
           {
             method: 'GET',
             mode: 'cors',
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Accept': 'application/json'
-            }
+           
           }
         );
         if (!response.ok) throw new Error('Erreur lors du chargement des catégories',
