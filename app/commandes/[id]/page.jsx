@@ -4,12 +4,16 @@ import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { toast } from 'react-hot-toast';
 import { FaBox, FaCheck, FaClock, FaTruck } from 'react-icons/fa';
 import { HOST_IP, PORT, PROTOCOL_HTTP } from './../../constants';
+import { useRouter } from 'next/navigation';
+import { GoogleMap, Marker } from '@react-google-maps/api';
+import { useGoogleMapsScript } from '@/app/hooks/useGoogleMapsScript';
 
 const OrderDetailSkeleton = () => {
+  
   return (
     <div className="max-w-[1400px] mx-auto px-4 md:px-16 py-12 animate-pulse">
       {/* Fil d'Ariane skeleton */}
@@ -62,22 +66,33 @@ const OrderDetailSkeleton = () => {
 
 export default function OrderDetail() {
   const { id } = useParams();
+  const router = useRouter();
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
-  const { authFetch } = useAuth();
+  const { authFetch, user } = useAuth();
+  const mapRef = useRef(null);
+  const isGoogleMapsLoaded = useGoogleMapsScript();
 
   useEffect(() => {
     if (!id) {
       toast.error('ID de commande non trouvé');
       return;
     }
+    //authefication
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      toast.error('Vous devez vous connecter pour voir cette page');
+      router.push('/login');
+      return;
+    }
 
     const fetchOrderDetails = async () => {
       try {
-        const response = await authFetch(`${PROTOCOL_HTTP}://${HOST_IP}${PORT}/orders/${id}/`);
+        const response = await authFetch(`${PROTOCOL_HTTP}://${HOST_IP}${PORT}/orders/show/?number=${id}`);
         if (!response.ok) throw new Error('Erreur lors de la récupération de la commande');
         const data = await response.json();
         setOrder(data);
+        console.log(data);
       } catch (error) {
         console.error('Erreur:', error);
         toast.error('Erreur lors de la récupération de la commande');
@@ -88,6 +103,43 @@ export default function OrderDetail() {
 
     fetchOrderDetails();
   }, [id]);
+
+  useEffect(() => {
+    if (!isGoogleMapsLoaded || !mapRef.current || !order?.delivery) return;
+
+    const map = new window.google.maps.Map(mapRef.current, {
+      center: {
+        lat: parseFloat(order.delivery.latitude),
+        lng: parseFloat(order.delivery.longitude)
+      },
+      zoom: 15,
+      mapTypeControl: false,
+      streetViewControl: false,
+      fullscreenControl: false
+    });
+
+    // Créer une icône personnalisée avec l'image de profil
+    const customMarker = {
+      url: user?.image || '/placeholder-avatar.png',
+      scaledSize: new window.google.maps.Size(40, 40),
+      origin: new window.google.maps.Point(0, 0),
+      anchor: new window.google.maps.Point(20, 20),
+      shape: {
+        coords: [20, 20, 20],
+        type: 'circle'
+      }
+    };
+
+    new window.google.maps.Marker({
+      position: {
+        lat: parseFloat(order.delivery.latitude),
+        lng: parseFloat(order.delivery.longitude)
+      },
+      map: map,
+      icon: customMarker,
+      animation: window.google.maps.Animation.DROP
+    });
+  }, [isGoogleMapsLoaded, order, user]);
 
   if (loading) {
     return <OrderDetailSkeleton />;
@@ -126,12 +178,12 @@ export default function OrderDetail() {
         <span>›</span>
         <Link href="/profile" className="hover:text-[#048B9A]">Mon compte</Link>
         <span>›</span>
-        <span className="text-gray-900">Commande #{order.id}</span>
+        <span className="text-gray-900">Commande #{order.number}</span>
       </div>
 
       {/* En-tête */}
       <div className="mb-8">
-        <h1 className="text-2xl font-bold mb-2">Détails de la commande #{order.id}</h1>
+        <h1 className="text-2xl font-bold mb-2">Détails de la commande #{order.number}</h1>
         <p className="text-gray-600">
           Commandé le {new Date(order.created_at).toLocaleDateString()}
         </p>
@@ -184,7 +236,7 @@ export default function OrderDetail() {
           >
             <h2 className="text-lg font-semibold mb-6">Produits commandés</h2>
             <div className="space-y-6">
-              {order.items?.map((item) => (
+              {order?.order_items?.map((item) => (
                 <div key={item.id} className="flex gap-4">
                   <div className="relative w-20 h-20 rounded-lg overflow-hidden">
                     <Image
@@ -196,9 +248,9 @@ export default function OrderDetail() {
                   </div>
                   <div className="flex-1">
                     <h3 className="font-medium">{item.product?.name}</h3>
-                    <p className="text-gray-500">Quantité: {item.quantity}</p>
+                    <p className="text-gray-500">Quantité: {item?.product?.quantity}</p>
                     <p className="text-[#048B9A] font-medium">
-                      {item.price?.toLocaleString()} GNF
+                      {item?.product?.regular_price?.toLocaleString()} GNF
                     </p>
                   </div>
                 </div>
@@ -215,10 +267,40 @@ export default function OrderDetail() {
           >
             <h2 className="text-lg font-semibold mb-4">Adresse de livraison</h2>
             <div className="text-gray-600">
-              <p>{order.shipping_address?.addresse}</p>
-              <p>{order.shipping_address?.ville}</p>
-              <p>{order.shipping_address?.pays}</p>
-              <p className="mt-2">Tél: {order.shipping_address?.telephone}</p>
+              <p>{order.delivery?.address}</p>
+              <p>{order.delivery?.ville}</p>
+                <p>{order.delivery?.pays}</p>
+              <p className="mt-2">Tél: {order.delivery?.telephone}</p>
+            </div>
+            {/* GOOGLE MAP AVEC LATITUDE ET LONGITUTDE */}
+            <div className="mt-4">
+              <div 
+                ref={mapRef}
+                className="w-full h-[300px] rounded-lg overflow-hidden"
+              >
+                {order.delivery?.latitude && order.delivery?.longitude && (
+                  <GoogleMap
+                    mapContainerStyle={{ width: '100%', height: '100%' }}
+                    center={{
+                      lat: parseFloat(order.delivery.latitude),
+                      lng: parseFloat(order.delivery.longitude)
+                    }}
+                    zoom={15}
+                    options={{
+                      mapTypeControl: false,
+                      streetViewControl: false,
+                      fullscreenControl: false
+                    }}
+                  >
+                    <Marker
+                      position={{
+                        lat: parseFloat(order.delivery.latitude),
+                        lng: parseFloat(order.delivery.longitude)
+                      }}
+                    />
+                  </GoogleMap>
+                )}
+              </div>
             </div>
           </motion.div>
         </div>
@@ -235,11 +317,11 @@ export default function OrderDetail() {
             <div className="space-y-3">
               <div className="flex justify-between">
                 <span className="text-gray-600">Sous-total</span>
-                <span>{order.subtotal?.toLocaleString()} GNF</span>
+                <span>{order.total_price?.toLocaleString()} GNF</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Frais de livraison</span>
-                <span>{order.shipping_cost?.toLocaleString()} GNF</span>
+                <span>{order.total_delivery?.toLocaleString()} GNF</span>
               </div>
               {order.discount > 0 && (
                 <div className="flex justify-between text-green-600">
@@ -250,7 +332,9 @@ export default function OrderDetail() {
               <div className="border-t pt-3 mt-3">
                 <div className="flex justify-between font-semibold">
                   <span>Total</span>
-                  <span className="text-lg">{order.total_price?.toLocaleString()} GNF</span>
+                  <span className="text-lg">{
+                    Number(order.total_price) + Number(order.total_delivery)
+                  } GNF</span>
                 </div>
               </div>
             </div>
@@ -261,7 +345,7 @@ export default function OrderDetail() {
             <h2 className="text-lg font-semibold mb-4">Méthode de paiement</h2>
             <div className="flex items-center gap-3">
               <Image
-                src={`/paiements/${order.payment_method}.png`}
+                src={`/paiements/om.png`}
                 alt={order.payment_method}
                 width={32}
                 height={32}

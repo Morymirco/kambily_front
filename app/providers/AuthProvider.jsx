@@ -114,12 +114,12 @@ export function AuthProvider({ children }) {
       }
 
       // Sauvegarder les tokens
-      localStorage.setItem('access_token', data.access);
-      localStorage.setItem('refresh_token', data.refresh);
+      localStorage.setItem('access_token', data.access_token);
+      localStorage.setItem('refresh_token', data.refresh_token);
       localStorage.setItem('user', JSON.stringify(data.user));
       
-      setAccessToken(data.access);
-      setRefreshToken(data.refresh);
+      setAccessToken(data.access_token);
+        setRefreshToken(data.refresh_token);
       setUser(data.user);
       setIsAuthenticated(true);
 
@@ -148,7 +148,7 @@ export function AuthProvider({ children }) {
       if (!token) {
         const refresh = localStorage.getItem('refresh_token');
         if (refresh) {
-          token = await refreshAccessToken(refresh);
+          token = await refreshAccessToken(refresh_token);
         } else {
           throw new Error('Non authentifié');
         }
@@ -166,7 +166,7 @@ export function AuthProvider({ children }) {
       if (response.status === 401) {
         const refresh = localStorage.getItem('refresh_token');
         if (refresh) {
-          const newToken = await refreshAccessToken(refresh);
+          const newToken = await refreshAccessToken(refresh_token);
           headers.Authorization = `Bearer ${newToken}`;
           return fetch(url, { ...options, headers });
         } else {
