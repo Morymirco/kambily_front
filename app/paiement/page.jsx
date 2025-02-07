@@ -115,12 +115,14 @@ const Payment = () => {
 
       const orderData = {
         delivery_address_id: selectedAddress.pk,
-        total_paid: finalTotal,
+        total_delivery: 3000,
         promo_code: promoApplied ? promoCode : undefined
       };
 
       const response = await axios.post(
-        `${PROTOCOL_HTTP}://${HOST_IP}${PORT}/orders/create/`,
+        `${PROTOCOL_HTTP}://
+        
+        ${HOST_IP}${PORT}/orders/create/`,
         orderData,
         {
           headers: {
