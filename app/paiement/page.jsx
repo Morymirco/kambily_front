@@ -120,9 +120,7 @@ const Payment = () => {
       };
 
       const response = await axios.post(
-        `${PROTOCOL_HTTP}://
-        
-        ${HOST_IP}${PORT}/orders/create/`,
+        `${PROTOCOL_HTTP}://${HOST_IP}${PORT}/orders/create/`,
         orderData,
         {
           headers: {
