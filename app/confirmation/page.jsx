@@ -5,7 +5,7 @@ import { FaBox, FaCheckCircle, FaEnvelope, FaTruck } from 'react-icons/fa';
 import { useSearchParams } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { HOST_IP, PORT, PROTOCOL_HTTP } from './../../constants';
+import { HOST_IP, PORT, PROTOCOL_HTTP } from './../constants';
 // Composant pour les boutons d'action
 const ActionButton = ({ href, variant = 'primary', children }) => {
   const baseStyles = "inline-block px-6 py-3 rounded-lg transition-colors";

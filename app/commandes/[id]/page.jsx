@@ -7,7 +7,7 @@ import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { FaBox, FaCheck, FaClock, FaTruck } from 'react-icons/fa';
-import { HOST_IP, PORT, PROTOCOL_HTTP } from './../../../constants';
+import { HOST_IP, PORT, PROTOCOL_HTTP } from './../../constants';
 
 const OrderDetailSkeleton = () => {
   return (

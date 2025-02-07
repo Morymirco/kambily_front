@@ -12,7 +12,7 @@ import {
   FaPinterestP,
   FaTwitter
 } from 'react-icons/fa';
-import { HOST_IP, PORT, PROTOCOL_HTTP } from './../../constants';
+import { HOST_IP, PORT, PROTOCOL_HTTP } from './../constants';
 
 const Contact = () => {
   const [formData, setFormData] = useState({

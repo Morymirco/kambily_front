@@ -18,7 +18,7 @@ import 'swiper/css/free-mode';
 import { FreeMode } from 'swiper/modules';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import ProductCard from './../../Components/Common/ProductCard';
-import { HOST_IP, PORT, PROTOCOL_HTTP } from './../../../constants';
+import { HOST_IP, PORT, PROTOCOL_HTTP } from './../../constants';
 
 const ProductSkeleton = () => (
   <div className="max-w-[1400px] mx-auto px-4 md:px-16 py-12">
