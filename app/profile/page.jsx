@@ -1,14 +1,14 @@
 'use client'
+import ProductCard from '@/app/Components/Common/ProductCard';
+import { useAuth } from '@/app/providers/AuthProvider';
 import { AnimatePresence, motion } from 'framer-motion';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { FaAddressCard, FaCamera, FaCog, FaCreditCard, FaExclamationTriangle, FaGlobe, FaHeart, FaMapMarkerAlt, FaMoon, FaPlus, FaShoppingBag, FaSignOutAlt, FaTimes, FaTrash, FaUser } from 'react-icons/fa';
-
-import ProductCard from '@/app/Components/Common/ProductCard';
-import { useAuth } from '@/app/providers/AuthProvider';
-import Link from 'next/link';
+import { HOST_IP, PORT, PROTOCOL_HTTP } from '../constants';
 
 const WishlistSkeleton = () => (
   <div className="space-y-6">
@@ -183,7 +183,7 @@ const Profile = () => {
           return;
         }
 
-        const response = await fetch('https://api.kambily.store/accounts/getuser/', {
+        const response = await fetch(`${PROTOCOL_HTTP}://${HOST_IP}${PORT}/accounts/getuser/`, {
           method: 'GET',
           mode: 'cors',
           headers: {
@@ -218,7 +218,7 @@ const Profile = () => {
       const token = localStorage.getItem('access_token');
       
       // Appel à l'API pour déconnecter l'utilisateur
-      await fetch('https://api.kambily.store/accounts/logout', {
+      await fetch(`${PROTOCOL_HTTP}://${HOST_IP}${PORT}/accounts/logout`, {
         method: 'POST',
         mode: 'cors',
         headers: {
@@ -389,7 +389,7 @@ const Profile = () => {
 
       try {
         console.log(formData);
-        const response = await fetch('https://api.kambily.store/accounts/modify/', {
+        const response = await fetch(`${PROTOCOL_HTTP}://${HOST_IP}${PORT}/accounts/modify/`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('access_token')}`
@@ -523,7 +523,7 @@ const Profile = () => {
                     </div>
                     <div className="space-y-2">
                       <p className="text-sm text-gray-500">Téléphone</p>
-                      <p className="font-medium">{profileData.phone}</p>
+                      <p className="font-medium">{profileData.phone_number}</p>
                     </div>
                   </div>
                 </motion.div>
@@ -531,9 +531,9 @@ const Profile = () => {
                 {/* Statistiques */}
                 <motion.div className="grid grid-cols-1 sm:grid-cols-3 gap-4" variants={formVariants}>
                   {[
-                    { value: 12, label: "Commandes" },
-                    { value: 5, label: "En favoris" },
-                    { value: 3, label: "Avis" }
+                    { value: userData?.total_orders, label: "Commandes" },
+                    { value: userData?.total_favorites, label: "En favoris" },
+                    { value: userData?.total_reviews, label: "Avis" }
                   ].map((stat, index) => (
                     <motion.div
                       key={index}
@@ -693,7 +693,7 @@ const Profile = () => {
 
     const fetchOrders = async () => {
       try {
-        const response = await authFetch('https://api.kambily.store/orders/');
+        const response = await authFetch(`${PROTOCOL_HTTP}://${HOST_IP}${PORT}/orders/`);
         
         if (!response.ok) {
           throw new Error('Erreur lors de la récupération des commandes');
@@ -833,7 +833,7 @@ const Profile = () => {
 
     const fetchFavorites = async () => {
       try {
-        const response = await authFetch('https://api.kambily.store/favorites/');
+        const response = await authFetch(`${PROTOCOL_HTTP}://${HOST_IP}${PORT}/favorites/`);
         if (!response.ok) throw new Error('Erreur lors de la récupération des favoris');
         const data = await response.json();
         setFavorites(data);
@@ -850,7 +850,7 @@ const Profile = () => {
 
       try {
         setIsRemoving(true);
-        const response = await authFetch(`https://api.kambily.store/favorites/delete/${productId}/`, {
+        const response = await authFetch(`${PROTOCOL_HTTP}://${HOST_IP}${PORT}/favorites/delete/${productId}/`, {
           method: 'DELETE',
         });
 
@@ -1225,7 +1225,7 @@ const Profile = () => {
 
     const fetchAddresses = async () => {
       try {
-        const response = await authFetch('https://api.kambily.store/addresses/');
+        const response = await authFetch(`${PROTOCOL_HTTP}://${HOST_IP}${PORT}/addresses/`);
         if (!response.ok) throw new Error('Erreur lors de la récupération des adresses');
         const data = await response.json();
         setAddresses(data);
@@ -1242,7 +1242,7 @@ const Profile = () => {
       setIsSubmitting(true);
       console.log(formData);
       try {
-        const response = await authFetch('https://api.kambily.store/addresses/create/', {
+        const response = await authFetch(`${PROTOCOL_HTTP}://${HOST_IP}${PORT}/addresses/create/`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -1275,7 +1275,7 @@ const Profile = () => {
     const handleDeleteAddress = async (addressId) => {
       try {
         setIsDeleting(true);
-        const response = await authFetch(`https://api.kambily.store/addresses/delete/${addressId}/`, {
+        const response = await authFetch(`${PROTOCOL_HTTP}://${HOST_IP}${PORT}/addresses/delete/${addressId}/`, {
           method: 'DELETE',
         });
 

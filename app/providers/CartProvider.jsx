@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { createContext, useContext, useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { useAuth } from './AuthProvider';
-
+import { HOST_IP, PORT, PROTOCOL_HTTP } from './../constants';
 const CartContext = createContext();
 
 export const CartProvider = ({ children }) => {
@@ -18,7 +18,7 @@ export const CartProvider = ({ children }) => {
     const loadCart = async () => {
       if (isAuthenticated) {
         try {
-          const response = await authFetch('https://api.kambily.store/carts/');
+          const response = await authFetch(`${PROTOCOL_HTTP}://${HOST_IP}${PORT}/carts/`);
           if (response.ok) {
             const data = await response.json();
             console.log("depuis le pro",data);
@@ -43,7 +43,7 @@ export const CartProvider = ({ children }) => {
         return;
       }
 
-      const response = await authFetch(`https://api.kambily.store/carts/create/${product.id}/`, {
+        const response = await authFetch(`${PROTOCOL_HTTP}://${HOST_IP}${PORT}/carts/create/${product.id}/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -114,7 +114,7 @@ export const CartProvider = ({ children }) => {
 
   const removeFromCart = async (productId) => {
     try {
-      const response = await authFetch(`https://api.kambily.store/carts/remove/${productId}/`, {
+      const response = await authFetch(`${PROTOCOL_HTTP}://${HOST_IP}${PORT}/carts/remove/${productId}/`, {
         method: 'DELETE'
       });
 
@@ -133,7 +133,7 @@ export const CartProvider = ({ children }) => {
     if (newQuantity < 1) return;
 
     try {
-      const response = await authFetch(`https://api.kambily.store/carts/update/${productId}/`, {
+      const response = await authFetch(`${PROTOCOL_HTTP}://${HOST_IP}${PORT}/carts/update/${productId}/`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -153,7 +153,7 @@ export const CartProvider = ({ children }) => {
 
   const clearCart = async () => {
     try {
-      const response = await authFetch('https://api.kambily.store/carts/clear/', {
+      const response = await authFetch(`${PROTOCOL_HTTP}://${HOST_IP}${PORT}/carts/clear/`, {
         method: 'DELETE'
       });
 

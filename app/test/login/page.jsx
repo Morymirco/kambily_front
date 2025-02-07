@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
+import { HOST_IP, PORT, PROTOCOL_HTTP } from './../../constants';
 
 export default function LoginPage() {
   const [formData, setFormData] = useState({
@@ -27,7 +28,7 @@ export default function LoginPage() {
     setError(null);
 
     try {
-      const response = await fetch('https://api.kambily.store/accounts/login/', {
+      const response = await fetch(`${PROTOCOL_HTTP}://${HOST_IP}${PORT}/accounts/login/`, {
         method: 'POST',
         mode: 'cors',
         headers: {

@@ -2,7 +2,7 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { useAuth } from './AuthProvider';
-
+import { HOST_IP, PORT, PROTOCOL_HTTP } from './../constants';
 const FavoritesContext = createContext();
 
 export const useFavorites = () => {
@@ -31,7 +31,7 @@ export function FavoritesProvider({ children }) {
   // Récupérer tous les favoris
   const fetchFavorites = async () => {
     try {
-      const response = await authFetch('https://api.kambily.store/favorites/');
+      const response = await authFetch(`${PROTOCOL_HTTP}://${HOST_IP}${PORT}/favorites/`);
       if (!response.ok) throw new Error('Erreur lors de la récupération des favoris');
       
       const data = await response.json();
@@ -52,7 +52,7 @@ export function FavoritesProvider({ children }) {
   // Ajouter un produit aux favoris
   const addToFavorites = async (productId) => {
     try {
-      const response = await authFetch(`https://api.kambily.store/favorites/create/${productId}/`, {
+        const response = await authFetch(`${PROTOCOL_HTTP}://${HOST_IP}${PORT}/favorites/create/${productId}/`, {
         method: 'POST'
       });
 
@@ -73,7 +73,7 @@ export function FavoritesProvider({ children }) {
   // Retirer un produit des favoris
   const removeFromFavorites = async (productId) => {
     try {
-      const response = await authFetch(`https://api.kambily.store/favorites/delete/${productId}/`, {
+      const response = await authFetch(`${PROTOCOL_HTTP}://${HOST_IP}${PORT}/favorites/delete/${productId}/`, {
         method: 'DELETE'
       });
 

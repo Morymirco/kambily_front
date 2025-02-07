@@ -12,9 +12,7 @@ import {
   FaPinterestP,
   FaTwitter
 } from 'react-icons/fa';
-
-
-
+import { HOST_IP, PORT, PROTOCOL_HTTP } from './../../constants';
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -73,7 +71,7 @@ const Contact = () => {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch('https://api.kambily.store/contact/', {
+      const response = await fetch(`${PROTOCOL_HTTP}://${HOST_IP}${PORT}/contact/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

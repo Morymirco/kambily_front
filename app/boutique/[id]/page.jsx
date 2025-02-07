@@ -18,6 +18,7 @@ import 'swiper/css/free-mode';
 import { FreeMode } from 'swiper/modules';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import ProductCard from './../../Components/Common/ProductCard';
+import { HOST_IP, PORT, PROTOCOL_HTTP } from './../../../constants';
 
 const ProductSkeleton = () => (
   <div className="max-w-[1400px] mx-auto px-4 md:px-16 py-12">
@@ -187,7 +188,7 @@ const ReviewForm = ({ productId, setReviews }) => {
 
     
       const response = await axios.post(
-        'https://api.kambily.store/reviews/create/',
+        `${PROTOCOL_HTTP}://${HOST_IP}${PORT}/reviews/create/`,
         formData,
         {
           headers: {
@@ -443,7 +444,7 @@ const ProductDetail = () => {
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const response = await fetch(`https://api.kambily.store/products/${params.id}/`, {
+        const response = await fetch(`${PROTOCOL_HTTP}://${HOST_IP}${PORT}/products/${params.id}/`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -472,7 +473,7 @@ const ProductDetail = () => {
   useEffect(() => {
     const fetchSimilarProducts = async () => {
       try {
-        const response = await axios.get(`https://api.kambily.store/products/similar/${params.id}/`);
+        const response = await axios.get(`${PROTOCOL_HTTP}://${HOST_IP}${PORT}/products/similar/${params.id}/`);
         
         // Regrouper tous les produits similaires
         const allSimilarProducts = [
@@ -767,7 +768,7 @@ const ProductDetail = () => {
 
     setIsAddingToCart(true);
     try {
-      const response = await authFetch(`https://api.kambily.store/carts/create/${product.id}/`, {
+      const response = await authFetch(`${PROTOCOL_HTTP}://${HOST_IP}${PORT}/carts/create/${product.id}/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

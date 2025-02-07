@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-
+import { HOST_IP, PORT, PROTOCOL_HTTP } from './../../constants';
 export default function ConfirmAccount() {
     const [confirmation, setConfirmation] = useState('');
     const [loading, setLoading] = useState(false);
@@ -28,7 +28,7 @@ export default function ConfirmAccount() {
         try {
             const token = localStorage.getItem('access_token');
             const response = await axios.post(
-                'https://api.kambily.store/accounts/confirm/',
+                `${PROTOCOL_HTTP}://${HOST_IP}${PORT}/accounts/confirm/`,
                 { confirmation: parseInt(confirmation, 10) },
                 {
                     headers: {

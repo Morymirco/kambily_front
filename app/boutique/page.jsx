@@ -4,7 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { FaChevronLeft, FaChevronRight, FaEye, FaFacebookF, FaFilter, FaLink, FaSearch, FaShoppingCart, FaTimes, FaTwitter, FaWhatsapp } from 'react-icons/fa';
-
+import { HOST_IP, PORT, PROTOCOL_HTTP } from './../constants';
 // Composant Toast modifié
 const Toast = ({ message, image, onView, isError }) => (
   <div className="fixed bottom-16 sm:bottom-4 right-4 z-[80] animate-slide-up">
@@ -167,7 +167,7 @@ const ProductCard = ({ id, image, gallery = [], title, price, inStock, category,
 
       try {
         // Vérifier si le token est valide avec l'API
-        const response = await fetch('https://api.kambily.store/auth/verify/', {
+        const response = await fetch(`${PROTOCOL_HTTP}://${HOST_IP}${PORT}/auth/verify/`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -212,7 +212,7 @@ const ProductCard = ({ id, image, gallery = [], title, price, inStock, category,
         return;
       }
 
-      const response = await fetch(`https://api.kambily.store/carts/create/${id}/`, {
+      const response = await fetch(`${PROTOCOL_HTTP}://${HOST_IP}${PORT}/carts/create/${id}/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -771,7 +771,7 @@ const Boutique = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await fetch('https://api.kambily.store/products/', {
+        const response = await fetch(`${PROTOCOL_HTTP}://${HOST_IP}${PORT}/products/`, {
           method: 'GET',
           mode: 'cors',
           headers: {

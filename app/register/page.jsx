@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { FaEye, FaEyeSlash, FaUser } from 'react-icons/fa';
 import { isGuineanPhoneNumber } from '../constants';
-
+import { HOST_IP, PORT, PROTOCOL_HTTP } from './../constants';
 /**
  * Auteur : koulibaly
  * email : [koulibalyamadou10@gmail.com, amadoukoulibaly@kambily.store]
@@ -95,7 +95,7 @@ export default function RegisterPage() {
     console.log('Données à envoyer:', Object.fromEntries(formDataToSend) );
     
     // Inscription
-    const registerResponse = axios.post('https://api.kambily.store/accounts/register/', formDataToSend, {
+    const registerResponse = axios.post(`${PROTOCOL_HTTP}://${HOST_IP}${PORT}/accounts/register/`, formDataToSend, {
       headers: { 'Content-Type': 'multipart/form-data' }
     });
     

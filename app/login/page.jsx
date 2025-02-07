@@ -58,13 +58,15 @@ export default function Login() {
       });
       
       const data = await response.json();
+
+      console.log(data);
       
       if (!response.ok) {
         throw new Error(data.message || 'Email ou mot de passe incorrect');
       }
       
       // Stocker le token dans le localStorage
-      localStorage.setItem('access_token', data.access);
+      localStorage.setItem('access_token', data.access_token);
       
       // Stocker les informations utilisateur si nécessaire
       if (data.user) {

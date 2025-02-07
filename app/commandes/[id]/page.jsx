@@ -7,6 +7,7 @@ import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { FaBox, FaCheck, FaClock, FaTruck } from 'react-icons/fa';
+import { HOST_IP, PORT, PROTOCOL_HTTP } from './../../../constants';
 
 const OrderDetailSkeleton = () => {
   return (
@@ -73,7 +74,7 @@ export default function OrderDetail() {
 
     const fetchOrderDetails = async () => {
       try {
-        const response = await authFetch(`https://api.kambily.store/orders/${id}/`);
+        const response = await authFetch(`${PROTOCOL_HTTP}://${HOST_IP}${PORT}/orders/${id}/`);
         if (!response.ok) throw new Error('Erreur lors de la récupération de la commande');
         const data = await response.json();
         setOrder(data);

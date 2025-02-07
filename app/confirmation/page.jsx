@@ -5,7 +5,7 @@ import { FaBox, FaCheckCircle, FaEnvelope, FaTruck } from 'react-icons/fa';
 import { useSearchParams } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-
+import { HOST_IP, PORT, PROTOCOL_HTTP } from './../../constants';
 // Composant pour les boutons d'action
 const ActionButton = ({ href, variant = 'primary', children }) => {
   const baseStyles = "inline-block px-6 py-3 rounded-lg transition-colors";
@@ -48,7 +48,7 @@ const OrderSummary = () => {
     const fetchOrderDetails = async () => {
       try {
         const response = await axios.get(
-          `https://api.kambily.store/orders/show/?number=${orderNumber}/`,
+          `${PROTOCOL_HTTP}://${HOST_IP}${PORT}/orders/show/?number=${orderNumber}/`,
           {
             headers: {
               'Authorization': `Bearer ${localStorage.getItem('access_token')}`

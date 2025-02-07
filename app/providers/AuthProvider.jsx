@@ -1,6 +1,7 @@
 'use client'
 import { jwtDecode } from "jwt-decode";
 import { createContext, useContext, useEffect, useState } from 'react';
+import { HOST_IP, PORT, PROTOCOL_HTTP } from './../constants';
 
 const AuthContext = createContext();
 
@@ -62,7 +63,7 @@ export function AuthProvider({ children }) {
         throw new Error('Pas de refresh token disponible');
       }
 
-      const response = await fetch('https://api.kambily.store/accounts/token/refresh/', {
+      const response = await fetch(`${PROTOCOL_HTTP}://${HOST_IP}${PORT}/accounts/token/refresh/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -98,7 +99,7 @@ export function AuthProvider({ children }) {
 
   const login = async (email, password) => {
     try {
-      const response = await fetch('https://api.kambily.store/accounts/login/', {
+      const response = await fetch(`${PROTOCOL_HTTP}://${HOST_IP}${PORT}/accounts/login/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

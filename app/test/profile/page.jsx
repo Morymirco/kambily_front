@@ -2,6 +2,7 @@
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { FaEnvelope, FaMapMarkerAlt, FaPhone, FaSignOutAlt, FaUser } from 'react-icons/fa';
+import { HOST_IP, PORT, PROTOCOL_HTTP } from './../../constants';
 
 export default function ProfilePage() {
   const [userData, setUserData] = useState(null);
@@ -18,7 +19,7 @@ export default function ProfilePage() {
           return;
         }
 
-        const response = await fetch('https://api.kambily.store/accounts/get_user_with_token', {
+        const response = await fetch(`${PROTOCOL_HTTP}://${HOST_IP}${PORT}/accounts/get_user_with_token`, {
           mode: 'cors',
           headers: {
             'Authorization': `Bearer ${token}`,

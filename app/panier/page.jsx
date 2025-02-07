@@ -11,6 +11,7 @@ import toast, { Toaster } from 'react-hot-toast';
 import { FaEdit, FaMapPin, FaSearchLocation, FaTrash } from 'react-icons/fa';
 import DeliveryTimeSelector from '../Components/DeliveryTimeSelector';
 import LoginPrompt from '../Components/LoginPrompt';
+import { HOST_IP, PORT, PROTOCOL_HTTP } from './../constants';
 
 const containerStyle = {
   width: '100%',
@@ -230,7 +231,7 @@ const Panier = () => {
         return <LoginPrompt />;
       }
 
-      const response = await fetch('https://api.kambily.store/carts/', {
+      const response = await fetch(`${PROTOCOL_HTTP}://${HOST_IP}${PORT}/carts/`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -271,7 +272,7 @@ const Panier = () => {
       // Calculer la différence de quantité
       const quantityDiff = newQuantity - currentItem.quantity;
 
-      const response = await fetch(`https://api.kambily.store/carts/update/${itemId}/`, {
+      const response = await fetch(`${PROTOCOL_HTTP}://${HOST_IP}${PORT}/carts/update/${itemId}/`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -302,7 +303,7 @@ const Panier = () => {
     setDeletingItemId(itemId);
     try {
       const token = localStorage.getItem('access_token');
-      const response = await fetch(`https://api.kambily.store/carts/remove/${itemId}/`, {
+      const response = await fetch(`${PROTOCOL_HTTP}://${HOST_IP}${PORT}/carts/remove/${itemId}/`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -605,7 +606,7 @@ const Panier = () => {
               <motion.button
                 onClick={async () => {
                   try {
-                    const response = await authFetch('https://api.kambily.store/carts/clear/', {
+                    const response = await authFetch(`${PROTOCOL_HTTP}://${HOST_IP}${PORT}/carts/clear/`, {
                       method: 'DELETE'
                     });
 

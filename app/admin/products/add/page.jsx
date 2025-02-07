@@ -4,7 +4,8 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { FaPlus, FaTrash } from "react-icons/fa";
-import { generateSKU } from './../../../constants';
+import { generateSKU,HOST_IP,PORT,PROTOCOL_HTTP } from './../../../constants';
+
 
 export default function AddProduct() {
   const [formData, setFormData] = useState({
@@ -64,7 +65,7 @@ export default function AddProduct() {
   // Récupérer les catégories principales
   const fetchCategories = async () => {
     try {
-      const response = await fetch('https://api.kambily.store/categories/', {
+      const response = await fetch(`${PROTOCOL_HTTP}://${HOST_IP}${PORT}/categories/`, {
         method: 'GET',
         mode: 'cors',
         headers: {
