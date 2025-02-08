@@ -6,7 +6,7 @@ import { AuthProvider } from './providers/AuthProvider';
 import { CartProvider } from './providers/CartProvider';
 import { FavoritesProvider } from './providers/FavoritesProvider';
 import { LoadingProvider } from './providers/LoadingProvider';
-import JsonLd from './components/JsonLd.jsx'
+import JsonLd from './Components/Common/JsonLd'
 
 const krub = Krub({
   subsets: ['latin'],
