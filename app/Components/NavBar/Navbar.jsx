@@ -307,7 +307,7 @@ export default function Navbar() {
                 >
                   Accueil
                 </Link>
-                <div>
+                {/* <div>
                   <button 
                     className="flex items-center justify-between w-full text-gray-800 hover:text-[#048B9A]"
                     onClick={() => setIsDrawerOpen(false)}
@@ -319,7 +319,7 @@ export default function Navbar() {
                       </svg>
                     </div>
                   </button>
-                </div>
+                </div> */}
                 <Link 
                   href="/boutique" 
                   className="block text-gray-800 hover:text-[#048B9A]"

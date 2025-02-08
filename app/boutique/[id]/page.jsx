@@ -8,7 +8,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { FaFacebookF, FaHeart, FaImage, FaLinkedinIn, FaShare, FaShoppingCart, FaStar, FaTimes, FaTwitter, FaUser, FaWhatsapp } from 'react-icons/fa';
 import { FiZoomIn } from 'react-icons/fi';
@@ -17,8 +17,8 @@ import 'swiper/css';
 import 'swiper/css/free-mode';
 import { FreeMode } from 'swiper/modules';
 import { Swiper, SwiperSlide } from 'swiper/react';
-import ProductCard from './../../Components/Common/ProductCard';
-import { HOST_IP, PORT, PROTOCOL_HTTP } from './../../constants';
+import ProductCard from '../../Components/Common/ProductCard';
+import { HOST_IP, PORT, PROTOCOL_HTTP } from '../../constants';
 
 const ProductSkeleton = () => (
   <div className="max-w-[1400px] mx-auto px-4 md:px-16 py-12">
