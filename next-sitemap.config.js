@@ -3,10 +3,10 @@ module.exports = {
   siteUrl: 'https://kambily.store',
   generateRobotsTxt: true,
   generateIndexSitemap: false,
-  exclude: ['/404', '/500', '/server-sitemap.xml'],
+  exclude: ['/404', '/500', '/sitemap.xml'],
   robotsTxtOptions: {
     additionalSitemaps: [
-      'https://kambily.store/server-sitemap.xml',
+      'https://kambily.store/sitemap.xml',
     ],
     policies: [
       {
