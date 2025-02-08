@@ -19,6 +19,7 @@ import { FreeMode } from 'swiper/modules';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import ProductCard from '../../Components/Common/ProductCard';
 import { HOST_IP, PORT, PROTOCOL_HTTP } from '../../constants';
+import { useCart } from '@/app/providers/CartProvider';
 
 const ProductSkeleton = () => (
   <div className="max-w-[1400px] mx-auto px-4 md:px-16 py-12">
@@ -414,6 +415,7 @@ const formatPrice = (price) => {
 
 const ProductDetail = () => {
   const { toggleFavorite, isFavorite } = useFavorites();
+  const { addToCart } = useCart();
   const params = useParams();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -758,67 +760,25 @@ const ProductDetail = () => {
   };
 
   const handleAddToCart = async () => {
-    if (!selectedSize && product?.sizes?.length > 0) {
-      toast.error('Veuillez sélectionner une taille');
-      return;
-    }
-
-    if (!selectedColor && product?.colors?.length > 0) {
-      toast.error('Veuillez sélectionner une couleur');
-      return;
-    }
-
-    setIsAddingToCart(true);
+    if (isAddingToCart) return;
+    
     try {
-      const response = await authFetch(`${PROTOCOL_HTTP}://${HOST_IP}${PORT}/carts/create/${product.id}/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          product_id: product.id,
-          quantity: quantity,
-          size: selectedSize || null,
-          color: selectedColor || null,
-        }),
-      });
+      setIsAddingToCart(true);
+      
+      const productToAdd = {
+        id: product.id,
+        name: product.name,
+        image: productImages[0],
+        quantity: quantity
+      };
 
-      if (!response.ok) {
-        throw new Error('Erreur lors de l\'ajout au panier');
-        console.log(response);
-      }
-
-      toast.custom((t) => (
-        <div className="fixed bottom-4 right-4 z-50 animate-slide-up">
-          <div className="bg-white border border-gray-200 rounded-lg shadow-lg p-4 w-[300px] flex items-center gap-4">
-            <div className="relative w-16 h-16 flex-shrink-0 rounded-md overflow-hidden">
-              <Image
-                src={product.images[0]?.image || '/placeholder.png'}
-                alt={product.name}
-                fill
-                className="object-cover"
-              />
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-1.5 font-medium text-sm text-green-600">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-                Ajouté au panier
-              </div>
-              <p className="text-gray-600 text-sm mt-1 truncate">{product.name}</p>
-              <Link href="/panier">
-                <button className="mt-2 text-[#048B9A] text-sm font-medium hover:text-[#037383]">
-                  Voir le panier
-                </button>
-              </Link>
-            </div>
-          </div>
-        </div>
-      ), { duration: 3000 });
-
+      await addToCart(productToAdd);
+      
+      // Réinitialiser la quantité après l'ajout
+      setQuantity(1);
+      
     } catch (error) {
-      toast.error(error.message);
+      toast.error("Erreur lors de l'ajout au panier");
     } finally {
       setIsAddingToCart(false);
     }
@@ -1007,15 +967,18 @@ const ProductDetail = () => {
             <div className="flex gap-4 pt-6">
               <button 
                 onClick={handleAddToCart}
-                disabled={isAddingToCart}
-                className="flex-1 bg-[#048B9A] text-white h-14 rounded-lg flex items-center justify-center gap-2 hover:bg-[#037483] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={isAddingToCart || !product?.stock_status === 'in_stock'}
+                className="flex-1 flex items-center justify-center gap-2 py-3 bg-[#048B9A] text-white rounded-lg hover:bg-[#037483] disabled:opacity-50"
               >
                 {isAddingToCart ? (
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <>
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    <span>Ajout en cours...</span>
+                  </>
                 ) : (
                   <>
                     <FaShoppingCart />
-                    <span>Ajouter</span>
+                    <span>Ajouter au panier</span>
                   </>
                 )}
               </button>
