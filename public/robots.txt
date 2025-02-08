@@ -1,0 +1,11 @@
+# *
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /private
+
+# Host
+Host: https://kambily.store
+
+# Sitemaps
+Sitemap: https://kambily.store/sitemap.xml

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:news="http://www.google.com/schemas/sitemap-news/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:mobile="http://www.google.com/schemas/sitemap-mobile/1.0" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1" xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">
+<url><loc>https://kambily.store/robots.txt</loc><lastmod>2025-02-08T13:20:09.955Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://kambily.store/admin/products/add</loc><lastmod>2025-02-08T13:20:09.956Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://kambily.store/about</loc><lastmod>2025-02-08T13:20:09.956Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://kambily.store/confirmation</loc><lastmod>2025-02-08T13:20:09.956Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://kambily.store/contact</loc><lastmod>2025-02-08T13:20:09.956Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://kambily.store/forgot-password</loc><lastmod>2025-02-08T13:20:09.956Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://kambily.store/favoris</loc><lastmod>2025-02-08T13:20:09.956Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://kambily.store/cookies</loc><lastmod>2025-02-08T13:20:09.956Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://kambily.store/login</loc><lastmod>2025-02-08T13:20:09.956Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://kambily.store/conditions</loc><lastmod>2025-02-08T13:20:09.956Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://kambily.store/boutique</loc><lastmod>2025-02-08T13:20:09.956Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://kambily.store/panier</loc><lastmod>2025-02-08T13:20:09.956Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://kambily.store/paiement</loc><lastmod>2025-02-08T13:20:09.956Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://kambily.store/commandes</loc><lastmod>2025-02-08T13:20:09.956Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://kambily.store/register/confirmation</loc><lastmod>2025-02-08T13:20:09.956Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://kambily.store/retour</loc><lastmod>2025-02-08T13:20:09.956Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://kambily.store/profile</loc><lastmod>2025-02-08T13:20:09.956Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://kambily.store/test/contact</loc><lastmod>2025-02-08T13:20:09.956Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://kambily.store</loc><lastmod>2025-02-08T13:20:09.956Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://kambily.store/register</loc><lastmod>2025-02-08T13:20:09.956Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://kambily.store/test/profile</loc><lastmod>2025-02-08T13:20:09.956Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://kambily.store/test/categories/create</loc><lastmod>2025-02-08T13:20:09.956Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://kambily.store/test/login</loc><lastmod>2025-02-08T13:20:09.956Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://kambily.store/test/home</loc><lastmod>2025-02-08T13:20:09.956Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://kambily.store/test/testaddproduct</loc><lastmod>2025-02-08T13:20:09.956Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://kambily.store/test/testaffichecat</loc><lastmod>2025-02-08T13:20:09.956Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://kambily.store/test/testaffichepanier</loc><lastmod>2025-02-08T13:20:09.956Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://kambily.store/confidentialite</loc><lastmod>2025-02-08T13:20:09.956Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://kambily.store/test/testajoutcate</loc><lastmod>2025-02-08T13:20:09.956Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://kambily.store/test/testafficheproduct</loc><lastmod>2025-02-08T13:20:09.956Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://kambily.store/test/register</loc><lastmod>2025-02-08T13:20:09.956Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://kambily.store/aide</loc><lastmod>2025-02-08T13:20:09.956Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+</urlset>
