@@ -1,9 +1,8 @@
 import { MetadataRoute } from 'next'
-import { HOST_IP, PORT, PROTOCOL_HTTP } from './constants'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   try {
-    const productsResponse = await fetch(`${PROTOCOL_HTTP}://${HOST_IP}${PORT}/products/`)
+    const productsResponse = await fetch(`https://api.kambily.store/products/`)
     const productsData = await productsResponse.json()
     const products = Array.isArray(productsData) ? productsData : []
 
@@ -46,5 +45,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         priority: 0.9
       }
     ]
-  }
+    }
 }
