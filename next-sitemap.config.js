@@ -1,12 +1,12 @@
 /** @type {import('next-sitemap').IConfig} */
 module.exports = {
-  siteUrl: 'https://votre-domaine.com',
+  siteUrl: 'https://kambily.store',
   generateRobotsTxt: true,
   generateIndexSitemap: false,
   exclude: ['/404', '/500', '/server-sitemap.xml'],
   robotsTxtOptions: {
     additionalSitemaps: [
-      'https://votre-domaine.com/server-sitemap.xml',
+      'https://kambily.store/server-sitemap.xml',
     ],
     policies: [
       {

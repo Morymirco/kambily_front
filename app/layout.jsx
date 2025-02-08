@@ -6,6 +6,7 @@ import { AuthProvider } from './providers/AuthProvider';
 import { CartProvider } from './providers/CartProvider';
 import { FavoritesProvider } from './providers/FavoritesProvider';
 import { LoadingProvider } from './providers/LoadingProvider';
+import JsonLd from './components/JsonLd'
 
 
 
@@ -56,6 +57,43 @@ export const metadata = {
 };
 
 export default function RootLayout({ children }) {
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "Kambily",
+    "url": "https://kambily.store",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": {
+        "@type": "EntryPoint",
+        "urlTemplate": "https://kambily.store/recherche?q={search_term_string}"
+      },
+      "query-input": "required name=search_term_string"
+    },
+    "sameAs": [
+      "https://facebook.com/kambily",
+      "https://twitter.com/kambily",
+      "https://instagram.com/kambily"
+    ],
+    "hasPart": [
+      {
+        "@type": "WebPage",
+        "name": "Boutique",
+        "url": "https://kambily.store/boutique"
+      },
+      {
+        "@type": "WebPage",
+        "name": "Mon Profil",
+        "url": "https://kambily.store/profile"
+      },
+      {
+        "@type": "WebPage",
+        "name": "Mes Commandes",
+        "url": "https://kambily.store/commandes"
+      }
+    ]
+  }
+
   return (
     <html lang="fr" className={krub.variable}>
       <head>
@@ -84,6 +122,7 @@ export default function RootLayout({ children }) {
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
+        <JsonLd data={jsonLd} />
       </head>
       <body className={krub.className}>
         <LoadingProvider>
