@@ -458,6 +458,8 @@ const ProductDetail = () => {
 
         const data = await response.json();
         setProduct(data);
+      
+        console.log(data);
         setReviews(data.reviews || []);
       } catch (err) {
         setError(err.message);
@@ -1091,7 +1093,7 @@ const ProductDetail = () => {
                 : 'text-gray-500 hover:text-gray-700'
               }`}
           >
-            Avis (12)
+            Avis ({reviews.length})
             {activeTab === 'reviews' && (
               <div className="absolute bottom-0 left-0 w-full h-0.5 bg-[#048B9A]" />
             )}

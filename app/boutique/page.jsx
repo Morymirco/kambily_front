@@ -5,6 +5,9 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { FaChevronLeft, FaChevronRight, FaEye, FaFacebookF, FaFilter, FaLink, FaSearch, FaShoppingCart, FaTimes, FaTwitter, FaWhatsapp } from 'react-icons/fa';
 import { HOST_IP, PORT, PROTOCOL_HTTP } from './../constants';
+import { useSearchParams } from 'next/navigation';
+import { toast } from 'react-hot-toast';
+
 // Composant Toast modifié
 const Toast = ({ message, image, onView, isError }) => (
   <div className="fixed bottom-16 sm:bottom-4 right-4 z-[80] animate-slide-up">
@@ -755,6 +758,8 @@ const ProductSkeleton = () => (
 );
 
 const Boutique = () => {
+  const searchParams = useSearchParams();
+  const categoryParam = searchParams.get('categorie');
   const [sortBy, setSortBy] = useState('popular');
   const [showFilters, setShowFilters] = useState(false);
   const [viewMode, setViewMode] = useState('grid');
@@ -766,24 +771,21 @@ const Boutique = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [categories, setCategories] = useState([]);
 
-  // Charger les produits depuis l'API
   useEffect(() => {
     const fetchProducts = async () => {
+      setLoading(true);
       try {
-        const response = await fetch(`${PROTOCOL_HTTP}://${HOST_IP}${PORT}/products/`, {
-          method: 'GET',
-          mode: 'cors',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          }
-        });
+        const url = categoryParam 
+          ? `${PROTOCOL_HTTP}://${HOST_IP}${PORT}/products/?category=${categoryParam}`
+          : `${PROTOCOL_HTTP}://${HOST_IP}${PORT}/products/`;
+        
+        const response = await fetch(url);
 
-        if (!response.ok) {
-          throw new Error('Erreur lors du chargement des produits');
-        }
-
+        console.log('Réponse:', response);
+        if (!response.ok) throw new Error('Erreur lors du chargement des produits');
+        
         const data = await response.json();
         console.log('Données brutes:', data);
         
@@ -796,21 +798,36 @@ const Boutique = () => {
           gallery: product.images?.slice(1)?.map(img => img.image) || [],
           price: product.regular_price,
           oldPrice: product.promo_price !== product.regular_price ? product.regular_price : null,
-          inStock: product.etat_stock === 'En Stock',
+          inStock: product.etat_stock === 'En Stock' || 'En stock',
           category: product.categories?.[0]?.name || 'Non catégorisé'
         }));
 
         setProducts(transformedProducts);
         setFilteredProducts(transformedProducts);
       } catch (err) {
-        console.error('Erreur:', err);
         setError(err.message);
+        toast.error(err.message);
       } finally {
         setLoading(false);
       }
     };
 
     fetchProducts();
+  }, [categoryParam]);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await fetch(`${PROTOCOL_HTTP}://${HOST_IP}${PORT}/categories/nested/`);
+        if (!response.ok) throw new Error('Erreur lors du chargement des catégories');
+        const data = await response.json();
+        setCategories(data);
+      } catch (err) {
+        setError(err.message);
+      }
+    };
+
+    fetchCategories();
   }, []);
 
   // Filtrer les produits quand la recherche change
@@ -851,6 +868,12 @@ const Boutique = () => {
         duration: 0.3
       }
     }
+  };
+
+  // Afficher un titre dynamique selon la catégorie
+  const getCategoryTitle = () => {
+    if (!categoryParam) return "Tous nos produits";
+    return categoryParam.charAt(0).toUpperCase() + categoryParam.slice(1).replace(/-/g, ' ');
   };
 
   return (
@@ -1097,7 +1120,7 @@ const Boutique = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 max-h-[400px] overflow-y-auto pr-4">
                   {categories.map((category, index) => (
                     <div 
-                      key={index} 
+                      key={category.id || index}
                       className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 cursor-pointer group transition-colors"
                     >
                       <div className="flex items-center gap-3">
@@ -1110,7 +1133,7 @@ const Boutique = () => {
                         </span>
                       </div>
                       <span className="text-sm text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
-                        {category.count}
+                        {category.x || 0}
                       </span>
                     </div>
                   ))}
@@ -1210,7 +1233,7 @@ const Boutique = () => {
               <div className="col-span-full text-center text-red-500 p-8">
                 {error}
               </div>
-            ) : (searchQuery ? filteredProducts : products).map(product => (
+            ) : searchQuery ? filteredProducts : products.map(product => (
               <motion.div
                 key={product.id}
                 variants={productVariants}

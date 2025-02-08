@@ -25,6 +25,7 @@ export default function Navbar() {
   const [deletingItemId, setDeletingItemId] = useState(null);
   const [categories, setCategories] = useState([]);
   const [loadingCategories, setLoadingCategories] = useState(true);
+  const [expandedCategories, setExpandedCategories] = useState({});
 
   
   const languages = [
@@ -151,8 +152,8 @@ export default function Navbar() {
             id: category?.id || '',
             name: category?.name || '',
             slug: category?.slug || '',
-            subcategories: Array.isArray(category?.subcategories) 
-              ? category.subcategories.map(sub => ({
+            categories: Array.isArray(category?.categories) 
+              ? category.categories.map(sub => ({
                   id: sub?.id || '',
                   name: sub?.name || '',
                   slug: sub?.slug || ''
@@ -172,6 +173,13 @@ export default function Navbar() {
 
     fetchCategories();
   }, []);
+
+  const toggleCategory = (categoryId) => {
+    setExpandedCategories(prev => ({
+      ...prev,
+      [categoryId]: !prev[categoryId]
+    }));
+  };
 
   return (
     <nav className="w-full bg-white shadow-sm font-krub">
@@ -348,79 +356,62 @@ export default function Navbar() {
             <div className="mb-8">
               <h3 className="text-gray-400 text-sm font-medium mb-4">CATEGORY MENU</h3>
               {/* Menu des catégories */}
-              <div className="relative group">
-                <Link href="/boutique" className="hover:text-cyan-600 flex items-center">
-                  <div className="flex items-center gap-2">
-                    Nos catégories
-                    <svg 
-                      className="w-4 h-4 transition-transform duration-200" 
-                      viewBox="0 0 24 24" 
-                      fill="none" 
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </div>
-                </Link>
-                
-                {/* Dropdown menu */}
-                <div className="absolute left-0 mt-2 w-60 bg-white border rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
-                  {loadingCategories ? (
-                    // Skeleton loader
-                    <div className="p-2 space-y-2">
-                      {[1, 2, 3].map((item) => (
-                        <div key={item} className="h-8 bg-gray-100 rounded animate-pulse" />
-                      ))}
-                    </div>
-                  ) : categories.length > 0 ? (
-                    categories.map((category) => (
-                      <div key={category.id || Math.random()} className="relative group/sub">
-                        <Link 
-                          href={`/categories/${category.slug}`}
-                          className="block px-4 py-2 hover:bg-gray-50 hover:text-cyan-600"
+              <div className="bg-white rounded-lg shadow-sm">
+                <div className="p-4">
+                  <h2 className="font-medium mb-4">Nos catégories</h2>
+                  
+                  <div className="space-y-2">
+                    {categories.map((category) => (
+                      <div key={category.id} className="border-b last:border-b-0">
+                        <button
+                          onClick={() => toggleCategory(category.id)}
+                          className="w-full flex items-center justify-between py-3 hover:text-[#048B9A] transition-colors"
                         >
-                          <div className="flex items-center justify-between">
-                            <span>{category.name}</span>
-                            {(category.subcategories?.length || 0) > 0 && (
-                              <svg 
-                                className="w-4 h-4 transition-transform duration-200" 
-                                viewBox="0 0 24 24" 
-                                fill="none" 
-                                stroke="currentColor"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                              >
-                                <path d="M9 18l6-6-6-6" />
-                              </svg>
-                            )}
-                          </div>
-                        </Link>
+                          <span>{category.name}</span>
+                          <motion.span
+                            animate={{ rotate: expandedCategories[category.id] ? 180 : 0 }}
+                            transition={{ duration: 0.2 }}
+                          >
+                             <svg 
+    className="w-4 h-4 transition-transform duration-200" 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M19 9l-7 7-7-7" />
+  </svg>
+                          </motion.span>
+                        </button>
                         
-                        {/* Sous-catégories */}
-                        {(category.subcategories?.length || 0) > 0 && (
-                          <div className="absolute left-full top-0 w-48 bg-white border rounded-lg shadow-lg opacity-0 invisible group-hover/sub:opacity-100 group-hover/sub:visible transition-all duration-300">
-                            {category.subcategories.map((sub) => (
-                              <Link 
-                                key={sub.id || Math.random()}
-                                href={`/categories/${category.slug}/${sub.slug}`}
-                                className="block px-4 py-2 hover:bg-gray-50 hover:text-cyan-600"
-                              >
-                                {sub.name}
-                              </Link>
-                            ))}
-                          </div>
-                        )}
+                        <AnimatePresence>
+                          {expandedCategories[category.id] && category.categories && (
+                            <motion.div
+                              initial={{ height: 0, opacity: 0 }}
+                              animate={{ height: "auto", opacity: 1 }}
+                              exit={{ height: 0, opacity: 0 }}
+                              transition={{ duration: 0.2 }}
+                              className="overflow-hidden"
+                            >
+                              <div className="pl-4 pb-2 space-y-2">
+                                {category.categories.map((sub) => (
+                                  <Link
+                                    key={sub.id}
+                                    href={`/boutique?categorie=${category.slug}&subcategorie=${sub.slug}`}
+                                    className="block py-2 text-gray-600 hover:text-[#048B9A] transition-colors"
+                                  >
+                                    {sub.name}
+                                  </Link>
+                                ))}
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
                       </div>
-                    ))
-                  ) : (
-                    <div className="p-4 text-gray-500 text-center">
-                      Aucune catégorie disponible
-                    </div>
-                  )}
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
@@ -540,12 +531,12 @@ export default function Navbar() {
   >
     <path d="M19 9l-7 7-7-7" />
   </svg>
-                          </div>
+                </div>
                         </Link>
                         
                         {/* Sous-catégories */}
                         <div className="absolute left-full top-0 w-48 bg-white border rounded-lg shadow-lg opacity-0 invisible group-hover/sub:opacity-100 group-hover/sub:visible transition-all duration-300">
-                          {category.subcategories.map((sub, subIndex) => (
+                          {category.categories.map((sub, subIndex) => (
                             <Link 
                               key={subIndex}
                               href={`/categories/${category.slug}/${sub.slug}`}
