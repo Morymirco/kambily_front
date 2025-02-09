@@ -175,9 +175,8 @@ export function AuthProvider({ children }) {
 
       return response;
     } catch (error) {
-      console.error('Erreur de requête:', error);
+      console.log (error)
       logout();
-      throw error;
     }
   };
 

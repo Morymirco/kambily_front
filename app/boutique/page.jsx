@@ -4,6 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { FaChevronLeft, FaChevronRight, FaEye, FaFacebookF, FaFilter, FaLink, FaSearch, FaShoppingCart, FaTimes, FaTwitter, FaWhatsapp } from 'react-icons/fa';
+import {useCart} from "../providers/CartProvider";
 
 // Composant Toast modifié
 const Toast = ({ message, image, onView, isError }) => (
@@ -198,6 +199,8 @@ const ProductCard = ({ id, image, gallery = [], title, price, inStock, category,
       setShowModal(true);
     }, 500);
   };
+  
+  const {handleCartCount} = useCart()
 
   const handleAddToCart = async () => {
     setIsAddingToCart(true);
@@ -236,6 +239,7 @@ const ProductCard = ({ id, image, gallery = [], title, price, inStock, category,
 
       const data = await response.json();
       setShowToast(true);
+      handleCartCount()
       setTimeout(() => {
         setShowToast(false);
       }, 4000);

@@ -2,39 +2,40 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { createContext, useContext, useEffect, useState } from 'react';
-import { toast } from 'react-hot-toast';
+import {toast, Toaster} from 'react-hot-toast';
 import { useAuth } from './AuthProvider';
+import {HOST_IP, PORT, PROTOCOL_HTTP} from "@/app/constants";
 
 const CartContext = createContext();
 
 export const CartProvider = ({ children }) => {
   const [cartItems, setCartItems] = useState([]);
   const [cartTotal, setCartTotal] = useState(0);
-  const [showToast, setShowToast] = useState(false);
   const { authFetch, isAuthenticated } = useAuth();
-
+  
+  const loadCart = async () => {
+    if (isAuthenticated) {
+      try {
+        const response = await authFetch('https://api.kambily.store/carts/');
+        if (response.ok) {
+          const data = await response.json();
+          setCartItems(data || []);
+          setCartTotal(data.length);
+        }
+      } catch (error) {
+        console.error('Erreur chargement panier:', error);
+      }
+    }
+  };
+  
   // Charger le panier depuis l'API si connecté
   useEffect(() => {
-    const loadCart = async () => {
-      if (isAuthenticated) {
-        try {
-          const response = await authFetch('https://api.kambily.store/carts/');
-          if (response.ok) {
-            const data = await response.json();
-            console.log("depuis le pro",data);
-            setCartItems(data || []);
-            
-          }
-        } catch (error) {
-          console.error('Erreur chargement panier:', error);
-        }
-      }
-    };
-
-    loadCart();
+    loadCart ().then (r => console.log("loaded after isAuthenticated") );
   }, [isAuthenticated]);
 
-  const addToCart = async (product) => {
+  const addToCart = async (product, quantity = 1) => {
+    console.log ("product in cart provider to add to cart", product)
+    console.log (product.id)
     try {
       if (!isAuthenticated) {
         // Sauvegarder l'URL actuelle pour rediriger après la connexion
@@ -43,13 +44,13 @@ export const CartProvider = ({ children }) => {
         return;
       }
 
-      const response = await authFetch(`https://api.kambily.store/carts/create/${product.id}/`, {
+      const response = await authFetch(`${PROTOCOL_HTTP}://${HOST_IP}${PORT}/carts/create/${product.id}/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          quantity: product.quantity || 1
+          quantity: quantity
         })
       });
 
@@ -65,7 +66,10 @@ export const CartProvider = ({ children }) => {
       }
 
       const data = await response.json();
+      console.log ("addtocart", data)
       setCartItems(data.items);
+      setCartTotal(prev => prev+1)
+      alert("ajout effectué avec succées")
       
       // Afficher le toast personnalisé
       toast.custom((t) => (
@@ -107,8 +111,7 @@ export const CartProvider = ({ children }) => {
       ), { duration: 4000 });
 
     } catch (error) {
-      console.error('Erreur:', error);
-      toast.error(error.message || 'Une erreur est survenue lors de l\'ajout au panier');
+      console.log (error)
     }
   };
 
@@ -166,11 +169,27 @@ export const CartProvider = ({ children }) => {
     }
   };
 
+  const handleSetCartItems = (cartItems) => {
+    setCartItems(cartItems);
+  }
+  
+  const handleCartCount = ()=>{
+    setCartTotal(prev => prev+1)
+  }
+  
+  const handleSetCartCount = (cartCount) => {
+    setCartTotal(cartCount)
+  }
+  
   return (
     <CartContext.Provider value={{
       cartItems,
       cartTotal,
       addToCart,
+      handleSetCartItems,
+      handleCartCount,
+      handleSetCartCount,
+      loadCart,
       removeFromCart,
       updateQuantity,
       clearCart

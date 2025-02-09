@@ -18,6 +18,7 @@ import 'swiper/css/free-mode';
 import { FreeMode } from 'swiper/modules';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import ProductCard from './../../Components/Common/ProductCard';
+import {useCart} from "../../providers/CartProvider";
 
 const ProductSkeleton = () => (
   <div className="max-w-[1400px] mx-auto px-4 md:px-16 py-12">
@@ -414,11 +415,11 @@ const formatPrice = (price) => {
 const ProductDetail = () => {
   const { toggleFavorite, isFavorite } = useFavorites();
   const params = useParams();
-  const [product, setProduct] = useState(null);
+  const [product, setProduct] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedImage, setSelectedImage] = useState(0);
-  const [quantity, setQuantity] = useState(1);
+  const [quantity, setQuantity] = useState(0);
   const [selectedSize, setSelectedSize] = useState(null);
   const [activeTab, setActiveTab] = useState('description');
   const [showReviewModal, setShowReviewModal] = useState(false);
@@ -439,6 +440,8 @@ const ProductDetail = () => {
   const [isTogglingFavorite, setIsTogglingFavorite] = useState(false);
   const [reviews, setReviews] = useState([]);
   const [similarProducts, setSimilarProducts] = useState([]);
+  
+  const {addToCart} = useCart();
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -456,6 +459,7 @@ const ProductDetail = () => {
         }
 
         const data = await response.json();
+        console.log (data)
         setProduct(data);
         setReviews(data.reviews || []);
       } catch (err) {
@@ -755,70 +759,75 @@ const ProductDetail = () => {
   };
 
   const handleAddToCart = async () => {
-    if (!selectedSize && product?.sizes?.length > 0) {
-      toast.error('Veuillez sélectionner une taille');
+    if( quantity === 0 ){
+      alert("choisir une quantité")
       return;
     }
-
-    if (!selectedColor && product?.colors?.length > 0) {
-      toast.error('Veuillez sélectionner une couleur');
-      return;
-    }
-
-    setIsAddingToCart(true);
-    try {
-      const response = await authFetch(`https://api.kambily.store/carts/create/${product.id}/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          product_id: product.id,
-          quantity: quantity,
-          size: selectedSize || null,
-          color: selectedColor || null,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Erreur lors de l\'ajout au panier');
-        console.log(response);
-      }
-
-      toast.custom((t) => (
-        <div className="fixed bottom-4 right-4 z-50 animate-slide-up">
-          <div className="bg-white border border-gray-200 rounded-lg shadow-lg p-4 w-[300px] flex items-center gap-4">
-            <div className="relative w-16 h-16 flex-shrink-0 rounded-md overflow-hidden">
-              <Image
-                src={product.images[0]?.image || '/placeholder.png'}
-                alt={product.name}
-                fill
-                className="object-cover"
-              />
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-1.5 font-medium text-sm text-green-600">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-                Ajouté au panier
-              </div>
-              <p className="text-gray-600 text-sm mt-1 truncate">{product.name}</p>
-              <Link href="/panier">
-                <button className="mt-2 text-[#048B9A] text-sm font-medium hover:text-[#037383]">
-                  Voir le panier
-                </button>
-              </Link>
-            </div>
-          </div>
-        </div>
-      ), { duration: 3000 });
-
-    } catch (error) {
-      toast.error(error.message);
-    } finally {
-      setIsAddingToCart(false);
-    }
+    addToCart(product, quantity)
+    // if (!selectedSize && product?.sizes?.length > 0) {
+    //   toast.error('Veuillez sélectionner une taille');
+    //   return;
+    // }
+    //
+    // if (!selectedColor && product?.colors?.length > 0) {
+    //   toast.error('Veuillez sélectionner une couleur');
+    //   return;
+    // }
+    //
+    // setIsAddingToCart(true);
+    // try {
+    //   const response = await authFetch(`https://api.kambily.store/carts/create/${product.id}/`, {
+    //     method: 'POST',
+    //     headers: {
+    //       'Content-Type': 'application/json',
+    //     },
+    //     body: JSON.stringify({
+    //       product_id: product.id,
+    //       quantity: quantity,
+    //       size: selectedSize || null,
+    //       color: selectedColor || null,
+    //     }),
+    //   });
+    //
+    //   if (!response.ok) {
+    //     throw new Error('Erreur lors de l\'ajout au panier');
+    //     console.log(response);
+    //   }
+    //
+    //   toast.custom((t) => (
+    //     <div className="fixed bottom-4 right-4 z-50 animate-slide-up">
+    //       <div className="bg-white border border-gray-200 rounded-lg shadow-lg p-4 w-[300px] flex items-center gap-4">
+    //         <div className="relative w-16 h-16 flex-shrink-0 rounded-md overflow-hidden">
+    //           <Image
+    //             src={product.images[0]?.image || '/placeholder.png'}
+    //             alt={product.name}
+    //             fill
+    //             className="object-cover"
+    //           />
+    //         </div>
+    //         <div className="flex-1 min-w-0">
+    //           <div className="flex items-center gap-1.5 font-medium text-sm text-green-600">
+    //             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    //               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+    //             </svg>
+    //             Ajouté au panier
+    //           </div>
+    //           <p className="text-gray-600 text-sm mt-1 truncate">{product.name}</p>
+    //           <Link href="/panier">
+    //             <button className="mt-2 text-[#048B9A] text-sm font-medium hover:text-[#037383]">
+    //               Voir le panier
+    //             </button>
+    //           </Link>
+    //         </div>
+    //       </div>
+    //     </div>
+    //   ), { duration: 3000 });
+    //
+    // } catch (error) {
+    //   toast.error(error.message);
+    // } finally {
+    //   setIsAddingToCart(false);
+    // }
   };
 
   if (loading) {
@@ -992,14 +1001,24 @@ const ProductDetail = () => {
                 </button>
                 <span className="w-12 text-center">{quantity}</span>
                 <button
-                  onClick={() => setQuantity(quantity + 1)}
+                  onClick={() =>{
+                    if( quantity.quantity > quantity )
+                      setQuantity(quantity + 1)
+                  }}
                   className="w-12 h-12 rounded-lg border border-gray-300 flex items-center justify-center hover:bg-gray-50"
+                  
                 >
                   +
                 </button>
               </div>
             </div>
-
+            
+            {/*Quantité restantes*/}
+            <div>
+              <h3 className="font-medium mb-3">Quantité Restante {product.quantity}</h3>
+              {product.quantity <= 5 && (<p className="text-red-600">Ce produit est presque en rupture de stock</p>)}
+            </div>
+            
             {/* Boutons d'action */}
             <div className="flex gap-4 pt-6">
               <button 
