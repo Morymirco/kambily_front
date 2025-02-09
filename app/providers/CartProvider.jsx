@@ -38,6 +38,10 @@ export const CartProvider = ({ children }) => {
       alert("Veuillez definir la quantité")
       return;
     }
+    if( quantity.quantity < quantity ){
+      alert("ce produit est en rupture de stock")
+      return;
+    }
     console.log ("product in cart provider to add to cart", product)
     console.log (product.id)
     try {
