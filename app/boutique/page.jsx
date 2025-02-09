@@ -7,7 +7,6 @@ import { FaChevronLeft, FaChevronRight, FaEye, FaFacebookF, FaFilter, FaLink, Fa
 import { HOST_IP, PORT, PROTOCOL_HTTP } from './../constants';
 import { useSearchParams } from 'next/navigation';
 import { toast } from 'react-hot-toast';
-import Pagination from './../Components/Pagination/Pagination';
 
 // Composant Toast modifié
 const Toast = ({ message, image, onView, isError }) => (
@@ -773,26 +772,48 @@ const Boutique = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [categories, setCategories] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const itemsPerPage = 12;
-
-  const fetchProducts = async (page) => {
-    try {
-      const response = await fetch(
-        `${PROTOCOL_HTTP}://${HOST_IP}${PORT}/products/?page=${page}&per_page=${itemsPerPage}`
-      );
-      const data = await response.json();
-      setProducts(data.results);
-      setTotalPages(Math.ceil(data.count / itemsPerPage));
-    } catch (error) {
-      console.error('Erreur:', error);
-    }
-  };
 
   useEffect(() => {
-    fetchProducts(currentPage);
-  }, [currentPage]);
+    const fetchProducts = async () => {
+      setLoading(true);
+      try {
+        const url = categoryParam 
+          ? `${PROTOCOL_HTTP}://${HOST_IP}${PORT}/products/?category=${categoryParam}`
+          : `${PROTOCOL_HTTP}://${HOST_IP}${PORT}/products/`;
+        
+        const response = await fetch(url);
+
+        console.log('Réponse:', response);
+        if (!response.ok) throw new Error('Erreur lors du chargement des produits');
+        
+        const data = await response.json();
+        console.log('Données brutes:', data);
+        
+        const productsArray = Array.isArray(data.products) ? data.products : data.results || [];
+        
+        const transformedProducts = productsArray.map(product => ({
+          id: product.id,
+          title: product.name,
+          image: product.images?.[0]?.image || '/tshirt.png',
+          gallery: product.images?.slice(1)?.map(img => img.image) || [],
+          price: product.regular_price,
+          oldPrice: product.promo_price !== product.regular_price ? product.regular_price : null,
+          inStock: product.etat_stock === 'En Stock' || 'En stock',
+          category: product.categories?.[0]?.name || 'Non catégorisé'
+        }));
+
+        setProducts(transformedProducts);
+        setFilteredProducts(transformedProducts);
+      } catch (err) {
+        setError(err.message);
+        toast.error(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, [categoryParam]);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -1263,11 +1284,20 @@ const Boutique = () => {
 
       {/* Pagination */}
       <div className="mt-12 flex justify-center">
-        <Pagination 
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={(page) => setCurrentPage(page)}
-        />
+        <nav className="flex items-center gap-2">
+          <button className="w-10 h-10 flex items-center justify-center rounded-lg border border-gray-300 hover:bg-gray-50">
+            ‹
+          </button>
+          <button className="w-10 h-10 flex items-center justify-center rounded-lg bg-[#048B9A] text-white">
+            1
+          </button>
+          <button className="w-10 h-10 flex items-center justify-center rounded-lg border border-gray-300 hover:bg-gray-50">
+            2
+          </button>
+          <button className="w-10 h-10 flex items-center justify-center rounded-lg border border-gray-300 hover:bg-gray-50">
+            ›
+          </button>
+        </nav>
       </div>
     </div>
   );
