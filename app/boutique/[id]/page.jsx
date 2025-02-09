@@ -759,10 +759,6 @@ const ProductDetail = () => {
   };
 
   const handleAddToCart = async () => {
-    if( quantity === 0 ){
-      alert("choisir une quantité")
-      return;
-    }
     addToCart(product, quantity)
     // if (!selectedSize && product?.sizes?.length > 0) {
     //   toast.error('Veuillez sélectionner une taille');

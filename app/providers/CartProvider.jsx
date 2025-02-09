@@ -33,7 +33,11 @@ export const CartProvider = ({ children }) => {
     loadCart ().then (r => console.log("loaded after isAuthenticated") );
   }, [isAuthenticated]);
 
-  const addToCart = async (product, quantity = 1) => {
+  const addToCart = async (product, quantity = 0) => {
+    if( quantity === 0 ){
+      alert("Veuillez definir la quantité")
+      return;
+    }
     console.log ("product in cart provider to add to cart", product)
     console.log (product.id)
     try {

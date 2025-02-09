@@ -4,16 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4b768bd8-3767-4912-be3d-c0d581cc3426" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/app/auth/withAuth.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/Components/NavBar/Navbar.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/Components/NavBar/Navbar.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/boutique/[id]/page.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/boutique/[id]/page.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/boutique/page.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/boutique/page.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/constants.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/constants.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/providers/AuthProvider.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/providers/AuthProvider.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/providers/CartProvider.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/providers/CartProvider.jsx" afterDir="false" />
-    </list>
+    <list default="true" id="4b768bd8-3767-4912-be3d-c0d581cc3426" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
