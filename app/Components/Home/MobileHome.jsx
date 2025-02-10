@@ -8,6 +8,7 @@ import QualityHeader from '@/app/Components/Home/QualityHeader';
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import Image from 'next/image';
+import Categories from '@/app/Components/Categories/Categories';
 
 const ProductSkeleton = () => (
   <div className="border rounded-xl overflow-hidden bg-white animate-pulse">
@@ -171,6 +172,7 @@ export default function MobileHome() {
           <ElectronicsSection className="w-full" />
           {/* <ClothingSection className="w-full" />
           <AccessoriesSection className="w-full" /> */}
+          <Categories />
         </div>
       </div>
     </div>

@@ -15,7 +15,7 @@ export default function JewelrySection() {
         const data = await response.json();
         
         // Transformer les données pour correspondre aux props de Product
-        const transformedProducts = data.products.slice(0, 2).map(product => ({
+        const transformedProducts = data.results.slice(0, 2).map(product => ({
           id: product.id,
           image: product.images[0]?.image || "/bijoux/default.jpg",
           gallery: product.images?.slice(1)?.map(img => img.image) || [],

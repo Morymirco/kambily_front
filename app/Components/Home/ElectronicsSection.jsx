@@ -59,10 +59,10 @@ export default function ElectronicsSection() {
         if (!response.ok) throw new Error('Erreur réseau');
         const data = await response.json();
         
-        if (data.products && data.products.length > 0) {
-          const firstProduct = data.products[2];
+        if (data.results && data.results.length > 0) {
+          const firstProduct = data.results[2];
           setMainProduct(firstProduct);
-          setSmallProducts(data.products.slice(1, 4));
+          setSmallProducts(data.results.slice(1, 4));
         }
       } catch (error) {
         console.error('Erreur lors du chargement des produits:', error);
