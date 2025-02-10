@@ -7,7 +7,7 @@ import { FaWhatsapp } from 'react-icons/fa';
 const Hero = () => {
   return (
     <div className="px-4 py-6">
-      <div className="relative w-full h-[500px] rounded-2xl overflow-hidden">
+      <div className="relative w-full h-[700px] rounded-2xl overflow-hidden">
         {/* Image d'arrière-plan */}
         <Image
           src="/pyjama.png"
@@ -18,7 +18,7 @@ const Hero = () => {
         />
         
         {/* Superposition de couleur */}
-        <div className="absolute inset-0 bg-[#048B9A]/80" />
+        <div className="absolute inset-0 bg-[#048B9A]" />
 
         {/* Pattern de fond */}
         <div className="absolute inset-0">
@@ -31,65 +31,68 @@ const Hero = () => {
         </div>
 
         <motion.div 
-          className="relative h-full max-w-[1400px] mx-auto px-8 py-12 flex flex-col justify-center text-white"
+          className="relative h-full max-w-[1400px] mx-auto px-8 py-16 flex flex-col justify-between"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
-          <div className="mb-4">
-            <Image
-              src="/logo.png"
-              alt="Logo"
-              width={50}
-              height={50}
-              className="mb-6"
-            />
+          <div className="text-white">
+            <div className="mb-4">
+              <Image
+                src="/logo.png"
+                alt="Logo"
+                width={40}
+                height={40}
+                className="mb-4"
+              />
+            </div>
+
+            <motion.h1 
+              className="text-3xl sm:text-4xl font-bold mb-4"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.3 }}
+            >
+              Le plus Grand Marché <br />en Ligne <span className="relative">
+                en Guinée
+                <motion.div 
+                  className="absolute -right-12 top-1/2 transform -translate-y-1/2"
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ delay: 0.6 }}
+                >
+                  <Image
+                    src="/logo.webp"
+                    alt="Drapeau de la Guinée"
+                    width={24}
+                    height={16}
+                  />
+                </motion.div>
+              </span>
+            </motion.h1>
+
+            <motion.p 
+              className="text-base text-white/90 mb-8 max-w-lg"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.4 }}
+            >
+              Kambily est une plateforme guinéenne dédiée au commerce en ligne, 
+              mettant à disposition une large gamme de produits pour répondre à 
+              tous vos besoins. Trouvez facilement ce que vous recherchez et 
+              profitez d'une expérience d'achat simple et sécurisée.
+            </motion.p>
           </div>
-
-          <motion.h1 
-            className="text-4xl font-bold mb-4"
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.3 }}
-          >
-            Le plus Grand Marché <br />en Ligne <span className="relative">
-              en Guinée
-              <motion.div 
-                className="absolute -right-16 top-1/2 transform -translate-y-1/2"
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ delay: 0.6 }}
-              >
-                <Image
-                  src="/logo.webp"
-                  alt="Drapeau de la Guinée"
-                  width={30}
-                  height={20}
-                />
-              </motion.div>
-            </span>
-          </motion.h1>
-
-          <motion.p 
-            className="text-lg text-white/90 mb-8 max-w-xl"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.4 }}
-          >
-            Kambily est une plateforme guinéenne dédiée au commerce en ligne, 
-            mettant à disposition une large gamme de produits pour répondre à 
-            tous vos besoins. Trouvez facilement ce que vous recherchez et 
-            profitez d'une expérience d'achat simple et sécurisée.
-          </motion.p>
 
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5 }}
+            className="mb-16"
           >
             <Link href="/boutique">
               <motion.button
-                className="bg-white text-[#3B5998] px-6 py-3 rounded-lg font-medium hover:bg-opacity-90 shadow-lg"
+                className="bg-white text-[#048B9A] px-6 py-2.5 text-sm rounded-lg font-medium hover:bg-opacity-90 shadow-lg"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
