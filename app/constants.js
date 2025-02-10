@@ -1,12 +1,12 @@
 // Fichier de configuration avec les variables globales
 
 
-export const HOST_IP = '127.0.0.1';
-// export const HOST_IP = 'api.kambily.store';
-export const PORT = ':8001';
-// export const PORT = '';
-export const PROTOCOL_HTTP = 'http';
-// export const PROTOCOL_HTTP = "https";
+// export const HOST_IP = '127.0.0.1';
+export const HOST_IP = 'api.kambily.store';
+// export const PORT = ':8001';
+export const PORT = '';
+// export const PROTOCOL_HTTP = 'http';
+export const PROTOCOL_HTTP = "https";
 
 export const generateSlug = (name) => {
 	return name

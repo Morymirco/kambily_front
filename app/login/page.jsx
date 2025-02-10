@@ -64,7 +64,7 @@ export default function Login() {
       }
       
       // Stocker le token dans le localStorage
-      localStorage.setItem('access_token', data.access);
+      localStorage.setItem('access_token', data.access_token);
       
       // Stocker les informations utilisateur si nécessaire
       if (data.user) {
