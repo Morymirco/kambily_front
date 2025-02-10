@@ -1,8 +1,6 @@
 'use client'
 import { motion } from 'framer-motion';
 import Image from 'next/image';
-import Link from 'next/link';
-import { FaWhatsapp } from 'react-icons/fa';
 
 const categories = [
   { name: 'Smartphones', count: '23 produits', image: '/categories/smartphone.webp' },
@@ -18,8 +16,8 @@ const categories = [
 
 const Categories = () => {
   return (
-    <div className="px-4 py-6 bg-white  rounded-lg mx-4 my-6">
-      <div className="flex items-center justify-center gap-3 mb-4">
+    <div className="px-4 py-6 bg-white  rounded-lg mx-4 ">
+      <div className="flex  gap-3 mb-4">
         <div className="w-7 h-7 rounded-full bg-[#048B9A] flex items-center justify-center">
           <svg 
             xmlns="http://www.w3.org/2000/svg" 
@@ -72,7 +70,7 @@ const Categories = () => {
         ))}
       </div>
 
-      <Link href="https://wa.me/+224000000000">
+      {/* <Link href="https://wa.me/+224000000000">
         <motion.button
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
@@ -80,7 +78,7 @@ const Categories = () => {
         >
           <FaWhatsapp size={24} />
         </motion.button>
-      </Link>
+      </Link> */}
     </div>
   );
 };

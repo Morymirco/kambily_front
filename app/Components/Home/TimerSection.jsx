@@ -16,7 +16,7 @@ export default function TimerSection({ timeLeft }) {
           </div>
         </div>
       </div>
-
+{/* 
       <div className="flex justify-between items-center mt-3 border-t pt-3">
         <div className="font-medium text-sm flex items-center gap-2">
             <Image src="/camion.png" alt="Quality" width={20} height={20} className="inline-block " />
@@ -25,7 +25,7 @@ export default function TimerSection({ timeLeft }) {
           Voir Plus 
           <span className="text-xs">→</span>
         </Link>
-      </div>
+      </div> */}
     </div>
   );
 } 

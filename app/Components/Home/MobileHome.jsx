@@ -10,6 +10,7 @@ import toast from 'react-hot-toast';
 import Image from 'next/image';
 import Categories from '@/app/Components/Categories/Categories';
 import PubliésRécemment from '@/app/Components/PubliésRécemment/PubliésRécemment';
+import Hero from '@/app/Components/Hero/Hero';
 
 const ProductSkeleton = () => (
   <div className="border rounded-xl overflow-hidden bg-white animate-pulse">
@@ -122,7 +123,8 @@ export default function MobileHome() {
       </div>
       
       <div className="max-w-7xl mx-auto ">
-        {loading ? (
+      <Categories />
+        {/* {loading ? (
           <div className="py-8 grid grid-cols-2 gap-4">
             {[...Array(4)].map((_, index) => (
               <ProductSkeleton key={index} />
@@ -148,10 +150,11 @@ export default function MobileHome() {
               />
             ))}
           </div>
-        )}
+        )} */}
       </div>
 
       <div className="max-w-7xl mx-auto  space-y-8">
+      <PubliésRécemment />
         <FreeDeliveryBanner className="w-full" />
         
         <div className="grid grid-cols-1 gap-8 mb-4 py-3">
@@ -173,8 +176,9 @@ export default function MobileHome() {
           <ElectronicsSection className="w-full" />
           {/* <ClothingSection className="w-full" />
           <AccessoriesSection className="w-full" /> */}
-          <Categories />
-          <PubliésRécemment />
+          {/* <Categories /> */}
+          {/* <PubliésRécemment /> */}
+          <Hero />
         </div>
       </div>
     </div>
