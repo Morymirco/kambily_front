@@ -19,8 +19,8 @@ const categories = [
 const Categories = () => {
   return (
     <div className="px-4 py-6 bg-white  rounded-lg mx-4 my-6">
-      <div className="flex items-center gap-2 mb-4">
-        <div className="w-6 h-6 rounded-full bg-[#048B9A] flex items-center justify-center">
+      <div className="flex items-center justify-center gap-3 mb-4">
+        <div className="w-7 h-7 rounded-full bg-[#048B9A] flex items-center justify-center">
           <svg 
             xmlns="http://www.w3.org/2000/svg" 
             viewBox="0 0 24 24" 
@@ -34,7 +34,7 @@ const Categories = () => {
             />
           </svg>
         </div>
-        <h2 className="text-[#048B9A] text-xl font-medium text-center">Catégories</h2>
+        <h2 className="text-[#048B9A] text-2xl font-medium">Catégories</h2>
       </div>
       
       <p className="text-gray-600 text-sm mb-6">

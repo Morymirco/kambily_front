@@ -9,6 +9,7 @@ import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import Image from 'next/image';
 import Categories from '@/app/Components/Categories/Categories';
+import PubliésRécemment from '@/app/Components/PubliésRécemment/PubliésRécemment';
 
 const ProductSkeleton = () => (
   <div className="border rounded-xl overflow-hidden bg-white animate-pulse">
@@ -173,6 +174,7 @@ export default function MobileHome() {
           {/* <ClothingSection className="w-full" />
           <AccessoriesSection className="w-full" /> */}
           <Categories />
+          <PubliésRécemment />
         </div>
       </div>
     </div>
