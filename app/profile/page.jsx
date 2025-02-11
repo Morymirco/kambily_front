@@ -1990,7 +1990,7 @@ const Profile = () => {
           <AnimatePresence mode="wait">
             <motion.div 
               key={activeTab}
-              className="flex-1 bg-white rounded-lg shadow-sm p-6"
+              className="flex-1 bg-white rounded-lg shadow-sm"
               variants={contentVariants}
               initial="hidden"
               animate="visible"

@@ -43,7 +43,7 @@ export default function Carousel({ images, currentSlide, setCurrentSlide }) {
       </div>
 
       {/* Boutons précédent/suivant avec coins arrondis */}
-      <div className="absolute inset-0 flex items-center justify-between p-4">
+      {/* <div className="absolute inset-0 flex items-center justify-between p-4">
         <button
           onClick={() => setCurrentSlide(prev => (prev === 0 ? images.length - 1 : prev - 1))}
           className="p-2 rounded-full bg-black/30 text-white hover:bg-black/50 transition-colors"
@@ -58,7 +58,7 @@ export default function Carousel({ images, currentSlide, setCurrentSlide }) {
         >
           <FaChevronRight className="w-6 h-6" />
         </button>
-      </div>
+      </div> */}
     </div>
   );
 } 
