@@ -469,7 +469,7 @@ const ProductCard = ({ id, image, gallery = [], title, price, inStock, category,
 
             <div className="flex font-medium items-center gap-2 mb-3">
               <div className="flex items-baseline gap-2">
-                <span className="text-[13px] sm:text-2xl font-bold text-[#048B9A]">
+                <span className="text-[15px] sm:text-2xl font-bold text-[#048B9A]">
                   {parseInt(price).toLocaleString('fr-FR')} GNF
                 </span>
                 {oldPrice && (
