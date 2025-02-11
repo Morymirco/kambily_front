@@ -53,7 +53,7 @@ const Categories = () => {
               whileHover={{ scale: 1.05 }}
             >
               <div className="absolute inset-0 rounded-full overflow-hidden">
-                <div className="absolute inset-0 rounded-full border-2 border-[#048B9A] p-[2px]">
+                <div className="absolute inset-0 rounded-full border-2 border-[#a1CB41] p-[2px]">
                   <div className="absolute inset-0 rounded-full border-2 border-white"></div>
                   <Image
                     src={category.image}

@@ -310,7 +310,7 @@ const Produit = ({ image, gallery = [], title, price, inStock, category }) => {
                 
                 {/* Stock */}
                 {inStock && (
-                  <div className="flex items-center text-green-600">
+                  <div className="flex items-center text-[#a1CB41]">
                     <svg 
                       className="w-4 h-4 mr-2" 
                       viewBox="0 0 24 24" 

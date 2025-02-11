@@ -7,7 +7,7 @@ import { FaWhatsapp } from 'react-icons/fa';
 const Hero = () => {
   return (
     <div className="px-4 py-6">
-      <div className="relative w-full h-[700px] rounded-2xl overflow-hidden">
+      <div className="relative w-full h-[550px] rounded-2xl overflow-hidden">
         {/* Image d'arrière-plan */}
         <Image
           src="/pyjama.png"
@@ -17,8 +17,8 @@ const Hero = () => {
           priority
         />
         
-        {/* Superposition de couleur */}
-        <div className="absolute inset-0 bg-[#048B9A]" />
+        {/* Superposition avec dégradé */}
+        <div className="absolute inset-0 bg-gradient-to-br from-[#015760] via-[#000000]/90 to-[#015760]/80" />
 
         {/* Pattern de fond */}
         <div className="absolute inset-0">
@@ -37,24 +37,27 @@ const Hero = () => {
           transition={{ duration: 0.6 }}
         >
           <div className="text-white">
-            <div className="mb-4">
+            <div className="mb-4 ms-[-15px]">
               <Image
-                src="/logo.png"
+                src="/logotransparent.png"
                 alt="Logo"
-                width={40}
-                height={40}
+                width={60}
+                height={60}
                 className="mb-4"
               />
             </div>
 
             <motion.h1 
-              className="text-3xl sm:text-4xl font-bold mb-4"
+              className="text-2xl sm:text-4xl font-bold mb-4"
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.3 }}
             >
-              Le plus Grand Marché <br />en Ligne <span className="relative">
-                en Guinée
+              Le plus Grand <br />Marché en Ligne <br /><span className="relative">
+               <div className='bg-[#ffff] w-fit text-[#048B9A] rounded-lg px-3 py-1 mt-4 font'>
+            <span className='font-light'>   en </span>
+            <span className='font-extrabold'>Guinée</span>
+               </div>
                 <motion.div 
                   className="absolute -right-12 top-1/2 transform -translate-y-1/2"
                   initial={{ scale: 0 }}
@@ -92,11 +95,15 @@ const Hero = () => {
           >
             <Link href="/boutique">
               <motion.button
-                className="bg-white text-[#048B9A] px-6 py-2.5 text-sm rounded-lg font-medium hover:bg-opacity-90 shadow-lg"
+                className="bg-white text-[#048B9A] px-6 py-2.5 text-sm rounded-3xl font-medium hover:bg-opacity-90 shadow-lg"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
                 Découvrir nos produits
+
+
+              →
+                
               </motion.button>
             </Link>
           </motion.div>

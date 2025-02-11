@@ -74,7 +74,7 @@ const PubliésRécemment = () => {
             onClick={() => setSelectedCategory(category)}
             className={`px-4 py-2 rounded-full whitespace-nowrap ${
               selectedCategory === category
-                ? 'bg-[#048B9A] text-white'
+                ? 'bg-[#1B230A] text-white'
                 : 'text-gray-600 hover:bg-gray-100'
             }`}
             whileHover={{ scale: 1.05 }}
