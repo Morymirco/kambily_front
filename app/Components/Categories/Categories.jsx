@@ -16,7 +16,7 @@ const categories = [
 
 const Categories = () => {
   return (
-    <div className="px-4 py-6 bg-white  rounded-lg mx-4 ">
+    <div className="px-4 py-6 bg-white  rounded-lg ">
       <div className="flex  gap-3 mb-4">
         <div className="w-7 h-7 rounded-full bg-[#048B9A] flex items-center justify-center">
           <svg 

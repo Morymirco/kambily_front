@@ -118,11 +118,11 @@ export default function MobileHome() {
         />
       </div>
 
-      <div className="max-w-7xl mx-auto ">
+      <div className="w-full max-w-[2000px] mx-auto">
         <QualityHeader timeLeft={timeLeft} />
       </div>
       
-      <div className="max-w-7xl mx-auto ">
+      <div className="w-full max-w-[2000px]">
       <Categories />
         {/* {loading ? (
           <div className="py-8 grid grid-cols-2 gap-4">
@@ -153,13 +153,13 @@ export default function MobileHome() {
         )} */}
       </div>
 
-      <div className="max-w-7xl mx-auto  space-y-8">
+      <div className="w-full max-w-[2000px] mx-auto  space-y-8">
       <PubliésRécemment />
         <FreeDeliveryBanner className="w-full" />
         
         <div className="grid grid-cols-1 gap-8 mb-4 py-3">
           <JewelrySection className="w-full" />
-          <div className="max-w-7xl mx-auto px-4 py-3">
+          <div className="w-full max-w-[2000px] mx-auto px-4 py-3">
           <div className="flex items-center gap-3 mb-4">
           <div className="text-[#048B9A]">
             <Image src="/icons/paiement.png" alt="Quality" width={60} height={60} />

@@ -52,7 +52,7 @@ const PubliésRécemment = () => {
   ];
 
   return (
-    <div className="px-4 py-6">
+    <div className="px-2 py-6">
       <div className="flex items-center gap-2 mb-6">
         <div className="w-6 h-6 rounded-full bg-[#048B9A] flex items-center justify-center">
           <svg 

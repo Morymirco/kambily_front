@@ -3,9 +3,9 @@ import TimerSection from './TimerSection';
 
 export default function QualityHeader({ timeLeft }) {
   return (
-    <div className="w-full">
+    <div className="w-full max-w-[2000px] mx-auto">
       {/* Quality Header */}
-      <div className="px-4 py-3 bg-white">
+      <div className="px-2 py-3 bg-white">
         <div className="flex items-center gap-3">
           <div className="text-[#048B9A] flex-shrink-0">
             <Image 
