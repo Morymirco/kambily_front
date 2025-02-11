@@ -7,7 +7,7 @@ import { FaWhatsapp } from 'react-icons/fa';
 const Hero = () => {
   return (
     <div className="px-4 py-6">
-      <div className="relative w-full h-[550px] rounded-2xl overflow-hidden">
+      <div className="relative w-full h-[580px] rounded-2xl overflow-hidden">
         {/* Image d'arrière-plan */}
         <Image
           src="/pyjama.png"
@@ -54,9 +54,18 @@ const Hero = () => {
               transition={{ delay: 0.3 }}
             >
               Le plus Grand <br />Marché en Ligne <br /><span className="relative">
-               <div className='bg-[#ffff] w-fit text-[#048B9A] rounded-lg px-3 py-1 mt-4 font'>
-            <span className='font-light'>   en </span>
-            <span className='font-extrabold'>Guinée</span>
+               <div className='bg-[#ffffff] rounded-full px-4 py-1.5 flex items-center gap-2 mt-4 w-fit relative'>
+                 <span className='text-[#048B9A] font-light'>en</span>
+                 <span className='text-[#048B9A] font-bold'>Guinée</span>
+                 <div className='w-5 h-5 rounded-full overflow-hidden'>
+                   <Image
+                     src="/flags/gn.png"
+                     alt="Drapeau du Niger"
+                     width={20}
+                     height={20}
+                     className="object-cover absolute"
+                   />
+                 </div>
                </div>
                 <motion.div 
                   className="absolute -right-12 top-1/2 transform -translate-y-1/2"
@@ -95,15 +104,27 @@ const Hero = () => {
           >
             <Link href="/boutique">
               <motion.button
-                className="bg-white text-[#048B9A] px-6 py-2.5 text-sm rounded-3xl font-medium hover:bg-opacity-90 shadow-lg"
+                className="bg-white text-[#048B9A] px-6 py-2.5 text-sm rounded-3xl font-medium hover:bg-opacity-90 shadow-lg flex items-center gap-2"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
                 Découvrir nos produits
-
-
-              →
-                
+                <svg 
+                  width="16" 
+                  height="16" 
+                  viewBox="0 0 24 24" 
+                  fill="none" 
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="transform translate-y-[1px]"
+                >
+                  <path 
+                    d="M5 12H19M19 12L12 5M19 12L12 19" 
+                    stroke="currentColor" 
+                    strokeWidth="2" 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round"
+                  />
+                </svg>
               </motion.button>
             </Link>
           </motion.div>

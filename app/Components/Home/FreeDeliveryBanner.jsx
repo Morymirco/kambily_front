@@ -1,6 +1,6 @@
 export default function FreeDeliveryBanner() {
   return (
-    <div className="bg-gradient-to-br from-[#015760] via-[#000000]/90 to-[#015760]/80  p-4 rounded-lg">
+    <div className="bg-gradient-to-br from-[#048B9A] via-[#000000]/90 to-[#048B9A]/80  p-4 rounded-lg">
       <div className="text-center">
         <h2 className="text-4xl font-bold mb-1 text-[#a1CB41]">100%</h2>
         <h3 className="text-[#f8FBF0] font-medium mb-1">
