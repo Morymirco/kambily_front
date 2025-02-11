@@ -543,20 +543,20 @@ const ProductCard = ({ id, image, gallery = [], title, price, inStock, category,
 
       {/* Modal identique à celui de Produit.jsx */}
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
-          <div className="bg-white rounded-lg w-full max-w-5xl relative">
+        <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center bg-black bg-opacity-50 p-2 sm:p-4 overflow-y-auto">
+          <div className="bg-white rounded-lg w-full max-w-5xl relative mt-4 sm:mt-0">
             <button 
               onClick={() => setShowModal(false)}
-              className="absolute top-6 right-6 w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center hover:bg-gray-200 transition-all z-10 group"
+              className="absolute top-3 sm:top-6 right-3 sm:right-6 w-8 sm:w-10 h-8 sm:h-10 bg-gray-100 rounded-full flex items-center justify-center hover:bg-gray-200 transition-all z-10 group"
             >
-              <FaTimes className="w-5 h-5 text-gray-600 group-hover:text-gray-800 transition-colors" />
+              <FaTimes className="w-4 sm:w-5 h-4 sm:h-5 text-gray-600 group-hover:text-gray-800 transition-colors" />
             </button>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-8 p-4 sm:p-8">
               {/* Section image principale et miniatures */}
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 {/* Image principale */}
-                <div className="relative h-[500px] rounded-lg overflow-hidden">
+                <div className="relative h-[300px] sm:h-[500px] rounded-lg overflow-hidden">
                   <Image
                     src={allImages[selectedImage]}
                     alt={title}
@@ -567,15 +567,15 @@ const ProductCard = ({ id, image, gallery = [], title, price, inStock, category,
                     <>
                       <button
                         onClick={() => setSelectedImage(prev => prev === 0 ? allImages.length - 1 : prev - 1)}
-                        className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 p-2 rounded-full hover:bg-white"
+                        className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 p-1.5 sm:p-2 rounded-full hover:bg-white"
                       >
-                        <FaChevronLeft className="w-4 h-4" />
+                        <FaChevronLeft className="w-3 h-3 sm:w-4 sm:h-4" />
                       </button>
                       <button
                         onClick={() => setSelectedImage(prev => (prev + 1) % allImages.length)}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 p-2 rounded-full hover:bg-white"
+                        className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 p-1.5 sm:p-2 rounded-full hover:bg-white"
                       >
-                        <FaChevronRight className="w-4 h-4" />
+                        <FaChevronRight className="w-3 h-3 sm:w-4 sm:h-4" />
                       </button>
                     </>
                   )}
@@ -583,12 +583,12 @@ const ProductCard = ({ id, image, gallery = [], title, price, inStock, category,
 
                 {/* Miniatures */}
                 {hasGallery && (
-                  <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+                  <div className="flex gap-2 sm:gap-3 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
                     {allImages.map((img, index) => (
                       <button
                         key={index}
                         onClick={() => setSelectedImage(index)}
-                        className={`relative flex-shrink-0 w-24 h-24 rounded-lg overflow-hidden transition-all ${
+                        className={`relative flex-shrink-0 w-16 sm:w-24 h-16 sm:h-24 rounded-lg overflow-hidden transition-all ${
                           selectedImage === index 
                             ? 'ring-2 ring-[#048B9A] opacity-100' 
                             : 'opacity-60 hover:opacity-100'
@@ -607,55 +607,40 @@ const ProductCard = ({ id, image, gallery = [], title, price, inStock, category,
               </div>
 
               {/* Section détails */}
-              <div className="space-y-6">
-                {/* Titre */}
-                <h2 className="text-2xl font-bold text-gray-900">{title}</h2>
+              <div className="space-y-4 sm:space-y-6">
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-900">{title}</h2>
                 
-                {/* Stock */}
-                {inStock && (
-                  <div className="flex items-center text-green-600">
-                    <svg 
-                      className="w-4 h-4 mr-1" 
-                      viewBox="0 0 24 24" 
-                      fill="none" 
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M21 8l-2-2H5L3 8h18z" />
-                      <path d="M3 8v10a2 2 0 002 2h14a2 2 0 002-2V8" />
-                      <path d="M12 12v6" />
-                      <path d="M12 12l4-4" />
-                      <path d="M12 12l-4-4" />
-                    </svg>
-                    <span>En stock</span>
-                  </div>
-                )}
-
-                {/* Prix */}
-                <div className="flex items-center gap-3 mb-6">
-                  <span className="text-3xl font-extrabold text-[#048B9A]">
+                {/* Prix et stock */}
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                  <span className="text-2xl sm:text-3xl font-extrabold text-[#048B9A]">
                     {parseInt(price).toLocaleString('fr-FR')} GNF
                   </span>
+                  {inStock && (
+                    <div className="flex items-center text-green-600 text-sm sm:text-base">
+                      <svg className="w-4 h-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M5 13l4 4L19 7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                      <span>En stock</span>
+                    </div>
+                  )}
                 </div>
 
-                {/* Groupe Quantité + Ajouter au panier */}
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center border rounded-lg h-12">
+                {/* Actions */}
+                <div className="flex items-center gap-3 sm:gap-4">
+                  <div className="flex items-center border rounded-lg h-10 sm:h-12">
                     <button
                       onClick={() => handleQuantityChange('decrement')}
-                      className="px-3 h-full text-gray-600 hover:text-[#048B9A] disabled:opacity-50 disabled:cursor-not-allowed border-r"
+                      className="px-2 sm:px-3 h-full text-gray-600 hover:text-[#048B9A] disabled:opacity-50 disabled:cursor-not-allowed border-r"
                       disabled={quantity <= 1}
                     >
                       -
                     </button>
-                    <span className="px-4 min-w-[3rem] text-center">
+                    <span className="px-3 sm:px-4 min-w-[2.5rem] sm:min-w-[3rem] text-center">
                       {quantity}
                     </span>
                     <button
                       onClick={() => handleQuantityChange('increment')}
-                      className="px-3 h-full text-gray-600 hover:text-[#048B9A] border-l"
+                      className="px-2 sm:px-3 h-full text-gray-600 hover:text-[#048B9A] border-l"
                     >
                       +
                     </button>
@@ -664,80 +649,83 @@ const ProductCard = ({ id, image, gallery = [], title, price, inStock, category,
                   <button 
                     onClick={handleAddToCart}
                     disabled={isAddingToCart}
-                    className="w-[200px] bg-[#048B9A] text-white h-12 rounded-lg flex items-center justify-center gap-2 hover:bg-[#037383] transition-colors"
+                    className="flex-1 bg-[#048B9A] text-white h-10 sm:h-12 rounded-lg flex items-center justify-center gap-2 hover:bg-[#037383] transition-colors text-sm sm:text-base"
                   >
                     {isAddingToCart ? (
                       <>
-                        <span className="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full" />
-                        <span className="ml-2">Ajout...</span>
+                        <span className="animate-spin w-4 sm:w-5 h-4 sm:h-5 border-2 border-white border-t-transparent rounded-full" />
+                        <span>Ajout...</span>
                       </>
                     ) : (
                       <>
-                        <FaShoppingCart className="w-4 h-4" />
-                        Ajouter
+                        <FaShoppingCart className="w-3 sm:w-4 h-3 sm:h-4" />
+                        Ajouter au panier
                       </>
                     )}
                   </button>
                 </div>
 
-                {/* Tailles */}
-                <div className="pt-4 border-t">
-                  <h3 className="font-semibold mb-3">Tailles disponibles</h3>
-                  <div className="flex gap-2">
-                    {['S', 'M', 'L', 'XL'].map((size) => (
-                      <button 
-                        key={size}
-                        className="w-10 h-10 border rounded-md flex items-center justify-center hover:border-[#048B9A] hover:text-[#048B9A]"
-                      >
-                        {size}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Catégorie */}
-                <div className="pt-4 border-t">
-                  <div className="flex items-center gap-2">
-                    <h3 className="font-semibold">Catégorie:</h3>
-                    <div className="text-gray-600">
-                      {category}
+                {/* Sections complémentaires */}
+                <div className="space-y-3 sm:space-y-4 pt-3 sm:pt-4">
+                  {/* Tailles */}
+                  <div className="pt-4 border-t">
+                    <h3 className="font-semibold mb-3">Tailles disponibles</h3>
+                    <div className="flex gap-2">
+                      {['S', 'M', 'L', 'XL'].map((size) => (
+                        <button 
+                          key={size}
+                          className="w-10 h-10 border rounded-md flex items-center justify-center hover:border-[#048B9A] hover:text-[#048B9A]"
+                        >
+                          {size}
+                        </button>
+                      ))}
                     </div>
                   </div>
-                </div>
 
-                {/* Partage */}
-                <div className="pt-4 border-t">
-                  <h3 className="font-semibold mb-3">Partager</h3>
-                  <div className="flex gap-3">
-                    <button 
-                      onClick={() => handleShare('facebook')}
-                      className="w-9 h-9 rounded-full bg-blue-600 text-white flex items-center justify-center hover:bg-blue-700"
-                    >
-                      <FaFacebookF />
-                    </button>
-                    <button 
-                      onClick={() => handleShare('twitter')}
-                      className="w-9 h-9 rounded-full bg-sky-500 text-white flex items-center justify-center hover:bg-sky-600"
-                    >
-                      <FaTwitter />
-                    </button>
-                    <button 
-                      onClick={() => handleShare('whatsapp')}
-                      className="w-9 h-9 rounded-full bg-green-500 text-white flex items-center justify-center hover:bg-green-600"
-                    >
-                      <FaWhatsapp />
-                    </button>
-                    <button 
-                      onClick={() => handleShare('copy')}
-                      className="w-9 h-9 rounded-full bg-gray-600 text-white flex items-center justify-center hover:bg-gray-700 relative"
-                    >
-                      <FaLink />
-                      {copySuccess && (
-                        <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-black text-white text-xs py-1 px-2 rounded">
-                          Copié !
-                        </span>
-                      )}
-                    </button>
+                  {/* Catégorie */}
+                  <div className="pt-4 border-t">
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-semibold">Catégorie:</h3>
+                      <div className="text-gray-600">
+                        {category}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Partage */}
+                  <div className="pt-4 border-t">
+                    <h3 className="font-semibold mb-3">Partager</h3>
+                    <div className="flex gap-3">
+                      <button 
+                        onClick={() => handleShare('facebook')}
+                        className="w-9 h-9 rounded-full bg-blue-600 text-white flex items-center justify-center hover:bg-blue-700"
+                      >
+                        <FaFacebookF />
+                      </button>
+                      <button 
+                        onClick={() => handleShare('twitter')}
+                        className="w-9 h-9 rounded-full bg-sky-500 text-white flex items-center justify-center hover:bg-sky-600"
+                      >
+                        <FaTwitter />
+                      </button>
+                      <button 
+                        onClick={() => handleShare('whatsapp')}
+                        className="w-9 h-9 rounded-full bg-green-500 text-white flex items-center justify-center hover:bg-green-600"
+                      >
+                        <FaWhatsapp />
+                      </button>
+                      <button 
+                        onClick={() => handleShare('copy')}
+                        className="w-9 h-9 rounded-full bg-gray-600 text-white flex items-center justify-center hover:bg-gray-700 relative"
+                      >
+                        <FaLink />
+                        {copySuccess && (
+                          <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-black text-white text-xs py-1 px-2 rounded">
+                            Copié !
+                          </span>
+                        )}
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1066,25 +1054,25 @@ const Boutique = () => {
 
       {/* Snackbar de filtres */}
       {showFilters && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-start overflow-y-auto py-8">
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-start overflow-y-auto py-4 sm:py-8">
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl mx-4">
             {/* Header */}
-            <div className="flex justify-between items-center p-6 border-b">
-              <h2 className="text-2xl font-bold text-gray-800">FILTRER</h2>
+            <div className="flex justify-between items-center p-4 sm:p-6 border-b">
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-800">FILTRER</h2>
               <button 
                 onClick={() => setShowFilters(false)}
-                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-full transition-colors"
               >
-                <FaTimes className="w-6 h-6 text-gray-500" />
+                <FaTimes className="w-5 h-5 sm:w-6 sm:h-6 text-gray-500" />
               </button>
             </div>
 
-            <div className="p-8">
+            <div className="p-4 sm:p-8">
               {/* Prix */}
-              <div className="mb-10">
-                <h3 className="text-lg font-semibold text-gray-800 mb-6">Prix</h3>
-                <div className="px-4">
-                  <div className="flex justify-between mb-4 text-gray-600">
+              <div className="mb-6 sm:mb-10">
+                <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-4 sm:mb-6">Prix</h3>
+                <div className="px-2 sm:px-4">
+                  <div className="flex justify-between mb-3 sm:mb-4 text-sm sm:text-base text-gray-600">
                     <span>{priceRange[0].toLocaleString()}GNF</span>
                     <span>{priceRange[1].toLocaleString()}GNF</span>
                   </div>
@@ -1095,20 +1083,20 @@ const Boutique = () => {
                     step="1000"
                     value={priceRange[1]}
                     onChange={(e) => setPriceRange([priceRange[0], parseInt(e.target.value)])}
-                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-[#048B9A]"
+                    className="w-full h-1.5 sm:h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-[#048B9A]"
                   />
                 </div>
               </div>
 
               {/* Barre de recherche */}
-              <div className="mb-10">
+              <div className="mb-6 sm:mb-10">
                 <div className="relative">
                   <input
                     type="text"
                     placeholder="Rechercher une catégorie..."
-                    className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#048B9A] focus:border-[#048B9A] outline-none"
+                    className="w-full pl-10 sm:pl-12 pr-4 py-2.5 sm:py-3 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#048B9A] focus:border-[#048B9A] outline-none"
                   />
-                  <svg className="w-5 h-5 text-gray-500 absolute left-4 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500 absolute left-3 sm:left-4 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                   </svg>
                 </div>
@@ -1116,23 +1104,23 @@ const Boutique = () => {
 
               {/* Catégories */}
               <div>
-                <h3 className="text-lg font-semibold text-gray-800 mb-6">Catégories</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 max-h-[400px] overflow-y-auto pr-4">
+                <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-4 sm:mb-6">Catégories</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 sm:gap-x-8 gap-y-2 sm:gap-y-4 max-h-[300px] sm:max-h-[400px] overflow-y-auto pr-2 sm:pr-4">
                   {categories.map((category, index) => (
                     <div 
                       key={category.id || index}
-                      className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 cursor-pointer group transition-colors"
+                      className="flex items-center justify-between p-2 sm:p-3 rounded-lg hover:bg-gray-50 cursor-pointer group transition-colors"
                     >
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-2 sm:gap-3">
                         <input
                           type="checkbox"
-                          className="w-5 h-5 rounded border-gray-300 text-[#048B9A] focus:ring-[#048B9A]"
+                          className="w-4 h-4 sm:w-5 sm:h-5 rounded border-gray-300 text-[#048B9A] focus:ring-[#048B9A]"
                         />
-                        <span className="text-gray-700 group-hover:text-[#048B9A] transition-colors">
+                        <span className="text-sm sm:text-base text-gray-700 group-hover:text-[#048B9A] transition-colors">
                           {category.name}
                         </span>
                       </div>
-                      <span className="text-sm text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+                      <span className="text-xs sm:text-sm text-gray-500 bg-gray-100 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full">
                         {category.x || 0}
                       </span>
                     </div>
@@ -1142,31 +1130,27 @@ const Boutique = () => {
             </div>
 
             {/* Footer avec boutons */}
-            <div className="border-t p-6 flex justify-between items-center bg-gray-50 rounded-b-xl">
+            <div className="border-t p-4 sm:p-6 flex justify-between items-center bg-gray-50 rounded-b-xl">
               <button 
                 onClick={() => {
                   setPriceRange([0, 185000]);
-                  // Réinitialiser autres filtres
                 }}
-                className="text-gray-600 hover:text-gray-800 font-medium"
+                className="text-sm sm:text-base text-gray-600 hover:text-gray-800 font-medium"
               >
-                Réinitialiser les filtres
+                Réinitialiser
               </button>
-              <div className="flex gap-4">
+              <div className="flex gap-2 sm:gap-4">
                 <button 
                   onClick={() => setShowFilters(false)}
-                  className="px-6 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-700 font-medium"
+                  className="px-4 sm:px-6 py-2 sm:py-2.5 text-sm sm:text-base border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-700 font-medium"
                 >
                   Annuler
                 </button>
                 <button 
-                  onClick={() => {
-                    // Appliquer les filtres
-                    setShowFilters(false);
-                  }}
-                  className="px-6 py-2.5 bg-[#048B9A] hover:bg-[#037483] text-white rounded-lg font-medium transition-colors"
+                  onClick={() => setShowFilters(false)}
+                  className="px-4 sm:px-6 py-2 sm:py-2.5 text-sm sm:text-base bg-[#048B9A] hover:bg-[#037483] text-white rounded-lg font-medium transition-colors"
                 >
-                  Appliquer les filtres
+                  Appliquer
                 </button>
               </div>
             </div>
