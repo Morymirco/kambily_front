@@ -1955,7 +1955,7 @@ const Profile = () => {
         <div className="flex flex-col md:flex-row gap-8">
           {/* Sidebar avec animation */}
           <motion.div 
-            className="w-full md:w-64 bg-white rounded-lg shadow-sm p-4"
+            className="w-full md:w-64 bg-white rounded-lg shadow-sm "
             variants={containerVariants}
           >
             <nav className="space-y-2">
