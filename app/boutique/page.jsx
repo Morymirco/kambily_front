@@ -158,6 +158,7 @@ const ProductCard = ({ id, image, gallery = [], title, price, inStock, category,
   const [copySuccess, setCopySuccess] = useState(false);
   const [error, setError] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [oldPrice, setOldPrice] = useState(null);
 
   // Vérifier l'authentification au chargement du composant
   useEffect(() => {
@@ -317,9 +318,16 @@ const ProductCard = ({ id, image, gallery = [], title, price, inStock, category,
             </Link>
 
             <div className="mb-4">
-              <span className="text-xl font-extrabold text-[#048B9A]">
-                {parseInt(price).toLocaleString('fr-FR')} GNF
-              </span>
+              <div className="flex items-baseline gap-2">
+                <span className="text-[11px] sm:text-2xl font-bold text-[#048B9A]">
+                  {parseInt(price).toLocaleString('fr-FR')} GNF
+                </span>
+                {oldPrice && (
+                  <span className="text-sm sm:text-base text-gray-400 line-through">
+                    {parseInt(oldPrice).toLocaleString('fr-FR')} GNF
+                  </span>
+                )}
+              </div>
             </div>
 
             {inStock ? (
@@ -460,9 +468,16 @@ const ProductCard = ({ id, image, gallery = [], title, price, inStock, category,
             )}
 
             <div className="flex font-medium items-center gap-2 mb-3">
-              <span className={`font-normal ${viewMode === 'list' ? 'text-2xl' : 'text-lg'}`}>
-                {parseInt(price).toLocaleString('fr-FR')} GNF
-              </span>
+              <div className="flex items-baseline gap-2">
+                <span className="text-lg sm:text-2xl font-bold text-[#048B9A]">
+                  {parseInt(price).toLocaleString('fr-FR')} GNF
+                </span>
+                {oldPrice && (
+                  <span className="text-sm sm:text-base text-gray-400 line-through">
+                    {parseInt(oldPrice).toLocaleString('fr-FR')} GNF
+                  </span>
+                )}
+              </div>
             </div>
 
             {inStock ? (
