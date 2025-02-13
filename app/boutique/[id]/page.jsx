@@ -1,16 +1,15 @@
 'use client'
 import { useAuth } from '@/app/providers/AuthProvider';
+import { useCart } from '@/app/providers/CartProvider';
 import { useFavorites } from '@/app/providers/FavoritesProvider';
 import axios from 'axios';
-import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
 import { AnimatePresence, motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'react-hot-toast';
-import { FaFacebookF, FaHeart, FaImage, FaLinkedinIn, FaShare, FaShoppingCart, FaStar, FaTimes, FaTwitter, FaUser, FaWhatsapp } from 'react-icons/fa';
+import { FaFacebookF, FaHeart, FaImage, FaLinkedinIn, FaShare, FaShoppingCart, FaStar, FaTimes, FaTwitter, FaWhatsapp } from 'react-icons/fa';
 import { FiZoomIn } from 'react-icons/fi';
 import { IoMdClose } from 'react-icons/io';
 import 'swiper/css';
@@ -19,155 +18,9 @@ import { FreeMode } from 'swiper/modules';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import ProductCard from '../../Components/Common/ProductCard';
 import { HOST_IP, PORT, PROTOCOL_HTTP } from '../../constants';
-import { useCart } from '@/app/providers/CartProvider';
-
-const ProductSkeleton = () => (
-  <div className="max-w-[1400px] mx-auto px-4 md:px-16 py-12">
-    {/* Fil d'Ariane skeleton */}
-    <div className="flex items-center gap-2 mb-8">
-      <div className="w-16 h-4 bg-gray-200 rounded animate-pulse" />
-      <div className="w-2 h-4 bg-gray-200 rounded animate-pulse" />
-      <div className="w-20 h-4 bg-gray-200 rounded animate-pulse" />
-      <div className="w-2 h-4 bg-gray-200 rounded animate-pulse" />
-      <div className="w-32 h-4 bg-gray-200 rounded animate-pulse" />
-    </div>
-
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-      {/* Galerie d'images skeleton */}
-      <div className="space-y-4">
-        <div className="relative aspect-square rounded-lg bg-gray-200 animate-pulse" />
-        <div className="grid grid-cols-4 gap-4">
-          {[...Array(4)].map((_, i) => (
-            <div key={i} className="aspect-square rounded-lg bg-gray-200 animate-pulse" />
-          ))}
-        </div>
-      </div>
-
-      {/* Informations produit skeleton */}
-      <div className="space-y-6">
-        {/* Titre */}
-        <div className="w-3/4 h-8 bg-gray-200 rounded animate-pulse" />
-
-        {/* Prix et notation */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-32 h-8 bg-gray-200 rounded animate-pulse" />
-            <div className="w-24 h-6 bg-gray-200 rounded animate-pulse" />
-          </div>
-        </div>
-
-        {/* Description */}
-        <div className="space-y-2">
-          <div className="w-full h-4 bg-gray-200 rounded animate-pulse" />
-          <div className="w-full h-4 bg-gray-200 rounded animate-pulse" />
-          <div className="w-3/4 h-4 bg-gray-200 rounded animate-pulse" />
-        </div>
-
-        {/* Tailles */}
-        <div className="space-y-4">
-          <div className="w-20 h-6 bg-gray-200 rounded animate-pulse" />
-          <div className="flex gap-3">
-            {[...Array(4)].map((_, i) => (
-              <div key={i} className="w-12 h-12 bg-gray-200 rounded-lg animate-pulse" />
-            ))}
-          </div>
-        </div>
-
-        {/* Couleurs */}
-        <div className="space-y-4">
-          <div className="w-24 h-6 bg-gray-200 rounded animate-pulse" />
-          <div className="flex gap-3">
-            {[...Array(4)].map((_, i) => (
-              <div key={i} className="w-12 h-12 bg-gray-200 rounded-full animate-pulse" />
-            ))}
-          </div>
-        </div>
-
-        {/* Quantité */}
-        <div className="space-y-4">
-          <div className="w-24 h-6 bg-gray-200 rounded animate-pulse" />
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-gray-200 rounded-lg animate-pulse" />
-            <div className="w-12 h-12 bg-gray-200 rounded-lg animate-pulse" />
-            <div className="w-12 h-12 bg-gray-200 rounded-lg animate-pulse" />
-          </div>
-        </div>
-
-        {/* Boutons d'action */}
-        <div className="flex gap-4 pt-6">
-          <div className="flex-1 h-14 bg-gray-200 rounded-lg animate-pulse" />
-          <div className="flex-1 h-14 bg-gray-200 rounded-lg animate-pulse" />
-        </div>
-      </div>
-    </div>
-  </div>
-);
-
-const ReviewsTab = ({ reviews }) => {
-  if (!reviews || reviews.length === 0) {
-    return (
-      <div className="text-center py-8">
-        <p className="text-gray-500">Aucun avis pour le moment</p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="space-y-6">
-      {reviews.map((review) => (
-        <div 
-          key={review.id}
-          className="border-b border-gray-200 pb-6 last:border-b-0"
-        >
-          <div className="flex items-start justify-between mb-2">
-            <div className="flex items-center gap-3">
-              {review.user?.image ? (
-                <Image
-                  src={review.user.image}
-                  alt={`${review.user.first_name} ${review.user.last_name}`}
-                  width={40}
-                  height={40}
-                  className="rounded-full object-cover"
-                />
-              ) : (
-                <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
-                  <FaUser className="text-gray-400 w-5 h-5" />
-                </div>
-              )}
-              <div>
-                <h4 className="font-medium text-gray-900">
-                  {`${review.user.first_name} ${review.user.last_name}`}
-                </h4>
-                <p className="text-sm text-gray-500">
-                  {format(new Date(review.created_at), 'dd MMMM yyyy', { locale: fr })}
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-1">
-              {[...Array(5)].map((_, i) => (
-                <FaStar
-                  key={i}
-                  className={`w-4 h-4 ${
-                    i < Math.floor(review.rating) 
-                      ? 'text-yellow-400' 
-                      : 'text-gray-300'
-                  }`}
-                />
-              ))}
-              <span className="text-sm text-gray-600 ml-1">
-                {parseFloat(review.rating).toFixed(1)}
-              </span>
-            </div>
-          </div>
-          
-          <p className="text-gray-600">
-            {review.comment}
-          </p>
-        </div>
-      ))}
-    </div>
-  );
-};
+import { formatPrice } from './formatPrice';
+import { ProductSkeleton } from './ProductSkeleton';
+import { ReviewsTab } from './ReviewsTab';
 
 const ReviewForm = ({ productId, setReviews }) => {
   const [rating, setRating] = useState(0);
@@ -327,8 +180,7 @@ const ReviewForm = ({ productId, setReviews }) => {
     </form>
   );
 };
-
-const LightboxGallery = ({ images, onClose }) => {
+export const LightboxGallery = ({ images, onClose }) => {
   const [activeIndex, setActiveIndex] = useState(0);
   const swiperRef = useRef(null);
 
@@ -395,22 +247,14 @@ const LightboxGallery = ({ images, onClose }) => {
 
         {/* Bouton fermer */}
         <button
-          onClick={onClose}
-          className="absolute top-4 right-4 text-white p-2"
+          onClick={onClose} // Appel direct de onClose
+          className="absolute top-4 right-4 text-white p-2 z-50" // z-50 pour s'assurer qu'il est au-dessus
         >
           <IoMdClose className="w-6 h-6" />
         </button>
       </div>
     </div>
   );
-};
-
-const formatPrice = (price) => {
-  // Enlever les décimales et formater avec des espaces
-  return price
-    .toString()
-    .split('.')[0]
-    .replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + ' GNF';
 };
 
 const ProductDetail = () => {
@@ -521,51 +365,8 @@ const ProductDetail = () => {
   // Récupérer les images du produit depuis l'API
   const productImages = product?.images?.map(img => img.image) || [];
 
-  // Tailles disponibles
-  const sizes = ['S', 'M', 'L', 'XL'];
 
-  // Données des produits similaires
-  // const similarProductsData = [
-  //   {
-  //     id: 1,
-  //     image: "/realite.webp",
-  //     gallery: ["/realite.webp", "/realite2.webp", "/realite3.webp"],
-  //     title: "Réalité Virtuelle Casque , Portable 3D Virtuel Réalité Lunettes Pour Films Et Jeux",
-  //     price: "185,000",
-  //     oldPrice: "210,000",
-  //     inStock: true,
-  //     description: "Profitez dès maintenant avant la fin de l'offre"
-  //   },
-  //   {
-  //     id: 2,
-  //     image: "/pochette.webp",
-  //     gallery: ["/pochette.webp", "/pochette2.webp"],
-  //     title: "Coque De Téléphone Portable Figure",
-  //     price: "45,000",
-  //     inStock: true
-  //   },
-  //   {
-  //     id: 3,
-  //     image: "/lumiere.webp",
-  //     gallery: ["/lumiere.webp", "/lumiere2.webp"],
-  //     title: "1 pièce Lumière d'ambiance pour téléphone clip rond avec miroir",
-  //     price: "40,000",
-  //     inStock: true
-  //   },
-  //   {
-  //     id: 4,
-  //     image: "/lunettes.webp",
-  //     gallery: ["/lunettes.webp", "/lunettes2.webp"],
-  //     title: "3 Pièces Lunettes De Soleil De Mode",
-  //     price: "85,000",
-  //     oldPrice: "100,000",
-  //     inStock: true,
-  //     description: "Ne manquez pas cette opportunité tant qu'elle dure"
-  //   }
-  // ];
-
-  // Données des catégories
-  const categories = ['Pyjama', 'Femme', 'Ensemble', 'Nuit'];
+  
 
   // Fonction pour gérer la soumission de l'avis
   const handleSubmitReview = (e) => {
@@ -1414,7 +1215,7 @@ const ProductDetail = () => {
                       isFavorite(product?.id) ? 'text-red-500' : 'text-gray-600'
                     }`} />
                   </div>
-                  <p className="text-sm font-medium">
+                  <p className="text-sm font-medium">                                                                                                                                                                                                           
                     {isFavorite(product?.id) 
                       ? 'Ajouté aux favoris' 
                       : 'Retiré des favoris'
