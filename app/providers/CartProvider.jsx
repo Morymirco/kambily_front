@@ -42,17 +42,23 @@ export const CartProvider = ({ children }) => {
         window.location.href = '/login';
         return;
       }
-
-        const response = await authFetch(`${PROTOCOL_HTTP}://${HOST_IP}${PORT}/carts/create/${product.id}/`, {
+  
+      // Préparer le corps de la requête
+      const body = {
+        quantity: product.quantity || 1, // Quantité obligatoire
+        colors: product.colors || [],    // Couleurs optionnelles
+        sizes: product.sizes || [],      // Tailles optionnelles
+      };
+  
+      // Envoyer la requête à l'API
+      const response = await authFetch(`${PROTOCOL_HTTP}://${HOST_IP}${PORT}/carts/create/${product.id}/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          quantity: product.quantity || 1
-        })
+        body: JSON.stringify(body),
       });
-
+  
       if (!response.ok) {
         if (response.status === 401) {
           // Token expiré ou invalide
@@ -63,10 +69,10 @@ export const CartProvider = ({ children }) => {
         }
         throw new Error('Erreur lors de l\'ajout au panier');
       }
-
+  
       const data = await response.json();
       setCartItems(data.items);
-      
+  
       // Afficher le toast personnalisé
       toast.custom((t) => (
         <div className="fixed bottom-4 right-4 z-50 animate-slide-up">
@@ -80,7 +86,7 @@ export const CartProvider = ({ children }) => {
                 className="object-cover"
               />
             </div>
-
+  
             {/* Contenu */}
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5 font-medium text-sm">
@@ -91,11 +97,11 @@ export const CartProvider = ({ children }) => {
                   Ajouté au panier
                 </div>
               </div>
-
+  
               <p className="text-gray-600 text-sm mt-1 truncate">
                 {product.name}
               </p>
-
+  
               <Link href='/panier'>
                 <button className="mt-2 text-[#048B9A] text-sm font-medium hover:text-[#037383] transition-colors">
                   Voir le panier
@@ -105,13 +111,12 @@ export const CartProvider = ({ children }) => {
           </div>
         </div>
       ), { duration: 4000 });
-
+  
     } catch (error) {
       console.error('Erreur:', error);
       toast.error(error.message || 'Une erreur est survenue lors de l\'ajout au panier');
     }
   };
-
   const removeFromCart = async (productId) => {
     try {
       const response = await authFetch(`${PROTOCOL_HTTP}://${HOST_IP}${PORT}/carts/remove/${productId}/`, {

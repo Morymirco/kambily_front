@@ -130,6 +130,7 @@ const Payment = () => {
         }
       );
 
+
       if (response.status === 201 || response.status === 200) {
         console.log(response.data);
         const orderNumber = response.data?.order?.number;
@@ -143,23 +144,6 @@ const Payment = () => {
       toast.error(error.response?.data?.message || "Une erreur est survenue lors de la création de la commande");
     } finally {
       setIsCreatingOrder(false);
-    }
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsProcessing(true);
-
-    try {
-      // Simuler le traitement du paiement
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Rediriger vers la page de confirmation
-      router.push('/confirmation');
-    } catch (error) {
-      console.error('Erreur de paiement:', error);
-      setIsProcessing(false);
-      // Gérer l'erreur (vous pouvez ajouter un toast ici)
     }
   };
 

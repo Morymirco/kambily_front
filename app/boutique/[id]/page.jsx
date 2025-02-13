@@ -672,17 +672,19 @@ const ProductDetail = () => {
 
             {/* Prix et notation */}
             <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-3">
-                <span className="text-2xl font-bold text-[#048B9A]">
-                  {formatPrice(product?.regular_price)}
-                </span>
-                {product?.promo_price != 0 && (
-                  <span className="text-lg text-gray-500 line-through">
-                    {formatPrice(product?.promo_price)}
-                  </span>
-                )}
-              </div>
+            <div className="flex items-center gap-3 flex-wrap">
+  {/* Prix régulier */}
+  <span className="text-xl md:text-2xl font-bold text-[#048B9A]">
+    {formatPrice(product?.regular_price)}
+  </span>
 
+  {/* Prix promo (affiché uniquement si différent de 0) */}
+  {product?.promo_price != 0 && (
+    <span className="text-base md:text-lg text-gray-500 line-through">
+      {formatPrice(product?.promo_price)}
+    </span>
+  )}
+</div>
               {/* Boutons d'action */}
               <div className="flex items-center gap-3">
                 {/* Bouton favoris */}
