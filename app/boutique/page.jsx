@@ -9,6 +9,7 @@ import { FaChevronLeft, FaChevronRight, FaEye, FaFacebookF, FaFilter, FaLink, Fa
 import { HOST_IP, PORT, PROTOCOL_HTTP } from './../constants';
 import { ImageCarousel } from './ImageCarousel';
 import { ProductSkeleton } from './ProductSkeleton';
+import { useCart } from '@/app/providers/CartProvider';
 
 // Composant Toast modifié
 const Toast = ({ message, image, onView, isError }) => (
@@ -79,43 +80,8 @@ const ProductCard = ({ id, image, gallery = [], title, price, inStock, category,
   const [quantity, setQuantity] = useState(1);
   const [copySuccess, setCopySuccess] = useState(false);
   const [error, setError] = useState(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const { addToCart } = useCart();
   const [oldPrice, setOldPrice] = useState(null);
-
-  // Vérifier l'authentification au chargement du composant
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    const checkAuth = async () => {
-      if (!token) {
-        setIsAuthenticated(false);
-        return;
-      }
-
-      try {
-        // Vérifier si le token est valide avec l'API
-        const response = await fetch(`${PROTOCOL_HTTP}://${HOST_IP}${PORT}/auth/verify/`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          }
-        });
-
-        if (response.ok) {
-          setIsAuthenticated(true);
-        } else {
-          // Si le token n'est pas valide, le supprimer
-          localStorage.removeItem('token');
-          setIsAuthenticated(false);
-        }
-      } catch (error) {
-        console.error('Erreur de vérification du token:', error);
-        setIsAuthenticated(false);
-      }
-    };
-
-    checkAuth();
-  }, []);
 
   const handleOpenModal = () => {
     setIsLoading(true);
@@ -129,38 +95,17 @@ const ProductCard = ({ id, image, gallery = [], title, price, inStock, category,
     setIsAddingToCart(true);
     
     try {
-      const token = localStorage.getItem('access_token');
       
-      if (!token) {
-        // Sauvegarder l'URL actuelle pour rediriger après la connexion
-        localStorage.setItem('redirectAfterLogin', window.location.pathname);
-        window.location.href = '/login';
-        return;
-      }
+      // Créer un objet produit à ajouter au panier
+      const product = {
+        id: id,
+        quantity: quantity,
+        // Ajoutez d'autres propriétés si nécessaire, comme title, image, etc.
+      };
 
-      const response = await fetch(`${PROTOCOL_HTTP}://${HOST_IP}${PORT}/carts/create/${id}/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          quantity: quantity
-        })
-      });
+      // Utiliser la méthode addToCart du CartProvider
+      await addToCart(product);
 
-      if (!response.ok) {
-        if (response.status === 401) {
-          // Token expiré ou invalide
-          localStorage.removeItem('token');
-          localStorage.setItem('redirectAfterLogin', window.location.pathname);
-          window.location.href = '/login';
-          return;
-        }
-        throw new Error('Erreur lors de l\'ajout au panier');
-      }
-
-      const data = await response.json();
       setShowToast(true);
       setTimeout(() => {
         setShowToast(false);

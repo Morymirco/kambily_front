@@ -9,6 +9,7 @@ import { useEffect, useRef, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { FaEnvelope, FaGlobe, FaPhone, FaSun, FaTimes } from 'react-icons/fa';
 import MobileNav from './MobileNav';
+import { useCart } from '@/app/providers/CartProvider';
 
 export default function Navbar() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -20,8 +21,7 @@ export default function Navbar() {
   const [showCartPopup, setShowCartPopup] = useState(false);
   const cartPopupTimer = useRef(null);
   const { user, isAuthenticated, authFetch } = useAuth();
-  const [cartItems, setCartItems] = useState([]);
-  const [cartLoading, setCartLoading] = useState(true);
+  const { cartItems, cartTotal, cartLoading, removeFromCart } = useCart();
   const [deletingItemId, setDeletingItemId] = useState(null);
   const [categories, setCategories] = useState([]);
   const [loadingCategories, setLoadingCategories] = useState(true);
@@ -66,65 +66,6 @@ export default function Navbar() {
     // Nettoyer l'intervalle lors du démontage du composant
     return () => clearInterval(interval);
   }, []);
-
-  // Charger les articles du panier
-  useEffect(() => {
-    const fetchCart = async () => {
-      try {
-        const response = await authFetch('https://api.kambily.store/carts/');
-        if (response.ok) {
-          const data = await response.json();
-          setCartItems(data);
-        }
-      } catch (error) {
-        console.error('Erreur lors du chargement du panier:', error);
-      } finally {
-        setCartLoading(false);
-      }
-    };
-
-    if (showCartPopup) {
-      fetchCart();
-    }
-  }, [showCartPopup]);
-
-  // Calculer le total du panier
-  const cartTotal = cartItems.reduce((total, item) => {
-    return total + (item.product.regular_price * item.quantity);
-  }, 0);
-
-  // Fonction pour supprimer un article
-  const removeFromCart = async (itemId) => {
-    try {
-      const response = await authFetch(`https://api.kambily.store/carts/remove/${itemId}/`, {
-        method: 'DELETE'
-      });
-
-      if (response.ok) {
-        setCartItems(prev => prev.filter(item => item.product.id !== itemId));
-        toast.success('Article supprimé du panier');
-      }
-    } catch (error) {
-      console.error('Erreur lors de la suppression:', error);
-      toast.error('Erreur lors de la suppression');
-    }
-  };
-
-  const handleCartMouseEnter = () => {
-    if (cartPopupTimer.current) clearTimeout(cartPopupTimer.current);
-    setShowCartPopup(true);
-  };
-
-  const handleCartMouseLeave = () => {
-    cartPopupTimer.current = setTimeout(() => {
-      setShowCartPopup(false);
-    }, 300);
-  };
-
-  // Fonction de navigation vers le panier
-  const handleCartClick = () => {
-    router.push('/panier');
-  };
 
   // Récupération des catégories
   useEffect(() => {
@@ -179,6 +120,24 @@ export default function Navbar() {
       ...prev,
       [categoryId]: !prev[categoryId]
     }));
+  };
+
+  const handleCartMouseEnter = () => {
+    if (cartPopupTimer.current) clearTimeout(cartPopupTimer.current);  
+    console.log("Cart"+cartItems);
+    
+    setShowCartPopup(true);
+  };
+
+  const handleCartMouseLeave = () => {
+    cartPopupTimer.current = setTimeout(() => {
+      setShowCartPopup(false);
+    }, 300);
+  };
+
+  // Fonction de navigation vers le panier
+  const handleCartClick = () => {
+    router.push('/panier');
   };
 
   return (
@@ -570,21 +529,16 @@ export default function Navbar() {
                 onMouseEnter={handleCartMouseEnter}
                 onMouseLeave={handleCartMouseLeave}
               >
-                {/* <button 
-                  className="relative text-gray-600 hover:text-[#048B9A]"
-                  onClick={handleCartClick}
-                > */}
-                  <Image
-                    src="/cart.svg"
-                    alt="Panier"
-                    width={54}
-                    height={54}
-                    className="w-7 first:h-7 sm:w-6 sm:h-6"
-                  />
-                  <span className="absolute -top-2 -right-2 w-5 h-5 bg-[#048B9A] text-white text-xs rounded-full flex items-center justify-center">
-                    {cartItems.length}
-                  </span>
-                {/* </button> */}
+                <Image
+                  src="/cart.svg"
+                  alt="Panier"
+                  width={54}
+                  height={54}
+                  className="w-7 h-7"
+                />
+                <span className="absolute -top-2 -right-2 w-5 h-5 bg-[#048B9A] text-white text-xs rounded-full flex items-center justify-center">
+                  {cartItems.length}
+                </span>
 
                 {/* Popup du panier */}
                 <AnimatePresence>
@@ -594,10 +548,6 @@ export default function Navbar() {
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: 10 }}
                       className="absolute right-0 mt-4 w-80 bg-white rounded-lg shadow-lg z-50"
-                      onMouseEnter={() => {
-                        if (cartPopupTimer.current) clearTimeout(cartPopupTimer.current);
-                      }}
-                      onMouseLeave={handleCartMouseLeave}
                     >
                       {/* Barre de progression pour la livraison gratuite */}
                       <div className="p-4 bg-gray-50 border-b">
@@ -647,7 +597,7 @@ export default function Navbar() {
                           </div>
                         ) : (
                           cartItems.map((item) => (
-                            <div key={item.id} className="flex items-center gap-4 mb-4 relative">
+                            <div key={item.product.id} className="flex items-center gap-4 mb-4 relative">
                               <div className="relative w-16 h-16 rounded-lg overflow-hidden flex-shrink-0">
                                 <Image
                                   src={item.product.images[0]?.image || '/placeholder.png'}

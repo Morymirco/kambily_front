@@ -164,6 +164,7 @@ const Panier = () => {
   const router = useRouter();
   const { authFetch } = useAuth();
 
+
   // Regrouper tous les états au début du composant
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -416,21 +417,7 @@ const Panier = () => {
     }
   };
 
-  // Fonction pour augmenter la quantité
-  const incrementQuantity = (productId) => {
-    setQuantities(prev => ({
-      ...prev,
-      [productId]: (prev[productId] || 1) + 1
-    }));
-  };
-
-  // Fonction pour diminuer la quantité
-  const decrementQuantity = (productId) => {
-    setQuantities(prev => ({
-      ...prev,
-      [productId]: Math.max(1, (prev[productId] || 1) - 1)
-    }));
-  };
+  
 
   const handleCheckout = async () => {
     router.push('/paiement');

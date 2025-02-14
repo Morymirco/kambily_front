@@ -13,6 +13,48 @@ export const CartProvider = ({ children }) => {
   const [showToast, setShowToast] = useState(false);
   const { authFetch, isAuthenticated } = useAuth();
 
+  // Charger le panier depuis localStorage au démarrage
+  useEffect(() => {
+    const storedCart = JSON.parse(localStorage.getItem('cartItems')) || [];
+    if (storedCart.length > 0) {
+      fetchProductDetails(storedCart); // Appeler la fonction pour récupérer les détails des produits
+
+    }
+  }, []);
+
+  const fetchProductDetails = async (storedCart) => {
+    try {
+      // Créer un tableau de promesses pour récupérer les détails de chaque produit
+      const productRequests = storedCart.map(item =>
+        fetch(`${PROTOCOL_HTTP}://${HOST_IP}${PORT}/products/${item.id}/`)
+      );
+
+      // Attendre que toutes les requêtes soient complètes
+      const responses = await Promise.all(productRequests);
+
+      // Vérifier si toutes les réponses sont correctes
+      const products = await Promise.all(responses.map(res => {
+        if (!res.ok) {
+          throw new Error('Erreur lors de la récupération des produits');
+        }
+        return res.json();
+        console.log('Product des produ',res.json());
+        
+      }));
+
+      // Enrichir les articles du panier avec les détails des produits
+      const enrichedCartItems = storedCart.map((item, index) => ({
+        ...item,
+        product: products[index], // Ajoute les détails du produit
+      }));
+
+      // Mettre à jour l'état du panier avec les articles enrichis
+      setCartItems(enrichedCartItems);
+    } catch (error) {
+      console.error('Erreur lors de la récupération des détails des produits:', error);
+    }
+  };
+
   // Charger le panier depuis l'API si connecté
   useEffect(() => {
     const loadCart = async () => {
@@ -23,7 +65,7 @@ export const CartProvider = ({ children }) => {
             const data = await response.json();
             console.log("depuis le pro",data);
             setCartItems(data || []);
-            
+            localStorage.setItem('cartItems', JSON.stringify(data)); // Synchroniser avec localStorage
           }
         } catch (error) {
           console.error('Erreur chargement panier:', error);
@@ -34,23 +76,60 @@ export const CartProvider = ({ children }) => {
     loadCart();
   }, [isAuthenticated]);
 
+
   const addToCart = async (product) => {
     try {
-      if (!isAuthenticated) {
-        // Sauvegarder l'URL actuelle pour rediriger après la connexion
-        localStorage.setItem('redirectAfterLogin', window.location.pathname);
-        window.location.href = '/login';
+      // Vérifier si le produit existe déjà dans le panier
+      const existingProductIndex = cartItems.findIndex(item => item.id === product.id);
+  
+      if (existingProductIndex !== -1) {
+        // Si le produit existe, mettre à jour la quantité
+        const updatedCartItems = [...cartItems];
+        updatedCartItems[existingProductIndex].quantity += product.quantity || 1;
+  
+        if (!isAuthenticated) {
+          // Mettre à jour le localStorage si l'utilisateur n'est pas connecté
+          setCartItems(updatedCartItems);
+          localStorage.setItem('cartItems', JSON.stringify(updatedCartItems));
+          toast.success('Quantité mise à jour dans le panier (non connecté)');
+          return;
+        }
+  
+        // Mettre à jour la quantité via l'API si l'utilisateur est connecté
+        const response = await authFetch(`${PROTOCOL_HTTP}://${HOST_IP}${PORT}/carts/update/${product.id}/`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ quantity: updatedCartItems[existingProductIndex].quantity })
+        });
+  
+        if (!response.ok) throw new Error('Erreur lors de la mise à jour de la quantité');
+  
+        const data = await response.json();
+        setCartItems(data.items || []);
+        localStorage.setItem('cartItems', JSON.stringify(data.items || []));
+        toast.success('Quantité mise à jour dans le panier');
         return;
       }
   
-      // Préparer le corps de la requête
+      // Si le produit n'existe pas, l'ajouter au panier
+      if (!isAuthenticated) {
+        // Sauvegarder le produit dans localStorage si l'utilisateur n'est pas connecté
+        const updatedCart = [...cartItems, { ...product, quantity: product.quantity || 1 }];
+        setCartItems(updatedCart);
+        localStorage.setItem('cartItems', JSON.stringify(updatedCart));
+        toast.success('Produit ajouté au panier (non connecté)');
+        return;
+      }
+  
+      // Ajouter le produit via l'API si l'utilisateur est connecté
       const body = {
-        quantity: product.quantity || 1, // Quantité obligatoire
-        colors: product.colors || [],    // Couleurs optionnelles
-        sizes: product.sizes || [],      // Tailles optionnelles
+        quantity: product.quantity || 1,
+        colors: product.colors || [],
+        sizes: product.sizes || [],
       };
   
-      // Envoyer la requête à l'API
       const response = await authFetch(`${PROTOCOL_HTTP}://${HOST_IP}${PORT}/carts/create/${product.id}/`, {
         method: 'POST',
         headers: {
@@ -72,12 +151,12 @@ export const CartProvider = ({ children }) => {
   
       const data = await response.json();
       setCartItems(data.items);
+      localStorage.setItem('cartItems', JSON.stringify(data.items));
   
       // Afficher le toast personnalisé
       toast.custom((t) => (
         <div className="fixed bottom-4 right-4 z-50 animate-slide-up">
           <div className="bg-white border rounded-lg shadow-lg p-4 w-[300px] flex items-center gap-4">
-            {/* Image du produit */}
             <div className="relative w-16 h-16 flex-shrink-0 rounded-md overflow-hidden">
               <Image
                 src={product.image}
@@ -86,8 +165,6 @@ export const CartProvider = ({ children }) => {
                 className="object-cover"
               />
             </div>
-  
-            {/* Contenu */}
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5 font-medium text-sm">
                 <div className="text-green-600">
@@ -97,11 +174,9 @@ export const CartProvider = ({ children }) => {
                   Ajouté au panier
                 </div>
               </div>
-  
               <p className="text-gray-600 text-sm mt-1 truncate">
                 {product.name}
               </p>
-  
               <Link href='/panier'>
                 <button className="mt-2 text-[#048B9A] text-sm font-medium hover:text-[#037383] transition-colors">
                   Voir le panier
@@ -127,6 +202,7 @@ export const CartProvider = ({ children }) => {
 
       const data = await response.json();
       setCartItems(data.items || []);
+      localStorage.setItem('cartItems', JSON.stringify(data.items || [])); // Synchroniser avec localStorage
       toast.success('Produit retiré du panier');
     } catch (error) {
       console.error('Erreur:', error);
@@ -150,6 +226,7 @@ export const CartProvider = ({ children }) => {
 
       const data = await response.json();
       setCartItems(data.items || []);
+      localStorage.setItem('cartItems', JSON.stringify(data.items || [])); // Synchroniser avec localStorage
     } catch (error) {
       console.error('Erreur:', error);
       toast.error('Impossible de mettre à jour la quantité');
@@ -165,6 +242,7 @@ export const CartProvider = ({ children }) => {
       if (!response.ok) throw new Error('Erreur lors du vidage du panier');
 
       setCartItems([]);
+      localStorage.setItem('cartItems', JSON.stringify([])); // Synchroniser avec localStorage
     } catch (error) {
       console.error('Erreur:', error);
       toast.error('Impossible de vider le panier');

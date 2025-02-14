@@ -5,9 +5,11 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { FaFilter, FaSearch, FaSortAmountDown } from 'react-icons/fa';
+import { useCart } from '@/app/providers/CartProvider';
 
 export default function TestAfficheProduct() {
   const router = useRouter();
+  const { addToCart } = useCart();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -50,7 +52,6 @@ export default function TestAfficheProduct() {
         const data = await response.json();
         console.log('Données brutes:', data);
         
-        // Vérifier si data est un tableau, sinon utiliser data.results si disponible
         const productsArray = Array.isArray(data) ? data : data.results || [];
         
         const transformedProducts = productsArray.map(product => ({
@@ -80,7 +81,6 @@ export default function TestAfficheProduct() {
     fetchProducts();
   }, []);
 
-  // Filtrer les produits (s'assurer que products est toujours un tableau)
   const filteredProducts = Array.isArray(products) ? products.filter(product => {
     const matchesSearch = product.title.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory === 'all' || product.category.toLowerCase() === selectedCategory;
@@ -89,6 +89,10 @@ export default function TestAfficheProduct() {
 
   const handleProductClick = (productId) => {
     router.push(`/test/testafficheproduct/${productId}`);
+  };
+
+  const handleAddToCart = (product) => {
+    addToCart(product);
   };
 
   if (loading) {
@@ -184,6 +188,15 @@ export default function TestAfficheProduct() {
                 inStock={product.inStock}
                 category={product.category}
               />
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleAddToCart(product);
+                }}
+                className="mt-2 px-4 py-2 bg-[#048B9A] text-white rounded-lg hover:bg-[#037483] transition-colors"
+              >
+                Ajouter au panier
+              </button>
             </motion.div>
           ))}
         </motion.div>

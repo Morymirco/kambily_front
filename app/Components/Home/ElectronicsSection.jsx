@@ -118,10 +118,11 @@ export default function ElectronicsSection() {
               {mainProduct.etat_stock ? 'En stock' : 'Rupture de stock'}
             </div>
             {mainProduct.short_description && (
-              <p className="text-xs text-gray-400 mt-1">
-                {mainProduct.short_description}
-              </p>
-            )}
+  <p className="text-xs text-gray-400 mt-1 line-clamp-2">
+    {mainProduct.short_description}
+  </p>
+)}
+
           </div>
         </div>
       </Link>
