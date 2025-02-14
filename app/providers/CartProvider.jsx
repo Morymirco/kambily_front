@@ -117,6 +117,7 @@ export const CartProvider = ({ children }) => {
       toast.error(error.message || 'Une erreur est survenue lors de l\'ajout au panier');
     }
   };
+  
   const removeFromCart = async (productId) => {
     try {
       const response = await authFetch(`${PROTOCOL_HTTP}://${HOST_IP}${PORT}/carts/remove/${productId}/`, {
@@ -170,11 +171,22 @@ export const CartProvider = ({ children }) => {
       toast.error('Impossible de vider le panier');
     }
   };
+  
+  function handleCartItems(value){
+    setCartItems(value);
+    handleCartTotal(value.length)
+  }
+  
+  function handleCartTotal(value){
+    setCartTotal(value)
+  }
 
   return (
     <CartContext.Provider value={{
       cartItems,
+      handleCartItems,
       cartTotal,
+      handleCartTotal,
       addToCart,
       removeFromCart,
       updateQuantity,

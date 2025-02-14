@@ -9,6 +9,7 @@ import { useEffect, useRef, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { FaEnvelope, FaGlobe, FaPhone, FaSun, FaTimes } from 'react-icons/fa';
 import MobileNav from './MobileNav';
+import {useCart} from "@/app/providers/CartProvider";
 
 export default function Navbar() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -20,7 +21,7 @@ export default function Navbar() {
   const [showCartPopup, setShowCartPopup] = useState(false);
   const cartPopupTimer = useRef(null);
   const { user, isAuthenticated, authFetch } = useAuth();
-  const [cartItems, setCartItems] = useState([]);
+  const {cartItems, handleCartItems} = useCart()
   const [cartLoading, setCartLoading] = useState(true);
   const [deletingItemId, setDeletingItemId] = useState(null);
   const [categories, setCategories] = useState([]);
@@ -74,7 +75,7 @@ export default function Navbar() {
         const response = await authFetch('https://api.kambily.store/carts/');
         if (response.ok) {
           const data = await response.json();
-          setCartItems(data);
+          handleCartItems(data);
         }
       } catch (error) {
         console.error('Erreur lors du chargement du panier:', error);
