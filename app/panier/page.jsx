@@ -12,6 +12,7 @@ import { FaEdit, FaMapPin, FaSearchLocation, FaTrash } from 'react-icons/fa';
 import DeliveryTimeSelector from '../Components/DeliveryTimeSelector';
 import LoginPrompt from '../Components/LoginPrompt';
 import { HOST_IP, PORT, PROTOCOL_HTTP } from './../constants';
+import {useCart} from "../providers/CartProvider";
 
 const containerStyle = {
   width: '100%',
@@ -165,7 +166,7 @@ const Panier = () => {
   const { authFetch } = useAuth();
 
   // Regrouper tous les états au début du composant
-  const [cartItems, setCartItems] = useState([]);
+  const { cartItems, handleCartItems } = useCart();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [updating, setUpdating] = useState(false);
@@ -216,7 +217,7 @@ const Panier = () => {
 
   // Effet pour charger le panier
   useEffect(() => {
-    fetchCart();
+    fetchCart ().then (r  => console.log("fetchcart"));
   }, []);
 
   useEffect(() => {
@@ -245,7 +246,7 @@ const Panier = () => {
       const data = await response.json();
       console.log(data);
       
-      setCartItems(data);
+      handleCartItems(data);
     } catch (err) {
       setError(err.message);
       toast.error(err.message);
@@ -433,7 +434,11 @@ const Panier = () => {
   };
 
   const handleCheckout = async () => {
-    router.push('/paiement');
+    if( cartItems.length === 0 ){
+      alert("aucun element dans votre panier !")
+      return;
+    }
+    router.push('/paiement', {cartItems: cartItems});
   };
 
   if (!isAuthenticated) {
