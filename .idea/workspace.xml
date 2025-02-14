@@ -5,10 +5,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="4b768bd8-3767-4912-be3d-c0d581cc3426" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/app/register/confirmation/page.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/Components/NavBar/MobileNav.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/Components/NavBar/MobileNav.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/register/page.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/register/page.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/Components/NavBar/Navbar.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/Components/NavBar/Navbar.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/paiement/page.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/paiement/page.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/panier/page.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/panier/page.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/providers/CartProvider.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/providers/CartProvider.jsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -49,7 +50,7 @@
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
     "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "main",
+    "git-widget-placeholder": "synchro-koulou",
     "last_opened_file_path": "C:/Users/kouli/Documents/me/Projets_nextjs/koulibaly-portofolio",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",

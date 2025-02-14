@@ -27,7 +27,8 @@ const PaymentInput = ({ label, type, value, onChange, placeholder, required = fa
 
 const Payment = () => {
   const router = useRouter();
-  const { cartItems, isLoading: cartLoading } = useCart();
+  const { cartItems, cartTotal } = useCart();
+  const [loading, setLoading] = useState(true)
   const [paymentMethod, setPaymentMethod] = useState('card');
   const [isProcessing, setIsProcessing] = useState(false);
   const [billingAddress, setBillingAddress] = useState({
@@ -58,18 +59,15 @@ const Payment = () => {
     if (storedAddress) {
       setSelectedAddress(JSON.parse(storedAddress));
     }
-  }, []);
-
-  useEffect(() => {
-    // Attendre que les données du panier soient chargées
-    if (cartLoading) return;
-
+    
     // Vérifier si cartItems existe et n'est pas vide
     if (!cartItems || cartItems.length === 0) {
       router.push('/panier');
       return;
     }
-
+    // Desactiver le loader
+    setLoading(false)
+    
     // Calculer le sous-total
     const subtotal = cartItems.reduce((total, item) => {
       const price = parseFloat(item.product.regular_price) || 0;
@@ -90,7 +88,7 @@ const Payment = () => {
       total: subtotal + 3000,
       items
     });
-  }, [cartItems, cartLoading, router]);
+  }, [cartItems, router]);
 
   const handleBillingChange = (e) => {
     setBillingAddress({
@@ -210,7 +208,7 @@ const Payment = () => {
   };
 
   // Afficher un loader pendant le chargement
-  if (cartLoading) {
+  if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
         <div className="w-10 h-10 border-4 border-[#048B9A] border-t-transparent rounded-full animate-spin" />
