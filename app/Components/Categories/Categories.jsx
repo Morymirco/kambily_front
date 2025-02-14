@@ -4,7 +4,7 @@ import Image from 'next/image';
 
 const categories = [
   { name: 'Smartphones', count: '23 produits', image: '/categories/smartphone.webp' },
-  { name: 'Santé & Beauté', count: '40 produits', image: '/categories/Sante.webp' },
+  { name: 'Santé & Beauté', count: '40 produits', image: '/categories/sante.webp' },
   { name: 'Ordinateurs', count: '3 produits', image: '/categories/ordinateurs.webp' },
   { name: 'Mode & Accessoires', count: '96 produits', image: '/categories/fashion.webp' },
   { name: 'Maison Et Jardin', count: '7 produits', image: '/categories/home.webp' },
