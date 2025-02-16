@@ -3,8 +3,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { createContext, useContext, useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
-import { useAuth } from './AuthProvider';
 import { HOST_IP, PORT, PROTOCOL_HTTP } from './../constants';
+import { useAuth } from './AuthProvider';
 const CartContext = createContext();
 
 export const CartProvider = ({ children }) => {
@@ -15,10 +15,26 @@ export const CartProvider = ({ children }) => {
 
   // Charger le panier depuis localStorage au démarrage
   useEffect(() => {
-    const storedCart = JSON.parse(localStorage.getItem('cartItems')) || [];
-    if (storedCart.length > 0) {
-      fetchProductDetails(storedCart); // Appeler la fonction pour récupérer les détails des produits
-
+    const storedCartString = localStorage.getItem('cartItems');
+  
+    // Check if storedCartString is not null or undefined
+    if (!storedCartString) {
+      console.error('No cart items found in localStorage');
+      return;
+    }
+  
+    try {
+      // Attempt to parse the JSON string
+      const storedCart = JSON.parse(storedCartString);
+  
+      // Check if storedCart is an array and has items
+      if (Array.isArray(storedCart) && storedCart.length > 0) {
+        fetchProductDetails(storedCart); // Call the function to fetch product details
+      } else {
+        console.error('Cart items are not in the expected format');
+      }
+    } catch (error) {
+      console.error('Failed to parse cart items from localStorage:', error);
     }
   }, []);
 
