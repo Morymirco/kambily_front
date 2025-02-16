@@ -1,6 +1,7 @@
 'use client'
 import { motion } from 'framer-motion';
 import Image from 'next/image';
+import Link from 'next/link';
 
 const categories = [
   { name: 'Smartphones', count: '23 produits', image: '/categories/smartphone.webp' },
@@ -52,17 +53,19 @@ const Categories = () => {
               className="relative w-24 h-24 mb-2"
               whileHover={{ scale: 1.05 }}
             >
-              <div className="absolute inset-0 rounded-full overflow-hidden">
-                <div className="absolute inset-0 rounded-full border-2 border-[#a1CB41] p-[2px]">
-                  <div className="absolute inset-0 rounded-full border-2 border-white"></div>
-                  <Image
-                    src={category.image}
-                    alt={category.name}
-                    fill
-                    className="object-cover rounded-full"
-                  />
+              <Link href={`/boutique/category?category=${category.name.toLowerCase()}`}>
+                <div className="absolute inset-0 rounded-full overflow-hidden">
+                  <div className="absolute inset-0 rounded-full border-2 border-[#a1CB41] p-[2px]">
+                    <div className="absolute inset-0 rounded-full border-2 border-white"></div>
+                    <Image
+                      src={category.image}
+                      alt={category.name}
+                      fill
+                      className="object-cover rounded-full"
+                    />
+                  </div>
                 </div>
-              </div>
+              </Link>
             </motion.div>
             <h3 className="text-sm font-medium mb-1">{category.name}</h3>
             <p className="text-xs text-gray-500">{category.count}</p>
