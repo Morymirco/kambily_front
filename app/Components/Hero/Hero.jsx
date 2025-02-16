@@ -73,12 +73,12 @@ const Hero = () => {
                   animate={{ scale: 1 }}
                   transition={{ delay: 0.6 }}
                 >
-                  <Image
+                  {/* <Image
                     src="/logo.webp"
                     alt="Drapeau de la Guinée"
                     width={24}
                     height={16}
-                  />
+                  /> */}
                 </motion.div>
               </span>
             </motion.h1>
