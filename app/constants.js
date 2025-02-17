@@ -4,11 +4,12 @@
 export const HOST_IP = 'api.kambily.store';
 export const PORT = '';
 export const PROTOCOL_HTTP = 'https';
-// export const HOST_IP = '192.168.137.1'; 
+// export const HOST_IP = '127.0.0.1';
 // export const PORT = ':8001';
 // export const PROTOCOL_HTTP = 'http';
 export const PROTOCOL_WS = 'ws';
 
+export const ITEMS_PER_PAGE = 10; // Définir une constante pour le nombre d'éléments par page
 
 export const generateSlug = (name) => {
 	return name

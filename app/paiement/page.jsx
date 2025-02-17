@@ -7,7 +7,7 @@ import { toast } from 'react-hot-toast';
 import { FaCheckCircle, FaCreditCard, FaMobileAlt, FaMoneyBill, FaTag, FaMapPin } from 'react-icons/fa';
 import { AddressSelector } from '@/app/Components/AddressSelector';
 import { useCart } from '@/app/providers/CartProvider';
-import { HOST_IP, PORT, PROTOCOL_HTTP } from './../constants';
+import { HOST_IP, PORT, PROTOCOL_HTTP } from '../constants';
 
 const PaymentInput = ({ label, type, value, onChange, placeholder, required = false }) => (
   <div className="relative">
