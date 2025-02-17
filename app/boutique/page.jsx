@@ -68,7 +68,7 @@ const Toast = ({ message, image, onView, isError }) => (
 );
 
 // Composant ProductCard mis à jour
-const ProductCard = ({ id, image, gallery = [], title, price, inStock, category, viewMode, description }) => {
+const ProductCard = ({ id, image, gallery = [], title, price, inStock, category, viewMode, description, sizes = [], colors, etiquettes }) => {
   const [showModal, setShowModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
@@ -292,7 +292,7 @@ const ProductCard = ({ id, image, gallery = [], title, price, inStock, category,
           <div className="w-[260px] p-6 border-l flex flex-col justify-between flex-shrink-0 bg-gray-50">
             <p className="text-sm text-gray-600 line-clamp-4">
             {
-              description
+              short_description
             }
             </p>
 
@@ -550,6 +550,7 @@ const ProductCard = ({ id, image, gallery = [], title, price, inStock, category,
                     </div>
                   )}
                 </div>
+                
 
                 {/* Actions */}
                 <div className="flex items-center gap-3 sm:gap-4">
@@ -597,14 +598,18 @@ const ProductCard = ({ id, image, gallery = [], title, price, inStock, category,
                   <div className="pt-4 border-t">
                     <h3 className="font-semibold mb-3">Tailles disponibles</h3>
                     <div className="flex gap-2">
-                      {['S', 'M', 'L', 'XL'].map((size) => (
-                        <button 
-                          key={size}
-                          className="w-10 h-10 border rounded-md flex items-center justify-center hover:border-[#048B9A] hover:text-[#048B9A]"
-                        >
-                          {size}
-                        </button>
-                      ))}
+                      {sizes.length > 0 ? (
+                        sizes.map((size) => (
+                          <button 
+                            key={size.id}
+                            className="w-10 h-10 border rounded-md flex items-center justify-center hover:border-[#048B9A] hover:text-[#048B9A]"
+                          >
+                            {size.name}
+                          </button>
+                        ))
+                      ) : (
+                        <span>Aucune taille disponible</span>
+                      )}
                     </div>
                   </div>
 
@@ -681,6 +686,9 @@ const Boutique = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 10;
 
+  // État pour les catégories sélectionnées
+  const [selectedCategories, setSelectedCategories] = useState([]);
+
   useEffect(() => {
     const fetchProducts = async () => {
       setLoading(true);
@@ -704,14 +712,20 @@ const Boutique = () => {
           title: product.name,
           image: product.images?.[0]?.image || '/tshirt.png',
           gallery: product.images?.slice(1)?.map(img => img.image) || [],
-          price: product.regular_price,
-          oldPrice: product.promo_price !== product.regular_price ? product.regular_price : null,
-          inStock: product.etat_stock === 'En Stock' || 'En stock',
-          category: product.categories?.[0]?.name || 'Non catégorisé'
+          price: parseFloat(product.regular_price),
+          oldPrice: parseFloat(product.promo_price) !== parseFloat(product.regular_price) ? parseFloat(product.regular_price) : null,
+          inStock: product.etat_stock === 'En Stock',
+          category: product.categories?.[0]?.name || 'Non catégorisé',
+          short_description: product.short_description || '',
+          long_description: product.long_description || '',
+          colors: product.colors || [],
+          sizes: product.sizes || [],
+          averageRating: product.stats_star?.average_rating || 0,
+          totalReviews: product.stats_star?.total_reviews || 0,
         }));
 
         setProducts(transformedProducts);
-          setFilteredProducts(transformedProducts);
+        setFilteredProducts(transformedProducts);
       } catch (err) {
         setError(err.message);
         toast.error(err.message);
@@ -801,6 +815,24 @@ const Boutique = () => {
     setCurrentPage(pageNumber);
   };
 
+  // Fonction pour générer des suggestions basées sur le titre des produits
+  const generateSuggestions = (query) => {
+    if (!query) return [];
+    return products
+      .filter(product => product.title.toLowerCase().includes(query.toLowerCase()))
+      .map(product => product.title)
+      .slice(0, 5); // Limiter le nombre de suggestions
+  };
+
+  // Fonction pour filtrer les produits par catégorie et prix
+  const filterProducts = () => {
+    return products.filter(product => {
+      const matchesCategory = selectedCategories.length === 0 || selectedCategories.includes(product.category);
+      const matchesPrice = product.price >= priceRange[0] && product.price <= priceRange[1];
+      return matchesCategory && matchesPrice;
+    });
+  };
+
   return (
     <div className="w-full px-2 sm:px-4 py-4 sm:py-8">
       {/* Fil d'Ariane */}
@@ -857,9 +889,7 @@ const Boutique = () => {
               >
                 <h3 className="text-sm font-medium text-gray-600 mb-3">Suggestions :</h3>
                 <div className="space-y-2 max-h-[200px] overflow-y-auto">
-                  {['Robe d\'été', 'Robe de soirée', 'Robe longue'].filter(item => 
-                    item.toLowerCase().includes(searchQuery.toLowerCase())
-                  ).map((suggestion, index) => (
+                  {generateSuggestions(searchQuery).map((suggestion, index) => (
                     <motion.button
                       key={suggestion}
                       initial={{ opacity: 0, x: -20 }}
@@ -1010,8 +1040,8 @@ const Boutique = () => {
                 <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-4 sm:mb-6">Prix</h3>
                 <div className="px-2 sm:px-4">
                   <div className="flex justify-between mb-3 sm:mb-4 text-sm sm:text-base text-gray-600">
-                    <span>{priceRange[0].toLocaleString()}GNF</span>
-                    <span>{priceRange[1].toLocaleString()}GNF</span>
+                    <span>{priceRange[0].toLocaleString()} GNF</span>
+                    <span>{priceRange[1].toLocaleString()} GNF</span>
                   </div>
                   <input
                     type="range"
@@ -1025,20 +1055,6 @@ const Boutique = () => {
                 </div>
               </div>
 
-              {/* Barre de recherche */}
-              <div className="mb-6 sm:mb-10">
-                <div className="relative">
-                  <input
-                    type="text"
-                    placeholder="Rechercher une catégorie..."
-                    className="w-full pl-10 sm:pl-12 pr-4 py-2.5 sm:py-3 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#048B9A] focus:border-[#048B9A] outline-none"
-                  />
-                  <svg className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500 absolute left-3 sm:left-4 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                  </svg>
-                </div>
-              </div>
-
               {/* Catégories */}
               <div>
                 <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-4 sm:mb-6">Catégories</h3>
@@ -1047,11 +1063,20 @@ const Boutique = () => {
                     <div 
                       key={category.id || index}
                       className="flex items-center justify-between p-2 sm:p-3 rounded-lg hover:bg-gray-50 cursor-pointer group transition-colors"
+                      onClick={() => {
+                        setSelectedCategories(prev => 
+                          prev.includes(category.name) 
+                            ? prev.filter(cat => cat !== category.name) 
+                            : [...prev, category.name]
+                        );
+                      }}
                     >
                       <div className="flex items-center gap-2 sm:gap-3">
                         <input
                           type="checkbox"
+                          checked={selectedCategories.includes(category.name)}
                           className="w-4 h-4 sm:w-5 sm:h-5 rounded border-gray-300 text-[#048B9A] focus:ring-[#048B9A]"
+                          readOnly
                         />
                         <span className="text-sm sm:text-base text-gray-700 group-hover:text-[#048B9A] transition-colors">
                           {category.name}
@@ -1071,6 +1096,7 @@ const Boutique = () => {
               <button 
                 onClick={() => {
                   setPriceRange([0, 185000]);
+                  setSelectedCategories([]);
                 }}
                 className="text-sm sm:text-base text-gray-600 hover:text-gray-800 font-medium"
               >
@@ -1084,7 +1110,10 @@ const Boutique = () => {
                   Annuler
                 </button>
                 <button 
-                  onClick={() => setShowFilters(false)}
+                  onClick={() => {
+                    setFilteredProducts(filterProducts());
+                    setShowFilters(false);
+                  }}
                   className="px-4 sm:px-6 py-2 sm:py-2.5 text-sm sm:text-base bg-[#048B9A] hover:bg-[#037483] text-white rounded-lg font-medium transition-colors"
                 >
                   Appliquer
@@ -1154,9 +1183,33 @@ const Boutique = () => {
               <div className="col-span-full text-center text-red-500 p-8">
                 {error}
               </div>
+            ) : filteredProducts.length === 0 ? (
+              // Afficher un message et un SVG si la liste est vide
+              <div className="col-span-full text-center py-12">
+                <svg
+                  className="w-12 h-12 mx-auto mb-4 text-gray-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M3 3h18M9 3v18m6-18v18M3 9h18m-9 0v9"
+                  />
+                </svg>
+                <h3 className="text-xl font-medium mb-2 text-gray-600">
+                  Aucun produit trouvé
+                </h3>
+                <p className="text-gray-500">
+                  Essayez d'ajuster vos filtres ou de rechercher un autre terme.
+                </p>
+              </div>
             ) : (
-              // Assurez-vous que vous mappez sur un tableau de produits
-              (searchQuery ? filteredProducts : currentProducts).map(product => (
+              // Utiliser filteredProducts pour le rendu
+              filteredProducts.map(product => (
                 <motion.div
                   key={product.id}
                   variants={productVariants}
@@ -1167,7 +1220,7 @@ const Boutique = () => {
                   className="w-full px-0.5 sm:px-1"
                 >
                   <ProductCard
-                    {...product} // Assurez-vous que vous passez les bonnes propriétés
+                    {...product}
                     viewMode={viewMode}
                     className="h-full w-full"
                   />

@@ -171,6 +171,8 @@ export default function OrderDetail() {
 
   const handleCancelOrder = async (orderId) => {
     try {
+      console.log(orderId);
+
       const response = await fetch(`https://api.kambily.store/orders/cancel/`, {
         method: 'POST',
         headers: {
@@ -294,7 +296,7 @@ export default function OrderDetail() {
             <div className="text-gray-600">
               <p>{order.delivery?.address}</p>
               <p>{order.delivery?.ville}</p>
-                <p>{order.delivery?.pays}</p>
+              <p>{order.delivery?.pays}</p>
               <p className="mt-2">Tél: {order.delivery?.telephone}</p>
             </div>
             {/* GOOGLE MAP AVEC LATITUDE ET LONGITUTDE */}
@@ -379,13 +381,28 @@ export default function OrderDetail() {
               <span className="capitalize">{order.payment_method}</span>
             </div>
           </div>
-        </motion.div>
-      </div>
 
-      <div className="mt-8">
-        <button onClick={() => handleCancelOrder(order.id)} className="cancel-order-button">
-          Annuler la commande
-        </button>
+          {/* Bouton Annuler la commande */}
+          {order.status === 'pending' ? (
+            <div className="mt-4">
+              <button onClick={() => handleCancelOrder(order.number)} className="cancel-order-button bg-red-500 text-white rounded-lg px-4 py-2 hover:bg-red-600 transition-colors">
+                Annuler la commande
+              </button>
+            </div>
+          ) : order.status === 'cancel' ? (
+            <div className="mt-4">
+              <button className="cancel-order-button bg-gray-500 text-white rounded-lg px-4 py-2 hover:bg-gray-600 transition-colors">
+                Commande annulée
+              </button>
+            </div>
+            ) : order.status === 'shipped' ? (
+            <div className="mt-4">
+              <button className="cancel-order-button bg-gray-500 text-white rounded-lg px-4 py-2 hover:bg-gray-600 transition-colors">
+                Commande livrée
+              </button>
+            </div>
+          ) : null}
+        </motion.div>
       </div>
     </div>
   );

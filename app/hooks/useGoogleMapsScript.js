@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-export const useGoogleMapsScript = () => {
+export function useGoogleMapsScript() {
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
@@ -9,23 +9,26 @@ export const useGoogleMapsScript = () => {
       return;
     }
 
-    const existingScript = document.querySelector(`script[src*="maps.googleapis.com/maps/api"]`);
+    const existingScript = document.getElementById('google-maps-script');
     if (existingScript) {
-      existingScript.addEventListener('load', () => setIsLoaded(true));
+      existingScript.onload = () => setIsLoaded(true);
       return;
     }
 
-    const googleMapScript = document.createElement('script');
-    googleMapScript.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyAlAKK7ldE7CcZMmGADZPb3GYOPI8C4bXs&libraries=places`;
-    googleMapScript.async = true;
-    googleMapScript.defer = true;
-    googleMapScript.addEventListener('load', () => setIsLoaded(true));
-    document.body.appendChild(googleMapScript);
+    const script = document.createElement('script');
+    script.id = 'google-maps-script';
+    script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyAlAKK7ldE7CcZMmGADZPb3GYOPI8C4bXs`;
+    script.async = true;
+    script.defer = true;
+    script.onload = () => setIsLoaded(true);
+    document.head.appendChild(script);
 
     return () => {
-      googleMapScript.removeEventListener('load', () => setIsLoaded(true));
+      if (script.parentNode) {
+        script.parentNode.removeChild(script);
+      }
     };
   }, []);
 
   return isLoaded;
-}; 
+} 

@@ -20,22 +20,29 @@ const PubliésRécemment = () => {
           throw new Error('Erreur lors de la récupération des catégories');
         }
         const data = await response.json();
+        console.log('les categories',data);
+        
         const formattedCategories = data.map(category => ({
           id: category.id,
           image: category.image,
           title: category.name,
           count: category.products.length,
-          products: category.products
+          products: category.products.map(product => ({
+            id: product.id,
+            image: product.images?.[0]?.image || '/placeholder.png',
+            gallery: product.images?.slice(1)?.map(img => img.image) || [],
+            title: product.name,
+            price: parseFloat(product.regular_price),
+            oldPrice: product.promo_price !== product.regular_price ? parseFloat(product.regular_price) : null,
+            inStock: product.etat_stock === 'En Stock' || true,
+            category: category.name,
+            onAddToCart: () => console.log(`Add ${product.name} to cart`),
+            isAddingToCart: false
+          }))
         }));
-        console.log("categorie trans",data);
 
-        console.log('les produits',formattedCategories.products);
-        
-        
         setCategories(formattedCategories);
         setProducts(data.flatMap(category => category.products)); // Récupérer tous les produits
-        console.log('les produits de cette cateogie',products);
-        
       } catch (error) {
         console.error('Erreur lors de la récupération des catégories:', error);
         toast.error(error.message || 'Une erreur est survenue lors de la récupération des catégories');
@@ -111,10 +118,8 @@ const PubliésRécemment = () => {
           .flatMap(category => category.products)
           .map((product) => (
             <Product
-            key={product.id}
-            {...product}
-            vendeur={product.vendeur}
-            buttonText={product.category === "Alimentation" ? "Choix des options" : "Ajouter au panier"}
+              key={product.id}
+              {...product}
             />
           ))}
         

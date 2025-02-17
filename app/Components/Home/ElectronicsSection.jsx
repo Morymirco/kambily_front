@@ -104,21 +104,22 @@ export default function ElectronicsSection() {
               {mainProduct.name}
             </h3>
             <div className="flex items-center gap-2 mt-2">
+            <span className="text-[#048B9A] font-medium">
+                {mainProduct.regular_price.toLocaleString()}GNF
+              </span>
               {mainProduct.regular_price && (
                 <span className="text-gray-400 line-through text-sm">
-                  {mainProduct.regular_price.toLocaleString()}GNF
+                  {mainProduct.promo_price.toLocaleString()}GNF
                 </span>
               )}
-              <span className="text-[#048B9A] font-medium">
-                {mainProduct.promo_price.toLocaleString()}GNF
-              </span>
+             
             </div>
             <div className="flex items-center gap-2 text-xs text-green-600 mt-1">
               <span className="inline-block w-2 h-2 bg-green-600 rounded-full"></span>
               {mainProduct.etat_stock ? 'En stock' : 'Rupture de stock'}
             </div>
             {mainProduct.short_description && (
-              <p className="text-xs text-gray-400 mt-1">
+              <p className="text-xs text-gray-400 mt-1 line-clamp-3">
                 {mainProduct.short_description}
               </p>
             )}

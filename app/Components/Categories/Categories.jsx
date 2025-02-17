@@ -41,9 +41,7 @@ const Categories = () => {
     fetchCategories();
   }, []);
 
-  if (loading) {
-    return <div>Chargement des catégories...</div>; // Afficher un message de chargement
-  }
+ 
 
   return (
     <div className="px-4 py-6 bg-white rounded-lg">

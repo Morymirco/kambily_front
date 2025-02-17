@@ -283,11 +283,11 @@ const Produit = ({
 
           {/* Prix avec gestion de la promo */}
           <div className="flex items-center gap-2 mb-2">
-            <p className="text-lg font-bold text-gray-900">
+            <p className="text-base font-bold text-gray-900 whitespace-nowrap overflow-hidden text-ellipsis">
               {price} GNF
             </p>
             {oldPrice && (
-              <p className="text-sm text-gray-500 line-through">
+              <p className="text-base text-gray-500 line-through whitespace-nowrap overflow-hidden text-ellipsis">
                 {oldPrice} GNF
               </p>
             )}
@@ -429,12 +429,12 @@ const Produit = ({
 
                 {/* Prix */}
                 <div className="flex items-center gap-4 mb-6">
-                  <span className="text-2xl font-bold text-[#048B9A]">
-                    {price}GNF
+                  <span className="text-xl font-bold text-[#048B9A] whitespace-nowrap overflow-hidden text-ellipsis">
+                    {price} GNF
                   </span>
                   {oldPrice && (
-                    <span className="text-lg text-gray-500 line-through">
-                      {oldPrice}GNF
+                    <span className="text-base text-gray-500 line-through whitespace-nowrap overflow-hidden text-ellipsis">
+                      {oldPrice} GNF
                     </span>
                   )}
                 </div>
