@@ -68,7 +68,7 @@ const Toast = ({ message, image, onView, isError }) => (
 );
 
 // Composant ProductCard mis à jour
-const ProductCard = ({ id, image, gallery = [], title, price, inStock, category, viewMode }) => {
+const ProductCard = ({ id, image, gallery = [], title, price, inStock, category, viewMode, description }) => {
   const [showModal, setShowModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
@@ -291,7 +291,9 @@ const ProductCard = ({ id, image, gallery = [], title, price, inStock, category,
           {/* Colonne droite : Description et bouton */}
           <div className="w-[260px] p-6 border-l flex flex-col justify-between flex-shrink-0 bg-gray-50">
             <p className="text-sm text-gray-600 line-clamp-4">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+            {
+              description
+            }
             </p>
 
             <button 
@@ -787,6 +789,10 @@ const Boutique = () => {
   const indexOfFirstProduct = indexOfLastProduct - ITEMS_PER_PAGE;
   const currentProducts = products.slice(indexOfFirstProduct, indexOfLastProduct);
 
+  console.log("products", products);
+  console.log("currentProducts", currentProducts);
+  
+
   // Calculer le nombre total de pages
   const totalPages = Math.ceil(products.length / ITEMS_PER_PAGE);
 
@@ -1148,23 +1154,26 @@ const Boutique = () => {
               <div className="col-span-full text-center text-red-500 p-8">
                 {error}
               </div>
-            ) : searchQuery ? filteredProducts : currentProducts.map(product => (
-              <motion.div
-                key={product.id}
-                variants={productVariants}
-                layout
-                initial="hidden"
-                animate="show"
-                exit={{ opacity: 0, scale: 0.9 }}
-                className="w-full px-0.5 sm:px-1"
-              >
-                <ProductCard
-                  {...product}
-                  viewMode={viewMode}
-                  className="h-full w-full"
-                />
-              </motion.div>
-            ))}
+            ) : (
+              // Assurez-vous que vous mappez sur un tableau de produits
+              (searchQuery ? filteredProducts : currentProducts).map(product => (
+                <motion.div
+                  key={product.id}
+                  variants={productVariants}
+                  layout
+                  initial="hidden"
+                  animate="show"
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  className="w-full px-0.5 sm:px-1"
+                >
+                  <ProductCard
+                    {...product} // Assurez-vous que vous passez les bonnes propriétés
+                    viewMode={viewMode}
+                    className="h-full w-full"
+                  />
+                </motion.div>
+              ))
+            )}
           </AnimatePresence>
         </motion.div>
 
