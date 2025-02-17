@@ -676,24 +676,26 @@ const Boutique = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [categories, setCategories] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 10;
 
   useEffect(() => {
     const fetchProducts = async () => {
       setLoading(true);
       try {
-        const url = categoryParam 
-          ? `${PROTOCOL_HTTP}://${HOST_IP}${PORT}/products/?category=${categoryParam}`
-          : `${PROTOCOL_HTTP}://${HOST_IP}${PORT}/products/`;
-        
-        const response = await fetch(url);
+        let url = `${PROTOCOL_HTTP}://${HOST_IP}${PORT}/products/`;
 
-        console.log('Réponse:', response);
-        if (!response.ok) throw new Error('Erreur lors du chargement des produits');
+        if (categoryParam) {
+          url = `${PROTOCOL_HTTP}://${HOST_IP}${PORT}/products/categories/productslist/?category_ids=${categoryParam}`;
+        }
+
+        const response = await fetch(url);
+        if (!response.ok) throw new Error('Erreur lors de la récupération des produits');
         
         const data = await response.json();
         console.log('Données brutes:', data);
         
-        const productsArray = Array.isArray(data.products) ? data.products : data.results || [];
+        const productsArray = Array.isArray(data) ? data : data.results || [];
         
         const transformedProducts = productsArray.map(product => ({
           id: product.id,
@@ -707,7 +709,7 @@ const Boutique = () => {
         }));
 
         setProducts(transformedProducts);
-        setFilteredProducts(transformedProducts);
+          setFilteredProducts(transformedProducts);
       } catch (err) {
         setError(err.message);
         toast.error(err.message);
@@ -778,6 +780,19 @@ const Boutique = () => {
   const getCategoryTitle = () => {
     if (!categoryParam) return "Tous nos produits";
     return categoryParam.charAt(0).toUpperCase() + categoryParam.slice(1).replace(/-/g, ' ');
+  };
+
+  // Calculer les produits à afficher pour la page actuelle
+  const indexOfLastProduct = currentPage * ITEMS_PER_PAGE;
+  const indexOfFirstProduct = indexOfLastProduct - ITEMS_PER_PAGE;
+  const currentProducts = products.slice(indexOfFirstProduct, indexOfLastProduct);
+
+  // Calculer le nombre total de pages
+  const totalPages = Math.ceil(products.length / ITEMS_PER_PAGE);
+
+  // Fonction pour changer de page
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
   };
 
   return (
@@ -1133,7 +1148,7 @@ const Boutique = () => {
               <div className="col-span-full text-center text-red-500 p-8">
                 {error}
               </div>
-            ) : searchQuery ? filteredProducts : products.map(product => (
+            ) : searchQuery ? filteredProducts : currentProducts.map(product => (
               <motion.div
                 key={product.id}
                 variants={productVariants}
@@ -1188,12 +1203,15 @@ const Boutique = () => {
           <button className="w-10 h-10 flex items-center justify-center rounded-lg border border-gray-300 hover:bg-gray-50">
             ‹
           </button>
-          <button className="w-10 h-10 flex items-center justify-center rounded-lg bg-[#048B9A] text-white">
-            1
-          </button>
-          <button className="w-10 h-10 flex items-center justify-center rounded-lg border border-gray-300 hover:bg-gray-50">
-            2
-          </button>
+          {Array.from({ length: totalPages }, (_, index) => (
+            <button
+              key={index + 1}
+              onClick={() => handlePageChange(index + 1)}
+              className={`mx-1 px-3 py-1 rounded ${currentPage === index + 1 ? 'bg-[#048B9A] text-white' : 'bg-gray-200'}`}
+            >
+              {index + 1}
+            </button>
+          ))}
           <button className="w-10 h-10 flex items-center justify-center rounded-lg border border-gray-300 hover:bg-gray-50">
             ›
           </button>

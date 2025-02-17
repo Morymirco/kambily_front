@@ -1,55 +1,61 @@
 'use client'
-import { useState } from 'react';
 import { motion } from 'framer-motion';
-import Produit from '../Produit';
-import ProductCard from '../Common/ProductCard';
+import { useEffect, useState } from 'react';
+import { toast } from 'react-hot-toast';
 import Product from '../Common/Product';
-
-const categories = ['Tout', 'Alimentation', 'Mode & Accessoires', 'Voitures'];
+import Skeleton from './../../Common/Skeleton';
+import { HOST_IP, PORT, PROTOCOL_HTTP } from './../../constants';
 
 const PubliésRécemment = () => {
   const [selectedCategory, setSelectedCategory] = useState('Tout');
-  
-  const products = [
-    {
-      id: 1,
-      image: "/categories/fashion.webp",
-      title: "Toyota Venza année 2013",
-      price: "8 200 000",
-      category: "Voitures",
-      vendeur: "Sirius",
-      inStock: true
-    },
-    {
-      id: 2,
-      image: "/categories/smartphone.webp",
-      title: "Farine infantile",
-      subtitle: "Aliments pour bébés et enfants",
-      price: "1 000",
-      oldPrice: "2 000",
-      category: "Alimentation",
-      vendeur: "Saveur du sahel",
-      inStock: true
-    },
-    {
-      id: 3,
-      image: "/categories/Redmi.webp",
-      title: "Toyota Venza année 2013",
-      price: "8 200 000",
-      category: "Voitures",
-      vendeur: "Sirius",
-      inStock: true
-    },
-    {
-      id: 4,
-      image: "/categories/electronic.webp",
-      title: "Toyota Venza année 2013",
-      price: "8 200 000",
-      category: "Voitures",
-      vendeur: "Sirius",
-      inStock: true
-    }
-  ];
+  const [categories, setCategories] = useState([]);
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await fetch(`${PROTOCOL_HTTP}://${HOST_IP}${PORT}/categories/nested/`);
+        if (!response.ok) {
+          throw new Error('Erreur lors de la récupération des catégories');
+        }
+        const data = await response.json();
+        const formattedCategories = data.map(category => ({
+          id: category.id,
+          image: category.image,
+          title: category.name,
+          count: category.products.length,
+          products: category.products
+        }));
+        console.log("categorie trans",data);
+
+        console.log('les produits',formattedCategories.products);
+        
+        
+        setCategories(formattedCategories);
+        setProducts(data.flatMap(category => category.products)); // Récupérer tous les produits
+        console.log('les produits de cette cateogie',products);
+        
+      } catch (error) {
+        console.error('Erreur lors de la récupération des catégories:', error);
+        toast.error(error.message || 'Une erreur est survenue lors de la récupération des catégories');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="grid grid-cols-2 gap-4">
+        {Array.from({ length: 4 }).map((_, index) => (
+          <Skeleton key={index} />
+        ))}
+      </div>
+    );
+  }
 
   return (
     <div className="px-2 py-6">
@@ -68,32 +74,72 @@ const PubliésRécemment = () => {
       </div>
 
       <div className="flex gap-4 overflow-x-auto pb-4 mb-6">
+        <motion.button
+          key="Tout"
+          onClick={() => setSelectedCategory('Tout')}
+          className={`px-4 py-2 rounded-full whitespace-nowrap ${
+            selectedCategory === 'Tout'
+              ? 'bg-[#1B230A] text-white'
+              : 'text-gray-600 hover:bg-gray-100'
+          }`}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          Tout
+        </motion.button>
+
         {categories.map((category) => (
           <motion.button
-            key={category}
-            onClick={() => setSelectedCategory(category)}
+            key={category.id}
+            onClick={() => setSelectedCategory(category.title)}
             className={`px-4 py-2 rounded-full whitespace-nowrap ${
-              selectedCategory === category
+              selectedCategory === category.title
                 ? 'bg-[#1B230A] text-white'
                 : 'text-gray-600 hover:bg-gray-100'
             }`}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
-            {category}
+            {category.title} ({category.count})
           </motion.button>
         ))}
       </div>
 
       <div className="grid grid-cols-2 gap-4">
-        {products.map((product) => (
-          <Product
+        {categories
+          .filter(category => selectedCategory === 'Tout' || category.title === selectedCategory)
+          .flatMap(category => category.products)
+          .map((product) => (
+            <Product
             key={product.id}
             {...product}
             vendeur={product.vendeur}
             buttonText={product.category === "Alimentation" ? "Choix des options" : "Ajouter au panier"}
-          />
-        ))}
+            />
+          ))}
+        
+        {categories
+          .filter(category => selectedCategory === 'Tout' || category.title === selectedCategory)
+          .flatMap(category => category.products)
+          .length === 0 && (
+            <div className="col-span-2 text-center text-gray-500">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="w-16 h-16 mx-auto mb-2"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M13 16h-1v-4h-1m4 0h-1v4h-1m-1-4V8a4 4 0 00-8 0v8a4 4 0 008 0v-4z"
+                />
+              </svg>
+              <p>Aucun produit trouvé dans cette catégorie.</p>
+            </div>
+          )}
       </div>
     </div>
   );

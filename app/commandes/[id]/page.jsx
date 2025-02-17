@@ -1,16 +1,15 @@
 'use client'
+import { useGoogleMapsScript } from '@/app/hooks/useGoogleMapsScript';
 import { useAuth } from '@/app/providers/AuthProvider';
+import { GoogleMap, Marker } from '@react-google-maps/api';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
-import { useEffect, useState, useRef } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { FaBox, FaCheck, FaClock, FaTruck } from 'react-icons/fa';
 import { HOST_IP, PORT, PROTOCOL_HTTP } from './../../constants';
-import { useRouter } from 'next/navigation';
-import { GoogleMap, Marker } from '@react-google-maps/api';
-import { useGoogleMapsScript } from '@/app/hooks/useGoogleMapsScript';
 
 const OrderDetailSkeleton = () => {
   
@@ -169,6 +168,32 @@ export default function OrderDetail() {
   };
 
   const currentStep = getStatusStep(order.status);
+
+  const handleCancelOrder = async (orderId) => {
+    try {
+      const response = await fetch(`https://api.kambily.store/orders/cancel/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+        },
+        body: JSON.stringify({
+          number: orderId
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Erreur lors de l\'annulation de la commande');
+      }
+
+      // Mettez à jour l'état ou effectuez d'autres actions après l'annulation
+      console.log('Commande annulée avec succès');
+      // Vous pouvez également mettre à jour la liste des commandes ici si nécessaire
+    } catch (error) {
+      console.error('Erreur:', error);
+      // Affichez un message d'erreur à l'utilisateur si nécessaire
+    }
+  };
 
   return (
     <div className="max-w-[1400px] mx-auto px-4 md:px-16 py-12">
@@ -355,6 +380,12 @@ export default function OrderDetail() {
             </div>
           </div>
         </motion.div>
+      </div>
+
+      <div className="mt-8">
+        <button onClick={() => handleCancelOrder(order.id)} className="cancel-order-button">
+          Annuler la commande
+        </button>
       </div>
     </div>
   );

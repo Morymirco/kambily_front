@@ -2,23 +2,52 @@
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
-
-const categories = [
-  { name: 'Smartphones', count: '23 produits', image: '/categories/smartphone.webp' },
-  { name: 'Santé & Beauté', count: '40 produits', image: '/categories/sante.webp' },
-  { name: 'Ordinateurs', count: '3 produits', image: '/categories/ordinateurs.webp' },
-  { name: 'Mode & Accessoires', count: '96 produits', image: '/categories/fashion.webp' },
-  { name: 'Maison Et Jardin', count: '7 produits', image: '/categories/home.webp' },
-  { name: 'Électronique', count: '90 produits', image: '/categories/electronic.webp' },
-  { name: 'Bébé Maman', count: '3 produits', image: '/categories/baby.webp' },
-  { name: 'Automobile', count: '1 produit', image: '/categories/car.webp' },
-  { name: 'Alimentation', count: '22 produits', image: '/categories/food.webp' },
-];
+import { useEffect, useState } from 'react';
+import { toast } from 'react-hot-toast';
+import { HOST_IP, PORT, PROTOCOL_HTTP } from './../../constants';
 
 const Categories = () => {
+  const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await fetch(`${PROTOCOL_HTTP}://${HOST_IP}${PORT}/categories/nested/`);
+        if (!response.ok) {
+          throw new Error('Erreur lors de la récupération des catégories');
+        }
+        const data = await response.json();
+        console.log('categorie', data);
+        
+        // Formater les catégories pour obtenir le nom et le nombre de produits
+        const formattedCategories = data.map(category => ({
+          id: category.id,
+          slug: category.slug, // Supposons que chaque catégorie possède un slug unique
+          name: category.name,
+          count: category.products.length, // Supposons que chaque catégorie a un tableau de produits
+          image: category.image
+        }));
+
+        setCategories(formattedCategories);
+      } catch (error) {
+        console.error('Erreur lors de la récupération des catégories:', error);
+        toast.error(error.message || 'Une erreur est survenue lors de la récupération des catégories');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
+  if (loading) {
+    return <div>Chargement des catégories...</div>; // Afficher un message de chargement
+  }
+
   return (
-    <div className="px-4 py-6 bg-white  rounded-lg ">
-      <div className="flex  gap-3 mb-4">
+    <div className="px-4 py-6 bg-white rounded-lg">
+      <div className="flex gap-3 mb-4">
         <div className="w-7 h-7 rounded-full bg-[#048B9A] flex items-center justify-center">
           <svg 
             xmlns="http://www.w3.org/2000/svg" 
@@ -53,7 +82,7 @@ const Categories = () => {
               className="relative w-24 h-24 mb-2"
               whileHover={{ scale: 1.05 }}
             >
-              <Link href={`/boutique/category?category=${category.name.toLowerCase()}`}>
+              <Link href={`/boutique?categorie=${category.id}`}>
                 <div className="absolute inset-0 rounded-full overflow-hidden">
                   <div className="absolute inset-0 rounded-full border-2 border-[#a1CB41] p-[2px]">
                     <div className="absolute inset-0 rounded-full border-2 border-white"></div>
@@ -68,7 +97,7 @@ const Categories = () => {
               </Link>
             </motion.div>
             <h3 className="text-sm font-medium mb-1">{category.name}</h3>
-            <p className="text-xs text-gray-500">{category.count}</p>
+            <p className="text-xs text-gray-500">{category.count} produits</p>
           </motion.div>
         ))}
       </div>
