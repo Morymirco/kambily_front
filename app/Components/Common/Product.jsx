@@ -1,4 +1,5 @@
 'use client'
+import { useCart } from '@/app/providers/CartProvider';
 import { useFavorites } from '@/app/providers/FavoritesProvider';
 import { AnimatePresence, motion } from 'framer-motion';
 import Image from 'next/image';
@@ -145,6 +146,8 @@ const Produit = ({
   const [showToast, setShowToast] = useState(false);
   const [isTogglingFavorite, setIsTogglingFavorite] = useState(false);
 
+  const { addToCart } = useCart();
+
   const handleFavoriteClick = async (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -159,12 +162,8 @@ const Produit = ({
     }
   };
 
-  const handleAddToCart = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (onAddToCart && !isAddingToCart) {
-      onAddToCart();
-    }
+  const handleAddToCart = () => {
+    addToCart({ id, image, title, price, quantity });
   };
 
   const handleOpenModal = (e) => {

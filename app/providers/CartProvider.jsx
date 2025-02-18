@@ -3,35 +3,38 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { createContext, useContext, useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
-import { useAuth } from './AuthProvider';
 import { HOST_IP, PORT, PROTOCOL_HTTP } from './../constants';
+import { useAuth } from './AuthProvider';
 const CartContext = createContext();
 
 export const CartProvider = ({ children }) => {
   const [cartItems, setCartItems] = useState([]);
   const [cartTotal, setCartTotal] = useState(0);
   const [showToast, setShowToast] = useState(false);
+  const [cartLoading, setCartLoading] = useState(true);
   const { authFetch, isAuthenticated } = useAuth();
+
+  // Fonction pour charger le panier
+  const fetchCart = async () => {
+    setCartLoading(true);
+    try {
+      const response = await authFetch(`${PROTOCOL_HTTP}://${HOST_IP}${PORT}/carts/`);
+      if (response.ok) {
+        const data = await response.json();
+        setCartItems(data || []);
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement du panier:', error);
+    } finally {
+      setCartLoading(false);
+    }
+  };
 
   // Charger le panier depuis l'API si connecté
   useEffect(() => {
-    const loadCart = async () => {
-      if (isAuthenticated) {
-        try {
-          const response = await authFetch(`${PROTOCOL_HTTP}://${HOST_IP}${PORT}/carts/`);
-          if (response.ok) {
-            const data = await response.json();
-            console.log("depuis le pro",data);
-            setCartItems(data || []);
-            
-          }
-        } catch (error) {
-          console.error('Erreur chargement panier:', error);
-        }
-      }
-    };
-
-    loadCart();
+    if (isAuthenticated) {
+      fetchCart();
+    }
   }, [isAuthenticated]);
 
   const addToCart = async (product) => {
@@ -184,6 +187,9 @@ export const CartProvider = ({ children }) => {
   return (
     <CartContext.Provider value={{
       cartItems,
+      setCartItems,
+      cartLoading,
+      fetchCart,
       handleCartItems,
       cartTotal,
       handleCartTotal,

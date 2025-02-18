@@ -7,6 +7,7 @@ import { CartProvider } from './providers/CartProvider';
 import { FavoritesProvider } from './providers/FavoritesProvider';
 import { LoadingProvider } from './providers/LoadingProvider';
 import JsonLd from './Components/Common/JsonLd'
+import MaintenancePage from './Components/MaintenancePage';
 
 const krub = Krub({
   subsets: ['latin'],
@@ -127,9 +128,10 @@ export default function RootLayout({ children }) {
           <AuthProvider>
             <FavoritesProvider>
               <CartProvider>
-               
+              <MaintenancePage />
                   <MainLayout>
-                    {children}
+                   
+                    {/* {children} */}
                   </MainLayout>
                
               </CartProvider>

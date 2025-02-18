@@ -1,6 +1,7 @@
 'use client'
 
 import { useAuth } from '@/app/providers/AuthProvider';
+import { useCart } from "@/app/providers/CartProvider";
 import { AnimatePresence, motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -9,7 +10,6 @@ import { useEffect, useRef, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { FaEnvelope, FaGlobe, FaPhone, FaSun, FaTimes } from 'react-icons/fa';
 import MobileNav from './MobileNav';
-import {useCart} from "@/app/providers/CartProvider";
 
 export default function Navbar() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -21,8 +21,7 @@ export default function Navbar() {
   const [showCartPopup, setShowCartPopup] = useState(false);
   const cartPopupTimer = useRef(null);
   const { user, isAuthenticated, authFetch } = useAuth();
-  const {cartItems, handleCartItems} = useCart()
-  const [cartLoading, setCartLoading] = useState(true);
+  const { cartItems, cartLoading, fetchCart, removeFromCart } = useCart();
   const [deletingItemId, setDeletingItemId] = useState(null);
   const [categories, setCategories] = useState([]);
   const [loadingCategories, setLoadingCategories] = useState(true);
@@ -70,20 +69,6 @@ export default function Navbar() {
 
   // Charger les articles du panier
   useEffect(() => {
-    const fetchCart = async () => {
-      try {
-        const response = await authFetch('https://api.kambily.store/carts/');
-        if (response.ok) {
-          const data = await response.json();
-          handleCartItems(data);
-        }
-      } catch (error) {
-        console.error('Erreur lors du chargement du panier:', error);
-      } finally {
-        setCartLoading(false);
-      }
-    };
-
     if (showCartPopup) {
       fetchCart();
     }
@@ -93,23 +78,6 @@ export default function Navbar() {
   const cartTotal = cartItems.reduce((total, item) => {
     return total + (item.product.regular_price * item.quantity);
   }, 0);
-
-  // Fonction pour supprimer un article
-  const removeFromCart = async (itemId) => {
-    try {
-      const response = await authFetch(`https://api.kambily.store/carts/remove/${itemId}/`, {
-        method: 'DELETE'
-      });
-
-      if (response.ok) {
-        setCartItems(prev => prev.filter(item => item.product.id !== itemId));
-        toast.success('Article supprimé du panier');
-      }
-    } catch (error) {
-      console.error('Erreur lors de la suppression:', error);
-      toast.error('Erreur lors de la suppression');
-    }
-  };
 
   const handleCartMouseEnter = () => {
     if (cartPopupTimer.current) clearTimeout(cartPopupTimer.current);
@@ -670,15 +638,10 @@ export default function Navbar() {
                               </div>
                               <button 
                                 onClick={() => removeFromCart(item.product.id)}
-                                disabled={deletingItemId === item.product.id}
-                                className="absolute top-0 right-0 p-1 text-gray-400 hover:text-red-500 transition-colors disabled:opacity-50"
+                                className="absolute top-0 right-0 p-1 text-gray-400 hover:text-red-500 transition-colors"
                                 aria-label="Supprimer du panier"
                               >
-                                {deletingItemId === item.product.id ? (
-                                  <div className="w-4 h-4 border-2 border-red-500 border-t-transparent rounded-full animate-spin" />
-                                ) : (
-                                  <FaTimes size={14} />
-                                )}
+                                <FaTimes size={14} />
                               </button>
                             </div>
                           ))
